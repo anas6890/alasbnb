@@ -19,23 +19,23 @@ function Footer({}: Props) {
 
   useEffect(() => {
     fetch(
-      `https://extreme-ip-lookup.com/json/?key=${process.env.NEXT_PUBLIC_LOOKUP_KEY}`
+        `https://extreme-ip-lookup.com/json/?key=${process.env.NEXT_PUBLIC_LOOKUP_KEY}`
     )
-      .then((res) => res.json())
-      .then((data) => setCountry(data.country));
+        .then((res) => res.json())
+        .then((data) => setCountry(data.country));
   }, []);
 
   const footerColumns = itemData.map((item, index) => (
-    <FooterColumn index={index} data={item} />
+      <FooterColumn key={index} index={index} data={item} />
   ))
 
   return (
-    <ClientOnly>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-y-10 px-32 py-14 bg-gray-100 text-gray-600">
-        {footerColumns}
-        <p className="text-sm">{country}</p>
-      </div>
-    </ClientOnly>
+      <ClientOnly>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-y-10 px-32 py-14 bg-gray-100 text-gray-600">
+          {footerColumns}
+          <p className="text-sm">{country}</p>
+        </div>
+      </ClientOnly>
   );
 }
 
