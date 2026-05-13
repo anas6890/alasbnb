@@ -9,7 +9,8 @@ import HeartButton from "../HeartButton";
 
 type Props = {
   title: string;
-  locationValue: string;
+  city: string;
+  country: string;
   imageSrc: string;
   id: string;
   currentUser?: SafeUser | null;
@@ -17,19 +18,18 @@ type Props = {
 
 function ListingHead({
   title,
-  locationValue,
+  city,
+  country,
   imageSrc,
   id,
   currentUser,
 }: Props) {
-  const { getByValue } = useCountries();
-  const location = getByValue(locationValue);
 
   return (
     <>
       <Heading
         title={title}
-        subtitle={`${location?.region}, ${location?.label}`}
+        subtitle={`${city}, ${country}`}
       />
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}

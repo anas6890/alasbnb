@@ -3,6 +3,7 @@
 import Container from "@/components/Container";
 import Heading from "@/components/Heading";
 import ListingCard from "@/components/listing/ListingCard";
+import ReviewInput from "@/components/listing/ReviewInput";
 import { SafeReservation, SafeUser } from "@/types";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -45,18 +46,23 @@ function TripsClient({ reservations, currentUser }: Props) {
         subtitle="Where you've been and where you're going"
       />
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
-        {reservations.map((reservation) => (
-          <ListingCard
-            key={reservation.id}
-            data={reservation.listing}
-            reservation={reservation}
-            actionId={reservation.id}
-            onAction={onCancel}
-            disabled={deletingId === reservation.id}
-            actionLabel="Cancel reservation"
-            currentUser={currentUser}
-          />
-        ))}
+        {reservations.map((reservation) => {
+          const isPast = new Date(reservation.checkOut) < new Date();
+          return (
+            <ListingCard
+              key={reservation.id}
+              data={reservation.listing}
+              reservation={reservation}
+              actionId={reservation.id}
+              onAction={onCancel}
+              disabled={deletingId === reservation.id}
+              actionLabel="Cancel reservation"
+              currentUser={currentUser}
+            >
+              {isPast && <ReviewInput reservationId={reservation.id} />}
+            </ListingCard>
+          );
+        })}
       </div>
     </Container>
   );

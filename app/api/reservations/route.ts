@@ -17,6 +17,11 @@ export async function POST(request: Request) {
     return NextResponse.error();
   }
 
+  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+  if (!listing) {
+    return NextResponse.error();
+  }
+
   const listenAndReservation = await prisma.listing.update({
     where: {
       id: listingId,
@@ -25,9 +30,10 @@ export async function POST(request: Request) {
       reservations: {
         create: {
           userId: currentUser.id,
-          startDate,
-          endDate,
+          checkIn: startDate,
+          checkOut: endDate,
           totalPrice,
+          pricePerNight: listing.pricePerNight,
         },
       },
     },

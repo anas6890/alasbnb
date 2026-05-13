@@ -17,9 +17,9 @@ const Map = dynamic(() => import("../Map"), {
 type Props = {
   user: SafeUser;
   description: string;
-  guestCount: number;
-  roomCount: number;
-  bathroomCount: number;
+  maxGuests: number;
+  bedrooms: number;
+  bathrooms: number;
   category:
     | {
         icon: IconType;
@@ -27,32 +27,33 @@ type Props = {
         description: string;
       }
     | undefined;
-  locationValue: string;
+  lat: number;
+  lng: number;
 };
 
 function ListingInfo({
   user,
   description,
-  guestCount,
-  roomCount,
-  bathroomCount,
+  maxGuests,
+  bedrooms,
+  bathrooms,
   category,
-  locationValue,
+  lat,
+  lng,
 }: Props) {
-  const { getByValue } = useCountries();
-  const coordinates = getByValue(locationValue)?.latlng;
+  const coordinates = lat && lng ? [lat, lng] : undefined;
 
   return (
     <div className="col-span-4 flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <div className=" text-xl font-semibold flex flex-row items-center gap-2">
-          <div>Hosted by {user?.name}</div>
-          <Avatar src={user?.image} userName={user?.name} />
+          <div>Hosted by {user?.firstname} {user?.lastname}</div>
+          <Avatar src={user?.image} userName={user?.firstname} />
         </div>
         <div className="flex flex-row items-center gap-4 font-light text-neutral-500">
-          <p>{guestCount} guests</p>
-          <p>{roomCount} rooms</p>
-          <p>{bathroomCount} bathrooms</p>
+          <p>{maxGuests} guests</p>
+          <p>{bedrooms} bedrooms</p>
+          <p>{bathrooms} bathrooms</p>
         </div>
       </div>
       <hr />
@@ -84,7 +85,7 @@ function ListingInfo({
       <Offers />
       <hr />
       <p className="text-xl font-semibold">{`Where you’ll be`}</p>
-      <Map center={coordinates} locationValue={locationValue} />
+      <Map center={coordinates} />
     </div>
   );
 }

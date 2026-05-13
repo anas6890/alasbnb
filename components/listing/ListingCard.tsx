@@ -18,6 +18,7 @@ type Props = {
   actionLabel?: string;
   actionId?: string;
   currentUser?: SafeUser | null;
+  children?: React.ReactNode;
 };
 
 function ListingCard({
@@ -28,11 +29,12 @@ function ListingCard({
   actionLabel,
   actionId = "",
   currentUser,
+  children,
 }: Props) {
   const router = useRouter();
   const { getByValue } = useCountries();
 
-  const location = getByValue(data.locationValue);
+  // const location = getByValue(data.locationValue);
 
   const handleCancel = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -50,16 +52,16 @@ function ListingCard({
       return reservation.totalPrice;
     }
 
-    return data.price;
-  }, [reservation, data.price]);
+    return data.pricePerNight;
+  }, [reservation, data.pricePerNight]);
 
   const reservationDate = useMemo(() => {
     if (!reservation) {
       return null;
     }
 
-    const start = new Date(reservation.startDate);
-    const end = new Date(reservation.endDate);
+    const start = new Date(reservation.checkIn);
+    const end = new Date(reservation.checkOut);
 
     return `${format(start, "PP")} - ${format(end, "PP")}`;
   }, [reservation]);
@@ -81,22 +83,34 @@ function ListingCard({
           <Image
             fill
             className="object-cover h-full w-full group-hover:scale-110 transition"
-            src={data.imageSrc}
+            src={data.images?.[0] || ""}
             alt="listing"
           />
+          <div className="absolute top-3 left-3 bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold shadow-sm">
+            Coup de cœur voyageurs
+          </div>
           <div className="absolute top-3 right-3">
             <HeartButton listingId={data.id} currentUser={currentUser} />
           </div>
         </div>
-        <div className="font-semibold text-lg">
-          {location?.region}, {location?.label}
+        <div className="flex flex-row justify-between items-start">
+          <div className="font-bold text-base">
+            {data.type} - {data.city}
+          </div>
+          <div className="flex items-center gap-1 text-sm">
+            <span>★</span>
+            <span>5,0</span>
+          </div>
         </div>
-        <div className="font-light text-neutral-500">
-          {reservationDate || data.category}
+        <div className="font-light text-neutral-500 text-sm">
+          {reservationDate || "15-17 mai"}
         </div>
-        <div className="flex flex-row items-center gap-">
-          <div className="flex gap-1 font-semibold">
-            ${price} {!reservation && <div className="font-light"> Night</div>}
+        <div className="flex flex-row items-center gap-1">
+          <div className="font-semibold">
+            {price} €
+          </div>
+          <div className="font-light text-neutral-500 text-sm">
+            au total
           </div>
         </div>
         {onAction && actionLabel && (
@@ -107,6 +121,7 @@ function ListingCard({
             onClick={handleCancel}
           />
         )}
+        {children}
       </div>
     </motion.div>
   );

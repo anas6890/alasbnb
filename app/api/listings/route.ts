@@ -19,27 +19,28 @@ export async function POST(request: Request) {
     bathroomCount,
     guestCount,
     location,
+    city,
+    address,
     price,
   } = body;
-
-  Object.keys(body).forEach((value: any) => {
-    if (!body[value]) {
-      NextResponse.error();
-    }
-  });
 
   const listen = await prisma.listing.create({
     data: {
       title,
       description,
-      imageSrc,
-      category,
-      roomCount,
-      bathroomCount,
-      guestCount,
-      locationValue: location.value,
-      price: parseInt(price, 10),
-      userId: currentUser.id,
+      images: [imageSrc],
+      type: category,
+      bedrooms: roomCount,
+      bathrooms: bathroomCount,
+      maxGuests: guestCount,
+      beds: roomCount, // default
+      address: address || location.label,
+      city: city || location.region,
+      country: location.label || location.value,
+      lat: location.latlng?.[0] || 0,
+      lng: location.latlng?.[1] || 0,
+      pricePerNight: parseInt(price, 10),
+      hostId: currentUser.id,
     },
   });
 

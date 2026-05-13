@@ -28,7 +28,9 @@ function RegisterModal({}: Props) {
     formState: { errors },
   } = useForm<FieldValues>({
     defaultValues: {
-      name: "",
+      firstname: "",
+      lastname: "",
+      birthdate: "",
       email: "",
       password: "",
     },
@@ -72,8 +74,25 @@ function RegisterModal({}: Props) {
         required
       />
       <Input
-        id="name"
-        label="User Name"
+        id="firstname"
+        label="First Name"
+        disabled={isLoading}
+        register={register}
+        errors={errors}
+        required
+      />
+      <Input
+        id="lastname"
+        label="Last Name"
+        disabled={isLoading}
+        register={register}
+        errors={errors}
+        required
+      />
+      <Input
+        id="birthdate"
+        label="Birthdate"
+        type="date"
         disabled={isLoading}
         register={register}
         errors={errors}

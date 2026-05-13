@@ -27,33 +27,33 @@ export default async function getListings(params: IListingsParams) {
     let query: any = {};
 
     if (userId) {
-      query.userId = userId;
+      query.hostId = userId;
     }
 
     if (category) {
-      query.category = category;
+      query.type = category;
     }
 
     if (roomCount) {
-      query.roomCount = {
+      query.bedrooms = {
         gte: +roomCount,
       };
     }
 
     if (guestCount) {
-      query.guestCount = {
+      query.maxGuests = {
         gte: +guestCount,
       };
     }
 
     if (bathroomCount) {
-      query.bathroomCount = {
+      query.bathrooms = {
         gte: +bathroomCount,
       };
     }
 
     if (locationValue) {
-      query.locationValue = locationValue;
+      query.country = locationValue;
     }
 
     if (startDate && endDate) {
@@ -62,12 +62,12 @@ export default async function getListings(params: IListingsParams) {
           some: {
             OR: [
               {
-                endDate: { gte: startDate },
-                startDate: { lte: startDate },
+                checkOut: { gte: startDate },
+                checkIn: { lte: startDate },
               },
               {
-                startDate: { lte: endDate },
-                endDate: { gte: endDate },
+                checkIn: { lte: endDate },
+                checkOut: { gte: endDate },
               },
             ],
           },

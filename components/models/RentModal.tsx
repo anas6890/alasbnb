@@ -45,6 +45,8 @@ function RentModal({}: Props) {
     defaultValues: {
       category: "",
       location: null,
+      city: "",
+      address: "",
       guestCount: 1,
       roomCount: 1,
       bathroomCount: 1,
@@ -157,6 +159,22 @@ function RentModal({}: Props) {
         <CountrySelect
           value={location}
           onChange={(value) => setCustomValue("location", value)}
+        />
+        <Input
+          id="city"
+          label="City"
+          disabled={isLoading}
+          register={register}
+          errors={errors}
+          required
+        />
+        <Input
+          id="address"
+          label="Address"
+          disabled={isLoading}
+          register={register}
+          errors={errors}
+          required
         />
         <Map center={location?.latlng} />
       </div>

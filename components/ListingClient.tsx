@@ -23,13 +23,14 @@ const initialDateRange = {
 
 type Props = {
   reservations?: SafeReservation[];
+  reviews?: any[];
   listing: safeListing & {
     user: SafeUser;
   };
   currentUser?: SafeUser | null;
 };
 
-function ListingClient({ reservations = [], listing, currentUser }: Props) {
+function ListingClient({ reservations = [], reviews = [], listing, currentUser }: Props) {
   const router = useRouter();
   const loginModal = useLoginModel();
 
@@ -38,8 +39,8 @@ function ListingClient({ reservations = [], listing, currentUser }: Props) {
 
     reservations.forEach((reservation) => {
       const range = eachDayOfInterval({
-        start: new Date(reservation.startDate),
-        end: new Date(reservation.endDate),
+        start: new Date(reservation.checkIn),
+        end: new Date(reservation.checkOut),
       });
 
       dates = [...dates, ...range];
@@ -49,7 +50,7 @@ function ListingClient({ reservations = [], listing, currentUser }: Props) {
   }, [reservations]);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [totalPrice, setTotalPrice] = useState(listing.price);
+  const [totalPrice, setTotalPrice] = useState(listing.pricePerNight);
   const [dateRange, setDateRange] = useState<Range>(initialDateRange);
 
   const onCreateReservation = useCallback(() => {
@@ -86,17 +87,17 @@ function ListingClient({ reservations = [], listing, currentUser }: Props) {
         dateRange.startDate
       );
 
-      if (dayCount && listing.price) {
-        setTotalPrice(dayCount * listing.price);
+      if (dayCount && listing.pricePerNight) {
+        setTotalPrice(dayCount * listing.pricePerNight);
       } else {
-        setTotalPrice(listing.price);
+        setTotalPrice(listing.pricePerNight);
       }
     }
-  }, [dateRange, listing.price]);
+  }, [dateRange, listing.pricePerNight]);
 
   const category = useMemo(() => {
-    return categories.find((item) => item.label === listing.category);
-  }, [listing.category]);
+    return categories.find((item) => item.label === listing.type);
+  }, [listing.type]);
 
   return (
     <Container>
@@ -104,8 +105,9 @@ function ListingClient({ reservations = [], listing, currentUser }: Props) {
         <div className="flex flex-col gap-6">
           <ListingHead
             title={listing.title}
-            imageSrc={listing.imageSrc}
-            locationValue={listing.locationValue}
+            imageSrc={listing.images?.[0] || ""}
+            city={listing.city}
+            country={listing.country}
             id={listing.id}
             currentUser={currentUser}
           />
@@ -114,14 +116,15 @@ function ListingClient({ reservations = [], listing, currentUser }: Props) {
               user={listing.user}
               category={category}
               description={listing.description}
-              roomCount={listing.roomCount}
-              guestCount={listing.guestCount}
-              bathroomCount={listing.bathroomCount}
-              locationValue={listing.locationValue}
+              bedrooms={listing.bedrooms}
+              maxGuests={listing.maxGuests}
+              bathrooms={listing.bathrooms}
+              lat={listing.lat}
+              lng={listing.lng}
             />
             <div className="order-first mb-10 md:order-last md:col-span-3">
               <ListingReservation
-                price={listing.price}
+                price={listing.pricePerNight}
                 totalPrice={totalPrice}
                 onChangeDate={(value) => setDateRange(value)}
                 dateRange={dateRange}
@@ -130,6 +133,27 @@ function ListingClient({ reservations = [], listing, currentUser }: Props) {
                 disabledDates={disableDates}
               />
             </div>
+          </div>
+
+          <hr />
+          
+          <div className="flex flex-col gap-4 mt-4">
+            <h2 className="text-2xl font-semibold">Reviews</h2>
+            {reviews.length === 0 ? (
+              <p className="text-neutral-500">No reviews yet.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {reviews.map((review) => (
+                  <div key={review.id} className="p-4 border-[1px] border-neutral-200 rounded-xl">
+                    <div className="flex flex-row items-center gap-2 mb-2">
+                      <div className="font-semibold">{review.user.firstname} {review.user.lastname}</div>
+                      <div className="text-neutral-500 font-light">• {review.rating}/5</div>
+                    </div>
+                    <div className="text-neutral-500">{review.comment}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

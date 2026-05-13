@@ -39,12 +39,7 @@ function UserMenu({ currentUser }: Props) {
   return (
     <div className="relative">
       <div className="flex flex-row items-center gap-3">
-        <div
-          className="hidden md:block text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
-          onClick={onRent}
-        >
-          Airbnb your Home
-        </div>
+
         <div
           onClick={toggleOpen}
           className="p-4 md:py-1 md:px-2 border-[1px] flex flex-row items-center gap-3 rounded-full cursor-pointer hover:shadow-md transition"
@@ -52,7 +47,7 @@ function UserMenu({ currentUser }: Props) {
           <AiOutlineMenu />
           <div className="hidden md:block">
             {currentUser ? (
-              <Avatar src={currentUser?.image!} userName={currentUser?.name} />
+              <Avatar src={currentUser?.image!} userName={currentUser?.firstname} />
             ) : (
               <Image
                 className="rounded-full"
@@ -86,12 +81,20 @@ function UserMenu({ currentUser }: Props) {
                   onClick={() => router.push("/properties")}
                   label="My properties"
                 />
+                <MenuItem
+                  onClick={() => router.push("/experiences")}
+                  label="Experiences"
+                />
                 <MenuItem onClick={onRent} label="Airbnb your home" />
                 <hr />
                 <MenuItem onClick={() => signOut()} label="Logout" />
               </>
             ) : (
               <>
+                <MenuItem
+                  onClick={() => router.push("/experiences")}
+                  label="Experiences"
+                />
                 <MenuItem onClick={loginModel.onOpen} label="Login" />
                 <MenuItem onClick={registerModel.onOpen} label="Sign up" />
               </>
