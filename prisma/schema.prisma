@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,19 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// --- UTILISATEURS ---
 model User {
-  id             String        @id @default(auto()) @map("_id") @db.ObjectId
-  name           String?
-  email          String?       @unique
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  firstname      String
+  lastname       String
+  email          String    @unique
   emailVerified  DateTime?
   image          String?
-  hashedPassword String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  favoriteIds    String[]      @db.ObjectId
-  accounts       Account[]
-  listings       Listing[]
-  reservations   Reservation[]
+  hashedPassword String
+  birthdate      DateTime
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  favoriteIds    String[]  @db.ObjectId
+
+  accounts     Account[]
+  listings     Listing[]
+  experiences  Experience[]
+  reservations Reservation[]
+  reviews      Review[]
+  payments     Payment[]
 }
 
 model Account {
@@ -43,31 +47,118 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+// --- LOGEMENTS ---
 model Listing {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   description   String
-  imageSrc      String
-  createdAt     DateTime      @default(now())
-  category      String
-  roomCount     Int
-  bathroomCount Int
-  guestCount    Int
-  locationValue String
-  userId        String        @db.ObjectId
-  price         Int
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reservations  Reservation[]
+  type          String // apartment, house, villa, etc.
+  pricePerNight Int
+  cleaningFee   Int      @default(0)
+  serviceFee    Int      @default(0)
+  maxGuests     Int
+  bedrooms      Int
+  beds          Int
+  bathrooms     Int
+  images        String[]
+  amenities     String[]
+
+  // Localisation précise
+  address String
+  city    String
+  country String
+  lat     Float
+  lng     Float
+
+  // Règles de la maison
+  petsAllowed    Boolean @default(false)
+  smokingAllowed Boolean @default(false)
+  partiesAllowed Boolean @default(false)
+  checkInTime    Int     @default(14)
+  checkOutTime   Int     @default(11)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  hostId    String   @db.ObjectId
+  user      User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  reservations Reservation[]
 }
 
+// --- EXPÉRIENCES (Activités) ---
+model Experience {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  category        String
+  description     String
+  durationMinutes Int
+  pricePerPerson  Int
+  maxGroupSize    Int
+  images          String[]
+  included        String[]
+
+  city    String
+  country String
+  lat     Float
+  lng     Float
+
+  hostId String @db.ObjectId
+  user   User   @relation(fields: [hostId], references: [id], onDelete: Cascade)
+}
+
+// --- RÉSERVATIONS ---
 model Reservation {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  listingId  String   @db.ObjectId
-  startDate  DateTime
-  endDate    DateTime
-  totalPrice Int
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  checkIn  DateTime
+  checkOut DateTime
+  status   String   @default("pending") // pending, confirmed, cancelled
+
+  // Snapshot du prix au moment de l'achat
+  pricePerNight Int
+  totalPrice    Int
+
+  // Détail des voyageurs
+  adults   Int @default(1)
+  children Int @default(0)
+  infants  Int @default(0)
+  pets     Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String  @db.ObjectId
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  payment Payment?
+  reviews Review[]
+}
+
+// --- PAIEMENTS ---
+model Payment {
+  id                    String  @id @default(auto()) @map("_id") @db.ObjectId
+  amount                Int
+  currency              String  @default("USD")
+  status                String  @default("pending") // captured, refunded, failed
+  stripePaymentIntentId String?
+
+  reservationId String      @unique @db.ObjectId
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// --- COMMENTAIRES ---
+model Review {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  rating  Int
+  comment String
+
+  authorId String @db.ObjectId
+  user     User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  reservationId String      @db.ObjectId
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 }
