@@ -17,7 +17,7 @@ import Modal from "./Modal";
 
 type Props = {};
 
-function LoginModal({}: Props) {
+function LoginModal({ }: Props) {
   const router = useRouter();
   const registerModel = useRegisterModal();
   const loginModel = useLoginModel();
@@ -48,9 +48,15 @@ function LoginModal({}: Props) {
         router.refresh();
         loginModel.onClose();
       } else if (callback?.error) {
-        toast.error("Something Went Wrong");
+        toast.error(callback.error);
       }
     });
+  };
+
+  const socialAction = (action: string) => {
+    setIsLoading(true);
+
+    signIn(action, { callbackUrl: "/" });
   };
 
   const toggle = useCallback(() => {
@@ -87,13 +93,15 @@ function LoginModal({}: Props) {
         outline
         label="Continue with Google"
         icon={FcGoogle}
-        onClick={() => signIn("google")}
+        disabled={isLoading}
+        onClick={() => socialAction("google")}
       />
       <Button
         outline
         label="Continue with Facebook"
         icon={AiFillFacebook}
-        onClick={() => signIn("facebook")}
+        disabled={isLoading}
+        onClick={() => socialAction("facebook")}
         isColor
       />
       <div className="text-neutral-500 text-center mt-4 font-light">

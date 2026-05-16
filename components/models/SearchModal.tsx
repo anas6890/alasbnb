@@ -22,7 +22,7 @@ enum STEPS {
 
 type Props = {};
 
-function SearchModal({}: Props) {
+function SearchModal({ }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const searchModel = useSearchModal();
@@ -36,7 +36,7 @@ function SearchModal({}: Props) {
     startDate: new Date(),
     endDate: new Date(),
     key: "selection",
-  });  const Map = useMemo(
+  }); const Map = useMemo(
     () =>
       dynamic(() => import("../Map"), {
         ssr: false,

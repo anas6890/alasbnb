@@ -1,7 +1,8 @@
 import prisma from "@/lib/prismadb";
 import getCurrentUser from "./getCurrentUser";
+import { cache } from "react";
 
-export default async function getFavoriteListings() {
+const getFavoriteListings = cache(async () => {
   try {
     const currentUser = await getCurrentUser();
 
@@ -26,4 +27,6 @@ export default async function getFavoriteListings() {
   } catch (error: any) {
     throw new Error(error.message);
   }
-}
+});
+
+export default getFavoriteListings;

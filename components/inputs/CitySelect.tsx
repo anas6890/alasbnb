@@ -25,12 +25,18 @@ const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
         `https://nominatim.openstreetmap.org/search?format=json&q=${inputValue}&addressdetails=1&limit=5`
       );
 
-      return response.data.map((item: any) => ({
-        label: item.display_name,
-        value: item.place_id,
-        latlng: [parseFloat(item.lat), parseFloat(item.lon)],
-        region: item.address?.country || "",
-      }));
+      return response.data.map((item: any) => {
+        const address = item.address;
+        const city = address?.city || address?.town || address?.village || address?.municipality || item.name;
+        const country = address?.country || "";
+        
+        return {
+          label: country ? `${city} - ${country}` : city,
+          value: item.place_id,
+          latlng: [parseFloat(item.lat), parseFloat(item.lon)],
+          region: country,
+        };
+      });
     } catch (error) {
       console.error("Error fetching cities:", error);
       return [];

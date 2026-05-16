@@ -53,7 +53,18 @@ export default async function getListings(params: IListingsParams) {
     }
 
     if (locationValue) {
-      query.country = locationValue;
+      const parts = locationValue.split(" - ");
+      if (parts.length === 2) {
+        query.OR = [
+          { city: { contains: parts[0], mode: "insensitive" } },
+          { country: { contains: parts[1], mode: "insensitive" } }
+        ];
+      } else {
+        query.OR = [
+          { city: { contains: locationValue, mode: "insensitive" } },
+          { country: { contains: locationValue, mode: "insensitive" } }
+        ];
+      }
     }
 
     if (startDate && endDate) {

@@ -17,7 +17,7 @@ import Modal from "./Modal";
 
 type Props = {};
 
-function RegisterModal({}: Props) {
+function RegisterModal({ }: Props) {
   const registerModel = useRegisterModal();
   const loginModel = useLoginModel();
   const [isLoading, setIsLoading] = useState(false);
@@ -42,15 +42,22 @@ function RegisterModal({}: Props) {
     axios
       .post("/api/register", data)
       .then(() => {
-        toast.success("Success!");
+        toast.success("Register Successfully");
         loginModel.onOpen();
         registerModel.onClose();
       })
-      .catch((err: any) => toast.error("Something Went Wrong"))
+      .catch((err: any) => {
+        toast.error("Something Went Wrong");
+      })
       .finally(() => {
         setIsLoading(false);
-        toast.success("Register Successfully");
       });
+  };
+
+  const socialAction = (action: string) => {
+    setIsLoading(true);
+
+    signIn(action, { callbackUrl: "/" });
   };
 
   const toggle = useCallback(() => {
@@ -116,13 +123,15 @@ function RegisterModal({}: Props) {
         outline
         label="Continue with Google"
         icon={FcGoogle}
-        onClick={() => signIn("google")}
+        disabled={isLoading}
+        onClick={() => socialAction("google")}
       />
       <Button
         outline
         label="Continue with Facebook"
         icon={AiFillFacebook}
-        onClick={() => signIn("facebook")}
+        disabled={isLoading}
+        onClick={() => socialAction("facebook")}
         isColor
       />
       <div className="text-neutral-500 text-center mt-4 font-light">

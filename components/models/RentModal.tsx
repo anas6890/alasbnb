@@ -28,7 +28,7 @@ enum STEPS {
   PRICE = 5,
 }
 
-function RentModal({}: Props) {
+function RentModal({ }: Props) {
   const router = useRouter();
   const rentModel = useRentModal();
   const [step, setStep] = useState(STEPS.CATEGORY);

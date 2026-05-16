@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo } from "react";
 import Button from "../Button";
 import HeartButton from "../HeartButton";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 type Props = {
   data: safeListing;
@@ -32,9 +34,9 @@ function ListingCard({
   children,
 }: Props) {
   const router = useRouter();
+  const { language } = useLanguage();
+  const t = translations[language] || translations.fr;
   const { getByValue } = useCountries();
-
-  // const location = getByValue(data.locationValue);
 
   const handleCancel = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -87,7 +89,7 @@ function ListingCard({
             alt="listing"
           />
           <div className="absolute top-3 left-3 bg-white/90 px-3 py-1 rounded-full text-[10px] font-bold shadow-sm">
-            Coup de cœur voyageurs
+            {language === "fr" ? "Coup de cœur voyageurs" : "Guest favorite"}
           </div>
           <div className="absolute top-3 right-3">
             <HeartButton listingId={data.id} currentUser={currentUser} />
@@ -103,14 +105,14 @@ function ListingCard({
           </div>
         </div>
         <div className="font-light text-neutral-500 text-sm">
-          {reservationDate || "15-17 mai"}
+          {reservationDate || "15-17 May"}
         </div>
         <div className="flex flex-row items-center gap-1">
           <div className="font-semibold">
-            {price} €
+             €{price}
           </div>
           <div className="font-light text-neutral-500 text-sm">
-            au total
+            {reservation ? t.total : `/ ${t.night}`}
           </div>
         </div>
         {onAction && actionLabel && (

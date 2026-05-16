@@ -7,34 +7,41 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { SafeUser } from "@/types";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 import { AiOutlineMenu } from "react-icons/ai";
 import Avatar from "../Avatar";
 import MenuItem from "./MenuItem";
 
-type Props = {
+interface Props {
   currentUser?: SafeUser | null;
-};
+}
 
 function UserMenu({ currentUser }: Props) {
+  const { data: session } = useSession();
   const router = useRouter();
   const registerModel = useRegisterModal();
   const loginModel = useLoginModel();
   const rentModel = useRentModal();
   const [isOpen, setIsOpen] = useState(false);
+  const { language } = useLanguage();
+  const t = translations[language] || translations.fr;
+
+  const finalUser = currentUser || (session?.user as SafeUser);
 
   const toggleOpen = useCallback(() => {
     setIsOpen((value) => !value);
   }, []);
 
   const onRent = useCallback(() => {
-    if (!currentUser) {
+    if (!finalUser) {
       return loginModel.onOpen();
     }
 
     rentModel.onOpen();
-  }, [currentUser, loginModel, rentModel]);
+  }, [finalUser, loginModel, rentModel]);
 
   return (
     <div className="relative">
@@ -46,8 +53,8 @@ function UserMenu({ currentUser }: Props) {
         >
           <AiOutlineMenu />
           <div className="hidden md:block">
-            {currentUser ? (
-              <Avatar src={currentUser?.image!} userName={currentUser?.firstname} />
+            {finalUser ? (
+              <Avatar src={finalUser?.image!} userName={finalUser?.firstname || finalUser?.name} />
             ) : (
               <Image
                 className="rounded-full"
@@ -61,42 +68,35 @@ function UserMenu({ currentUser }: Props) {
         </div>
       </div>
       {isOpen && (
-        <div className="absolute rounded-xl shadow-md w-[40vw] md:w-3/4 bg-white overflow-hidden right-0 top-12 text-sm">
+        <div className="absolute rounded-xl shadow-md w-[240px] bg-white overflow-hidden right-0 top-12 text-sm border-[1px] border-neutral-100">
           <div className="flex flex-col cursor-pointer">
-            {currentUser ? (
+            {finalUser ? (
               <>
                 <MenuItem
                   onClick={() => router.push("/trips")}
-                  label="My trips"
+                  label={t.bookings}
                 />
                 <MenuItem
                   onClick={() => router.push("/favorites")}
-                  label="My favorites"
+                  label={t.wishlist}
                 />
                 <MenuItem
                   onClick={() => router.push("/reservations")}
-                  label="My reservations"
+                  label={t.reservations}
                 />
                 <MenuItem
                   onClick={() => router.push("/properties")}
-                  label="My properties"
+                  label={t.properties}
                 />
-                <MenuItem
-                  onClick={() => router.push("/experiences")}
-                  label="Experiences"
-                />
-                <MenuItem onClick={onRent} label="Airbnb your home" />
+
+                <MenuItem onClick={onRent} label={t.host} />
                 <hr />
-                <MenuItem onClick={() => signOut()} label="Logout" />
+                <MenuItem onClick={() => signOut()} label={t.logout} />
               </>
             ) : (
               <>
-                <MenuItem
-                  onClick={() => router.push("/experiences")}
-                  label="Experiences"
-                />
-                <MenuItem onClick={loginModel.onOpen} label="Login" />
-                <MenuItem onClick={registerModel.onOpen} label="Sign up" />
+                <MenuItem onClick={loginModel.onOpen} label={t.login} />
+                <MenuItem onClick={registerModel.onOpen} label={t.signup} />
               </>
             )}
           </div>

@@ -5,10 +5,12 @@ import LoginModal from "@/components/models/LoginModal";
 import RegisterModal from "@/components/models/RegisterModal";
 import RentModal from "@/components/models/RentModal";
 import SearchModal from "@/components/models/SearchModal";
+import LanguageModal from "@/components/models/LanguageModal";
 import Navbar from "@/components/navbar/Navbar";
 import { Nunito } from "next/font/google";
 import "../styles/globals.css";
 import getCurrentUser from "./actions/getCurrentUser";
+import NextAuthProvider from "./providers/NextAuthProvider";
 
 export const metadata = {
   title: "Alasbnb ",
@@ -30,16 +32,21 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={font.className}>
-        <ClientOnly>
-          <ToastContainerBar />
-          <SearchModal />
-          <RegisterModal />
-          <LoginModal />
-          <RentModal />
-          <Navbar currentUser={currentUser} />
-        </ClientOnly>
-        <div className="pb-20 pt-36">{children}</div>
-        <Footer />
+        <NextAuthProvider>
+          <ClientOnly>
+            <ToastContainerBar />
+            <SearchModal />
+            <LanguageModal />
+            <RegisterModal />
+            <LoginModal />
+            <RentModal />
+            <Navbar currentUser={currentUser} />
+          </ClientOnly>
+          <div className="pb-20">
+            {children}
+          </div>
+          <Footer />
+        </NextAuthProvider>
       </body>
     </html>
   );

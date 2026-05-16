@@ -9,7 +9,11 @@ import Categories from "./Categories";
 import { useRouter, usePathname } from "next/navigation";
 import useLoginModel from "@/hook/useLoginModal";
 import useRentModal from "@/hook/useRentModal";
-import { useCallback } from "react";
+import useLanguageModal from "@/hook/useLanguageModal";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
+import { useCallback, useState } from "react";
+import { MdLanguage } from "react-icons/md";
 
 type Props = {
   currentUser?: SafeUser | null;
@@ -19,6 +23,9 @@ function Navbar({ currentUser }: Props) {
   const router = useRouter();
   const loginModel = useLoginModel();
   const rentModel = useRentModal();
+  const languageModal = useLanguageModal();
+  const { language } = useLanguage();
+  const t = translations[language] || translations.fr;
   const pathname = usePathname();
 
   const onRent = useCallback(() => {
@@ -30,7 +37,7 @@ function Navbar({ currentUser }: Props) {
   }, [currentUser, loginModel, rentModel]);
 
   return (
-    <div className="fixed w-full bg-white z-20 shadow-sm border-b-[1px]">
+    <div className="relative w-full bg-white z-30 shadow-sm border-b-[1px]">
       <div className="py-4">
         <Container>
           <div className="flex flex-row items-center justify-between gap-3 md:gap-0">
@@ -42,13 +49,13 @@ function Navbar({ currentUser }: Props) {
                 onClick={() => router.push("/")}
                 className={`cursor-pointer hover:text-black transition relative pb-1 ${pathname === "/" ? "text-black after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-black" : ""}`}
               >
-                Logements
+                {t.logements}
               </div>
               <div 
                 onClick={() => router.push("/experiences")}
                 className={`cursor-pointer hover:text-black transition relative pb-1 ${pathname === "/experiences" ? "text-black after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-black" : ""}`}
               >
-                Expériences
+                {t.experiences}
               </div>
             </div>
 
@@ -57,7 +64,14 @@ function Navbar({ currentUser }: Props) {
                 onClick={onRent}
                 className="hidden md:block text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
               >
-                Devenir hôte
+                {t.host}
+              </div>
+              <div
+                onClick={languageModal.onOpen}
+                className="p-3 hover:bg-neutral-100 rounded-full transition cursor-pointer"
+                title={language === "fr" ? "Changer la langue" : "Change language"}
+              >
+                <MdLanguage size={18} />
               </div>
               <UserMenu currentUser={currentUser} />
             </div>

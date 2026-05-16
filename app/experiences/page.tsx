@@ -6,8 +6,10 @@ import Container from "@/components/Container";
 import ExperienceCard from "@/components/experience/ExperienceCard";
 
 export default async function ExperiencesPage() {
-  const experiences = await getExperiences();
-  const currentUser = await getCurrentUser();
+  const [experiences, currentUser] = await Promise.all([
+    getExperiences(),
+    getCurrentUser()
+  ]);
 
   if (experiences.length === 0) {
     return (
