@@ -19,10 +19,10 @@ export default async function getReviews(params: IParams) {
     const reviews = await prisma.review.findMany({
       where: query,
       include: {
-        user: true,
+        author: true,
       },
       orderBy: {
-        id: "desc",
+        createdAt: "desc",
       },
     });
 

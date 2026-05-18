@@ -13,7 +13,7 @@ const getFavoriteListings = cache(async () => {
     const favorites = await prisma.listing.findMany({
       where: {
         id: {
-          in: [...(currentUser.favoriteIds || [])],
+          in: [...(currentUser.savedListingIds || [])],
         },
       },
     });

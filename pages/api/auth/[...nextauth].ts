@@ -6,8 +6,21 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import FacebookProvider from "next-auth/providers/facebook";
 import GoogleProvider from "next-auth/providers/google";
 
+const customAdapter = PrismaAdapter(prisma);
+const originalCreateUser = customAdapter.createUser;
+if (originalCreateUser) {
+    customAdapter.createUser = async (profile: any) => {
+        return originalCreateUser({
+            ...profile,
+            name: undefined,
+            firstname: profile.name?.split(" ")[0] || "User",
+            lastname: profile.name?.split(" ").slice(1).join(" ") || "",
+        } as any);
+    };
+}
+
 export const authOptions: AuthOptions = {
-    adapter: PrismaAdapter(prisma),
+    adapter: customAdapter,
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID as string,

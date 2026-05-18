@@ -11,17 +11,19 @@ type Props = {
 };
 
 function Counter({ title, subtitle, value, onChange }: Props) {
+  const safeValue = isNaN(value) || !value ? 1 : value;
+
   const onAdd = useCallback(() => {
-    onChange(value + 1);
-  }, [onChange, value]);
+    onChange(safeValue + 1);
+  }, [onChange, safeValue]);
 
   const onReduce = useCallback(() => {
-    if (value === 1) {
+    if (safeValue === 1) {
       return;
     }
 
-    onChange(value - 1);
-  }, [value, onChange]);
+    onChange(safeValue - 1);
+  }, [safeValue, onChange]);
 
   return (
     <div className="flex flex-row items-center justify-between">
@@ -36,7 +38,7 @@ function Counter({ title, subtitle, value, onChange }: Props) {
         >
           <AiOutlineMinus />
         </div>
-        <div className="font-light text-xl text-neutral-600">{value}</div>
+        <div className="font-light text-xl text-neutral-600">{safeValue}</div>
         <div
           onClick={onAdd}
           className="w-10 h-10 rounded-full border-[1px] border-neutral-400 flex items-center justify-center text-neutral-600 cursor-pointer hover:opacity-80 transition"

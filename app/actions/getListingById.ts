@@ -17,20 +17,20 @@ export default async function getListingById(params: IParams) {
       },
     });
 
-    if (!listing) {
+    if (!listing || !listing.user) {
       return null;
     }
 
     return {
       ...listing,
       createdAt: listing.createdAt.toString(),
-      user: listing.user ? {
+      user: {
         ...listing.user,
         createdAt: listing.user.createdAt.toISOString(),
         updatedAt: listing.user.updatedAt.toISOString(),
         emailVerified: listing.user.emailVerified?.toISOString() || null,
-        birthdate: listing.user.birthdate?.toISOString() || "",
-      } : null,
+        deletedAt: listing.user.deletedAt,
+      },
     };
   } catch (error: any) {
     throw new Error(error.message);

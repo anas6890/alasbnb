@@ -10,6 +10,7 @@ const nextConfig = {
       "platform-lookaside.fbsbx.com",
       "images.unsplash.com"
     ],
+    unoptimized: true,
   },
 };
 

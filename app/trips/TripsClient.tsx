@@ -45,13 +45,13 @@ function TripsClient({ reservations, currentUser }: Props) {
         title="Trips"
         subtitle="Where you've been and where you're going"
       />
-      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
+      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
         {reservations.map((reservation) => {
-          const isPast = new Date(reservation.checkOut) < new Date();
+          const isPast = reservation.checkOut && new Date(reservation.checkOut) < new Date();
           return (
             <ListingCard
               key={reservation.id}
-              data={reservation.listing}
+              data={reservation.listing as any}
               reservation={reservation}
               actionId={reservation.id}
               onAction={onCancel}

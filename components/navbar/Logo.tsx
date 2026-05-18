@@ -12,11 +12,12 @@ function Logo({}: Props) {
   return (
     <div onClick={() => router.push("/")}>
       <Image
-        alt="logo"
-        className="cursor-pointer"
-        height="100"
-        width="100"
+        alt="AlasBnB"
+        className="cursor-pointer object-contain"
+        height={58}
+        width={160}
         src="/assets/logo.png"
+        priority
       />
     </div>
   );

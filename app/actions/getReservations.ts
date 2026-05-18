@@ -24,7 +24,7 @@ export default async function getReservation(params: IParams) {
       query.listing = { hostId: authorId };
     }
 
-    const reservation = await prisma.reservation.findMany({
+    const reservations = await prisma.reservation.findMany({
       where: query,
       include: {
         listing: true,
@@ -34,15 +34,17 @@ export default async function getReservation(params: IParams) {
       },
     });
 
-    const safeReservations = reservation.map((reservation) => ({
+    const safeReservations = reservations.map((reservation) => ({
       ...reservation,
       createdAt: reservation.createdAt.toISOString(),
-      checkIn: reservation.checkIn.toISOString(),
-      checkOut: reservation.checkOut.toISOString(),
-      listing: {
-        ...reservation.listing,
-        createdAt: reservation.listing.createdAt.toISOString(),
-      },
+      checkIn: reservation.checkIn?.toISOString() || null,
+      checkOut: reservation.checkOut?.toISOString() || null,
+      listing: reservation.listing
+        ? {
+            ...reservation.listing,
+            createdAt: reservation.listing.createdAt.toISOString(),
+          }
+        : null,
     }));
 
     return safeReservations;

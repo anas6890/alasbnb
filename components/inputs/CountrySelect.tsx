@@ -3,6 +3,7 @@
 import useCountries from "@/hook/useCountries";
 import Select from "react-select";
 import Flag from "react-world-flags";
+import React from "react";
 
 export type CountrySelectValue = {
   flag: string;
@@ -12,10 +13,10 @@ export type CountrySelectValue = {
   value: string;
 };
 
-type Props = {
+interface Props {
   value?: CountrySelectValue;
   onChange: (value: CountrySelectValue) => void;
-};
+}
 
 function CountrySelect({ value, onChange }: Props) {
   const { getAll } = useCountries();
@@ -27,7 +28,7 @@ function CountrySelect({ value, onChange }: Props) {
         isClearable
         options={getAll()}
         value={value}
-        onChange={(value) => onChange(value as CountrySelectValue)}
+        onChange={(value: any) => onChange(value as CountrySelectValue)}
         formatOptionLabel={(option: any) => (
           <div className="flex flex-row items-center gap-3">
             <Flag code={option.value} className="w-5" />
@@ -42,7 +43,7 @@ function CountrySelect({ value, onChange }: Props) {
           input: () => "text-lg",
           option: () => "text-lg",
         }}
-        theme={(theme) => ({
+        theme={(theme: any) => ({
           ...theme,
           borderRadius: 6,
           colors: {

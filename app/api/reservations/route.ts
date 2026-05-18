@@ -22,6 +22,8 @@ export async function POST(request: Request) {
     return NextResponse.error();
   }
 
+  const pricePerNight = listing.pricePerNight;
+
   const listenAndReservation = await prisma.listing.update({
     where: {
       id: listingId,
@@ -30,10 +32,11 @@ export async function POST(request: Request) {
       reservations: {
         create: {
           userId: currentUser.id,
-          checkIn: startDate,
-          checkOut: endDate,
-          totalPrice,
-          pricePerNight: listing.pricePerNight,
+          checkIn: new Date(startDate),
+          checkOut: new Date(endDate),
+          totalPrice: totalPrice,
+          pricePerNight: pricePerNight,
+          type: "LISTING",
         },
       },
     },

@@ -6,17 +6,17 @@ import axios from "axios";
 
 export type CitySelectValue = {
   label: string;
+  latlng: number[];
   value: string;
-  latlng: [number, number];
-  region: string;
 };
 
-interface CitySelectProps {
+interface Props {
   value?: CitySelectValue;
   onChange: (value: CitySelectValue) => void;
+  countryValue?: string;
 }
 
-const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
+const CitySelect: React.FC<Props> = ({ value, onChange, countryValue }) => {
   const loadOptions = async (inputValue: string) => {
     if (inputValue.length < 3) return [];
 
@@ -49,7 +49,7 @@ const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
       cacheOptions
       loadOptions={loadOptions}
       value={value}
-      onChange={(val) => onChange(val as CitySelectValue)}
+      onChange={(val: any) => onChange(val as CitySelectValue)}
       classNames={{
         control: () => "p-3 border-2",
         input: () => "text-lg",

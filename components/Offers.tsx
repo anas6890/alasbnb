@@ -1,105 +1,74 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AiOutlineCar, AiOutlineWifi } from "react-icons/ai";
-import { BiCctv } from "react-icons/bi";
-import { BsFire } from "react-icons/bs";
-import { FaFireExtinguisher } from "react-icons/fa";
-import { GiButterflyFlower } from "react-icons/gi";
-import { GrWorkshop } from "react-icons/gr";
-import { MdOutlineBathtub, MdOutlineCoffeeMaker } from "react-icons/md";
-import { RiSafeLine } from "react-icons/ri";
+import { TbPool, TbWifi, TbCar, TbToolsKitchen2, TbTv, TbPaw } from "react-icons/tb";
+import { PiWashingMachine } from "react-icons/pi";
+import { MdOutlineSecurity, MdOutlineFireExtinguisher, MdOutlineSensors } from "react-icons/md";
+import React, { useState } from "react";
 
-const offersRowOne = [
-  {
-    label: "Garden view",
-    icon: GiButterflyFlower,
-  },
-  {
-    label: "Hot water",
-    icon: BsFire,
-  },
+type Props = {
+  amenities?: string[];
+};
 
-  {
-    label: "Wifi",
-    icon: AiOutlineWifi,
-  },
-  {
-    label: "Coffee",
-    icon: MdOutlineCoffeeMaker,
-  },
-  {
-    label: "Security cameras on property",
-    icon: BiCctv,
-  },
+const amenityIconMap: Record<string, any> = {
+  "Cuisine": TbToolsKitchen2,
+  "Wifi": TbWifi,
+  "Stationnement gratuit sur place": TbCar,
+  "Piscine": TbPool,
+  "Animaux acceptés": TbPaw,
+  "Télévision": TbTv,
+  "Lave-linge": PiWashingMachine,
+  "Détecteur de monoxyde de carbone": MdOutlineSensors,
+  "Détecteur de fumée": MdOutlineFireExtinguisher,
+  "Caméras de surveillance extérieures présentes sur place": MdOutlineSecurity
+};
+
+const DEFAULT_AMENITIES = [
+  "Cuisine",
+  "Wifi",
+  "Stationnement gratuit sur place",
+  "Piscine",
+  "Télévision",
+  "Lave-linge",
+  "Détecteur de fumée"
 ];
 
-const offersRowTwo = [
-  {
-    label: "Bathtub",
-    icon: MdOutlineBathtub,
-  },
-  {
-    label: "Dedicated workspace",
-    icon: GrWorkshop,
-  },
-  {
-    label: "Safe",
-    icon: RiSafeLine,
-  },
-  {
-    label: "Free parking on premises",
-    icon: AiOutlineCar,
-  },
-  {
-    label: "Fire extinguisher",
-    icon: FaFireExtinguisher,
-  },
-];
+function Offers({ amenities = [] }: Props) {
+  const listToRender = amenities && amenities.length > 0 ? amenities : DEFAULT_AMENITIES;
+  const [showAll, setShowAll] = useState(false);
 
-type Props = {};
+  const visibleAmenities = showAll ? listToRender : listToRender.slice(0, 6);
 
-function Offers({}: Props) {
   return (
-    <div>
-      <p className="text-xl font-semibold">What this place offers</p>
-      <div className="flex justify-start space-x-12 pt-6">
-        <div className="flex flex-col gap-2">
-          {offersRowOne.map((item, index) => (
+    <div className="flex flex-col gap-4">
+      <p className="text-xl font-semibold text-neutral-800">Ce que propose ce logement</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 pt-2">
+        {visibleAmenities.map((label, index) => {
+          const IconComponent = amenityIconMap[label] || TbWifi;
+          return (
             <motion.div
-              initial={{
-                x: -200,
-                opacity: 0,
-              }}
-              transition={{ duration: 1 }}
+              initial={{ opacity: 0, x: -10 }}
               whileInView={{ opacity: 1, x: 0 }}
-              key={index}
-              className="flex justify-start items-center text-center gap-4 my-1 cursor-pointer"
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              viewport={{ once: true }}
+              key={label}
+              className="flex items-center gap-4 py-1 text-neutral-700 font-light"
             >
-              <item.icon size={25} className="text-gray-700" />
-              <p className="text-neutral-500">{item.label}</p>
+              <IconComponent size={24} className="text-neutral-600" />
+              <span className="text-[15px]">{label}</span>
             </motion.div>
-          ))}
-        </div>
-        {/* another row */}
-        <div className="flex flex-col gap-2">
-          {offersRowTwo.map((item, index) => (
-            <motion.div
-              initial={{
-                x: 200,
-                opacity: 0,
-              }}
-              transition={{ duration: 1 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              key={index}
-              className="flex justify-start items-center text-center gap-4 my-1 cursor-pointer"
-            >
-              <item.icon size={25} className="text-gray-700" />
-              <p className="text-neutral-500">{item.label}</p>
-            </motion.div>
-          ))}
-        </div>
+          );
+        })}
       </div>
+
+      {listToRender.length > 6 && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="mt-4 border border-neutral-800 hover:bg-neutral-50 active:scale-98 transition duration-200 text-neutral-800 font-semibold px-6 py-3 rounded-xl text-sm w-fit shadow-sm"
+        >
+          {showAll ? "Afficher moins d'équipements" : `Afficher les ${listToRender.length} équipements`}
+        </button>
+      )}
     </div>
   );
 }

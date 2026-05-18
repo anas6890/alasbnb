@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import qs from "query-string";
 import React, { useCallback } from "react";
 import { IconType } from "react-icons";
+import useLanguage from "@/hook/useLanguage";
 
 type Props = {
   icon: IconType;
@@ -11,9 +12,29 @@ type Props = {
   selected?: boolean;
 };
 
+const translations: Record<string, Record<string, string>> = {
+  fr: {
+    apartment: "Appartement",
+    house: "Maison",
+    villa: "Villa",
+    cabin: "Chalet",
+    boat: "Bateau",
+    treehouse: "Cabane",
+  },
+  en: {
+    apartment: "Apartment",
+    house: "House",
+    villa: "Villa",
+    cabin: "Cabin",
+    boat: "Boat",
+    treehouse: "Treehouse",
+  }
+};
+
 function CategoryBox({ icon: Icon, label, selected }: Props) {
   const router = useRouter();
   const params = useSearchParams();
+  const { language } = useLanguage();
 
   const handleClick = useCallback(() => {
     let currentQuery = {};
@@ -42,6 +63,8 @@ function CategoryBox({ icon: Icon, label, selected }: Props) {
     router.push(url);
   }, [label, params, router]);
 
+  const displayLabel = translations[language]?.[label] || label.charAt(0).toUpperCase() + label.slice(1);
+
   return (
     <div
       onClick={handleClick}
@@ -50,7 +73,7 @@ function CategoryBox({ icon: Icon, label, selected }: Props) {
       } ${selected ? "text-neutral-800" : "text-neutral-500"}`}
     >
       <Icon size={26} />
-      <div className="font-medium text-xs">{label}</div>
+      <div className="font-medium text-xs whitespace-nowrap">{displayLabel}</div>
     </div>
   );
 }

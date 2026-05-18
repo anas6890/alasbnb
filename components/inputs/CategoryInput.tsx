@@ -2,6 +2,7 @@
 
 import React from "react";
 import { IconType } from "react-icons";
+import useLanguage from "@/hook/useLanguage";
 
 type Props = {
   icon: IconType;
@@ -10,7 +11,29 @@ type Props = {
   onClick: (value: string) => void;
 };
 
+const translations: Record<string, Record<string, string>> = {
+  fr: {
+    apartment: "Appartement",
+    house: "Maison",
+    villa: "Villa",
+    cabin: "Chalet",
+    boat: "Bateau",
+    treehouse: "Cabane",
+  },
+  en: {
+    apartment: "Apartment",
+    house: "House",
+    villa: "Villa",
+    cabin: "Cabin",
+    boat: "Boat",
+    treehouse: "Treehouse",
+  }
+};
+
 function CategoryInput({ icon: Icon, label, selected, onClick }: Props) {
+  const { language } = useLanguage();
+  const displayLabel = translations[language]?.[label] || label.charAt(0).toUpperCase() + label.slice(1);
+
   return (
     <div
       onClick={() => onClick(label)}
@@ -19,7 +42,7 @@ function CategoryInput({ icon: Icon, label, selected, onClick }: Props) {
       }`}
     >
       <Icon size={30} />
-      <div className="font-semibold">{label}</div>
+      <div className="font-semibold">{displayLabel}</div>
     </div>
   );
 }

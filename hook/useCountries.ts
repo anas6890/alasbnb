@@ -1,6 +1,7 @@
+// @ts-ignore
 import countries from "world-countries";
 
-const formattedCountries = countries.map((country) => ({
+const formattedCountries = countries.map((country: any) => ({
   value: country.cca2,
   label: country.name.common,
   flag: country.flag,
@@ -12,7 +13,7 @@ const useCountries = () => {
   const getAll = () => formattedCountries;
 
   const getByValue = (value: string) => {
-    return formattedCountries.find((item) => item.value === value);
+    return formattedCountries.find((item: any) => item.value === value);
   };
 
   return {

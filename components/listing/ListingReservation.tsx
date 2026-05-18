@@ -25,26 +25,27 @@ function ListingReservation({
   disabledDates,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl border-[1px] border-neutral-200 overflow-hidden">
-      <div className="flex flex-row items-center gap-1 p-4">
-        <p className="flex gap-1 text-2xl font-semibold">
-          $ {price} <p className="font-light text-neutral-600">night</p>
-        </p>
+    <div className="bg-white rounded-2xl border border-neutral-100 shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden">
+      <div className="flex flex-row items-center gap-1 p-6">
+        <span className="text-2xl font-bold text-neutral-900">€{price}</span>
+        <span className="font-normal text-neutral-500 text-sm ml-1">/ night</span>
       </div>
-      <hr />
-      <Calendar
-        value={dateRange}
-        disabledDates={disabledDates}
-        onChange={(value) => onChangeDate(value.selection)}
-      />
-      <hr />
-      <div className="p-4">
+      <hr className="border-neutral-100" />
+      <div className="p-2">
+        <Calendar
+          value={dateRange}
+          disabledDates={disabledDates}
+          onChange={(value) => onChangeDate(value.selection)}
+        />
+      </div>
+      <hr className="border-neutral-100" />
+      <div className="p-6">
         <Button disabled={disabled} label="Reserve" onClick={onSubmit} />
       </div>
-      <hr />
-      <div className="p-4 flex flex-row items-center justify-between font-semibold text-lg">
+      <hr className="border-neutral-100" />
+      <div className="p-6 flex flex-row items-center justify-between font-bold text-lg text-neutral-800">
         <p>Total</p>
-        <p> $ {totalPrice}</p>
+        <p>€{totalPrice}</p>
       </div>
     </div>
   );

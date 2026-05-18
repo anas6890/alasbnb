@@ -14,8 +14,8 @@ function useFavorite({ listingId, currentUser }: Props) {
   const router = useRouter();
   const loginModel = useLoginModel();
 
-  const hasFavorite = useMemo(() => {
-    const list = currentUser?.favoriteIds || [];
+  const hasFavorited = useMemo(() => {
+    const list = currentUser?.savedListingIds || [];
 
     return list.includes(listingId);
   }, [currentUser, listingId]);
@@ -31,7 +31,7 @@ function useFavorite({ listingId, currentUser }: Props) {
       try {
         let request;
 
-        if (hasFavorite) {
+        if (hasFavorited) {
           request = () => axios.delete(`/api/favorites/${listingId}`);
         } else {
           request = () => axios.post(`/api/favorites/${listingId}`);
@@ -44,11 +44,11 @@ function useFavorite({ listingId, currentUser }: Props) {
         toast.error("Something Went Wrong");
       }
     },
-    [currentUser, hasFavorite, listingId, loginModel]
+    [currentUser, hasFavorited, listingId, loginModel]
   );
 
   return {
-    hasFavorite,
+    hasFavorited,
     toggleFavorite,
   };
 }

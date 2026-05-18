@@ -11,7 +11,7 @@ type Props = {
 };
 
 function HeartButton({ listingId, currentUser }: Props) {
-  const { hasFavorite, toggleFavorite } = useFavorite({
+  const { hasFavorited, toggleFavorite } = useFavorite({
     listingId,
     currentUser,
   });
@@ -27,7 +27,7 @@ function HeartButton({ listingId, currentUser }: Props) {
       />
       <AiFillHeart
         size={24}
-        className={hasFavorite ? "fill-rose-500" : "fill-neutral-500/70"}
+        className={hasFavorited ? "fill-brand-500" : "fill-neutral-500/70"}
       />
     </div>
   );

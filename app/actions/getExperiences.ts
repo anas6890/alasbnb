@@ -1,6 +1,6 @@
 import prisma from "@/lib/prismadb";
 
-export default async function getExperiences() {
+export default async function getExperiences(searchParams?: any) {
   try {
     if (!(prisma as any).experience) {
       console.error("Prisma experience model is missing! Try restarting your dev server.");
@@ -11,6 +11,7 @@ export default async function getExperiences() {
       orderBy: {
         createdAt: "desc",
       },
+      ...(searchParams ? { where: searchParams } : {}),
     });
 
     return experiences;

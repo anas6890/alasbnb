@@ -27,13 +27,10 @@ const getCurrentUser = cache(async () => {
 
     return {
       ...currentUser,
-      name: currentUser.name || null,
-      firstname: currentUser.firstname || null,
-      lastname: currentUser.lastname || null,
       createdAt: currentUser.createdAt.toISOString(),
       updatedAt: currentUser.updatedAt.toISOString(),
       emailVerified: currentUser.emailVerified?.toISOString() || null,
-      birthdate: currentUser.birthdate?.toISOString() || "",
+      deletedAt: currentUser.deletedAt,
     };
   } catch (error: any) {
     console.log(

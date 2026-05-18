@@ -13,9 +13,9 @@ import getCurrentUser from "./actions/getCurrentUser";
 import NextAuthProvider from "./providers/NextAuthProvider";
 
 export const metadata = {
-  title: "Alasbnb ",
-  description: "Airbnb Clone",
-  icons: "https://www.seekpng.com/png/full/957-9571167_airbnb-png.png",
+  title: "AlasBnB — Trouvez votre logement idéal",
+  description: "AlasBnB — La plateforme de location de logements et d'expériences uniques.",
+  icons: "/assets/logo.png",
 };
 
 const font = Nunito({
@@ -42,7 +42,7 @@ export default async function RootLayout({
             <RentModal />
             <Navbar currentUser={currentUser} />
           </ClientOnly>
-          <div className="pb-20">
+          <div className="pt-28 pb-20">
             {children}
           </div>
           <Footer />
