@@ -4,6 +4,7 @@ import useLoginModel from "@/hook/useLoginModal";
 import { SafeReservation, SafeUser, safeListing } from "@/types";
 import axios from "axios";
 import { differenceInCalendarDays, eachDayOfInterval, format } from "date-fns";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Range } from "react-date-range";
@@ -204,10 +205,11 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
                         <div className="flex items-center gap-3">
                           <div className="relative w-12 h-12 rounded-full overflow-hidden bg-neutral-200">
                             {review.author?.image ? (
-                              <img
+                              <Image
                                 src={review.author.image}
                                 alt={review.author?.firstname || "User"}
-                                className="object-cover w-full h-full"
+                                fill
+                                className="object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center font-bold text-neutral-500 text-sm">

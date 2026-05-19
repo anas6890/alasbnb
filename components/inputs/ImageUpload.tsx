@@ -114,7 +114,7 @@ function ImageUpload({ onChange, value = [] }: Props) {
               </div>
               <div className="flex flex-col items-center gap-1">
                 <div className="font-semibold text-base">Cliquez pour importer des photos</div>
-                <div className="text-xs text-neutral-400">Glissez-déposez jusqu'à 10 photos de votre logement</div>
+                <div className="text-xs text-neutral-400">Glissez-déposez jusqu&apos;à 10 photos de votre logement</div>
               </div>
             </div>
           )}

@@ -114,7 +114,7 @@ function ListingInfo({
           <div className="flex flex-col gap-0.5">
             <div className="font-semibold text-neutral-800 text-[15px]">Hôte : {user?.firstname}</div>
             <div className="text-sm text-neutral-500 font-light">
-              6 mois d'expérience en tant qu'hôte sur Alasbnb
+              6 mois d&apos;expérience en tant qu&apos;hôte sur Alasbnb
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ function ListingInfo({
             <div className="flex flex-col gap-0.5">
               <div className="font-semibold text-neutral-800 text-[15px]">Offrez-vous un plongeon</div>
               <div className="text-sm text-neutral-500 font-light">
-                C'est l'un des rares logements de la région disposant d'une piscine.
+                C&apos;est l&apos;un des rares logements de la région disposant d&apos;une piscine.
               </div>
             </div>
           </div>
@@ -147,9 +147,9 @@ function ListingInfo({
         <div className="flex flex-row items-start gap-4">
           <FiKey size={28} className="text-neutral-700 mt-1" />
           <div className="flex flex-col gap-0.5">
-            <div className="font-semibold text-neutral-800 text-[15px]">Procédure d'arrivée exceptionnelle</div>
+            <div className="font-semibold text-neutral-800 text-[15px]">Procédure d&apos;arrivée exceptionnelle</div>
             <div className="text-sm text-neutral-500 font-light">
-              Les voyageurs récents ont attribué 5 étoiles à la procédure d'arrivée.
+              Les voyageurs récents ont attribué 5 étoiles à la procédure d&apos;arrivée.
             </div>
           </div>
         </div>
@@ -159,7 +159,7 @@ function ListingInfo({
       {/* Auto-translation banner */}
       <div className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4 flex flex-col gap-1">
         <div className="text-xs text-neutral-500 font-light leading-relaxed">
-          Certaines informations ont été traduites automatiquement. <span className="underline font-semibold cursor-pointer text-neutral-800">Afficher le texte d'origine</span>
+          Certaines informations ont été traduites automatiquement. <span className="underline font-semibold cursor-pointer text-neutral-800">Afficher le texte d&apos;origine</span>
         </div>
       </div>
       <hr />

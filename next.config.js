@@ -8,7 +8,8 @@ const nextConfig = {
       "lh3.googleusercontent.com", 
       "res.cloudinary.com",
       "platform-lookaside.fbsbx.com",
-      "images.unsplash.com"
+      "images.unsplash.com",
+      "ui-avatars.com"
     ],
     unoptimized: true,
   },

@@ -108,7 +108,7 @@ function RentModal({ }: Props) {
       dynamic(() => import("../Map"), {
         ssr: false,
       }),
-    [location]
+    []
   );
 
   const setCustomValue = (id: string, value: any) => {
@@ -268,6 +268,7 @@ function RentModal({ }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[40vh] overflow-y-auto p-1">
           {AMENITIES_LIST.map((item) => {
             const isSelected = amenities.includes(item.label);
+            const Icon = item.icon || TbWifi;
             return (
               <div
                 key={item.label}
@@ -276,7 +277,7 @@ function RentModal({ }: Props) {
                   isSelected ? "border-teal-500 bg-teal-50/20" : "border-neutral-200"
                 }`}
               >
-                <item.icon size={26} className={isSelected ? "text-teal-600" : "text-neutral-500"} />
+                <Icon size={26} className={isSelected ? "text-teal-600" : "text-neutral-500"} />
                 <div className={`text-xs font-semibold ${isSelected ? "text-teal-900" : "text-neutral-700"}`}>
                   {item.label}
                 </div>

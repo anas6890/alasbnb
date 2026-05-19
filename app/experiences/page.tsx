@@ -25,7 +25,7 @@ export default async function ExperiencesPage({ searchParams }: ExperiencesProps
   if (experiences.length === 0) {
     return (
       <ClientOnly>
-        <EmptyState title="No experiences found" subtitle="Looks like we have no experiences to offer right now." />
+        <EmptyState title="Aucune experience" subtitle="Aucune experience ne correspond a votre recherche." />
       </ClientOnly>
     );
   }

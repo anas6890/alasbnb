@@ -75,13 +75,13 @@ function Search({ mode = "logements", compact = false }: Props) {
               </>
             )}
           </video>
-          <span className="font-semibold">{t.anywhere || "N'importe où"}</span>
+          <span className="font-semibold truncate max-w-[160px]">{destinationLabel}</span>
         </div>
         <div className="px-4 border-l border-r border-gray-200 flex-1 text-center py-2 hover:bg-neutral-100 rounded-full transition font-semibold">
-          {isFr ? "Dates flexibles" : "Flexible dates"}
+          {durationLabel}
         </div>
         <div className="flex flex-row items-center gap-3 pl-4 pr-1 py-1 hover:bg-neutral-100 rounded-full transition">
-          <span className="text-neutral-500 text-sm">{t.addguests || "Ajouter des voyageurs"}</span>
+          <span className="text-neutral-500 text-sm truncate max-w-[160px]">{guestLabel}</span>
           <div className="p-2 bg-brand-500 rounded-full text-white inline-flex items-center justify-center">
             <BiSearch size={16} />
           </div>

@@ -53,11 +53,16 @@ export default async function getListings(params: IListingsParams) {
     }
 
     if (locationValue) {
-      query.location = {
-        is: {
-          country: locationValue,
-        },
-      };
+      const [cityPart, countryPart] = locationValue.split(" - ").map((item) => item.trim());
+      const city = countryPart ? cityPart : null;
+      const country = countryPart || locationValue;
+
+      const locationFilters = [{ location: { is: { country } } }];
+      if (city) {
+        locationFilters.unshift({ location: { is: { city } } });
+      }
+
+      query.OR = locationFilters;
     }
 
     if (startDate && endDate) {
@@ -79,16 +84,37 @@ export default async function getListings(params: IListingsParams) {
       };
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const listing = await prisma.listing.findMany({
       where: query,
       orderBy: {
         createdAt: "desc",
+      },
+      include: {
+        availabilities: {
+          where: {
+            isAvailable: true,
+            date: {
+              gte: today,
+            },
+          },
+          orderBy: {
+            date: "asc",
+          },
+          take: 30,
+        },
       },
     });
 
     const safeListings = listing.map((list) => ({
       ...list,
       createdAt: list.createdAt.toISOString(),
+      availabilities: list.availabilities?.map((availability) => ({
+        ...availability,
+        date: availability.date.toISOString(),
+      })),
     }));
 
     return safeListings;

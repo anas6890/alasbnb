@@ -137,8 +137,8 @@ export default function GuestSelector({ value, onChange, onClose, anchorRef }: P
         title={isFr ? "Animaux domestiques" : "Pets"}
         subtitle={
           isFr ? (
-            <>Vous voyagez avec un animal d'assistance ?{" "}
-              <span className="underline cursor-pointer font-medium text-neutral-700">Obtenez de l'aide</span>
+            <>Vous voyagez avec un animal d&apos;assistance ?{" "}
+              <span className="underline cursor-pointer font-medium text-neutral-700">Obtenez de l&apos;aide</span>
             </>
           ) : (
             <>Bringing a service animal?{" "}

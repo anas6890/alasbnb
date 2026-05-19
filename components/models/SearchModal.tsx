@@ -4,7 +4,7 @@ import useSearchModal from "@/hook/useSearchModal";
 import useLanguage from "@/hook/useLanguage";
 import { formatISO } from "date-fns";
 import dynamic from "next/dynamic";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import qs from "query-string";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Range } from "react-date-range";
@@ -72,6 +72,7 @@ function CounterRow({
 export default function SearchModal() {
   const router = useRouter();
   const params = useSearchParams();
+  const pathname = usePathname();
   const searchModel = useSearchModal();
   const { language } = useLanguage();
   const isFr = language === "fr";
@@ -83,6 +84,7 @@ export default function SearchModal() {
     endDate: new Date(),
     key: "selection",
   });
+  const [hasDateSelection, setHasDateSelection] = useState(false);
   const [adults, setAdults] = useState(0);
   const [children, setChildren] = useState(0);
   const [babies, setBabies] = useState(0);
@@ -92,6 +94,7 @@ export default function SearchModal() {
   useEffect(() => {
     if (searchModel.isOpen) {
       setStep(searchModel.initialStep ?? STEPS.LOCATION);
+      setHasDateSelection(false);
     }
   }, [searchModel.isOpen, searchModel.initialStep]);
 
@@ -110,15 +113,16 @@ export default function SearchModal() {
       guestCount: totalGuests || 1,
     };
 
-    if (dateRange.startDate) updatedQuery.startDate = formatISO(dateRange.startDate);
-    if (dateRange.endDate) updatedQuery.endDate = formatISO(dateRange.endDate);
+    if (hasDateSelection && dateRange.startDate) updatedQuery.startDate = formatISO(dateRange.startDate);
+    if (hasDateSelection && dateRange.endDate) updatedQuery.endDate = formatISO(dateRange.endDate);
 
-    const url = qs.stringifyUrl({ url: "/", query: updatedQuery }, { skipNull: true });
+    const baseUrl = pathname?.startsWith("/experiences") ? "/experiences/search" : "/search";
+    const url = qs.stringifyUrl({ url: baseUrl, query: updatedQuery }, { skipNull: true });
 
     setStep(STEPS.LOCATION);
     searchModel.onClose();
     router.push(url);
-  }, [step, searchModel, location, router, adults, children, babies, pets, dateRange, params]);
+  }, [step, searchModel, location, router, adults, children, babies, pets, dateRange, params, pathname, hasDateSelection]);
 
   const actionLabel = step === STEPS.GUESTS
     ? (isFr ? "Rechercher" : "Search")
@@ -147,7 +151,10 @@ export default function SearchModal() {
           subtitle={isFr ? "Choisissez vos dates !" : "Pick your dates!"}
         />
         <Calendar
-          onChange={(v) => setDateRange(v.selection)}
+          onChange={(v) => {
+            setDateRange(v.selection);
+            setHasDateSelection(true);
+          }}
           value={dateRange}
         />
       </div>
@@ -186,8 +193,8 @@ export default function SearchModal() {
           title={isFr ? "Animaux domestiques" : "Pets"}
           subtitle={
             isFr ? (
-              <>Vous voyagez avec un animal d'assistance ?{" "}
-                <span className="underline font-medium text-neutral-700 cursor-pointer">Obtenez de l'aide</span>
+              <>Vous voyagez avec un animal d&apos;assistance ?{" "}
+                <span className="underline font-medium text-neutral-700 cursor-pointer">Obtenez de l&apos;aide</span>
               </>
             ) : (
               <>Bringing a service animal?{" "}

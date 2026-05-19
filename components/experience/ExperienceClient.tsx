@@ -4,6 +4,7 @@ import useLoginModel from "@/hook/useLoginModal";
 import { SafeUser } from "@/types";
 import axios from "axios";
 import { format } from "date-fns";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Range } from "react-date-range";
@@ -96,15 +97,16 @@ function ExperienceClient({ experience, currentUser }: Props) {
                     Activité proposée par {experience.user?.firstname}
                   </h1>
                   <p className="text-neutral-500 font-light text-sm">
-                    {experience.category} · Expérience d'exception
+                    {experience.category} · Expérience d&apos;exception
                   </p>
                 </div>
                 <div className="ml-auto w-12 h-12 rounded-full overflow-hidden bg-neutral-200 relative">
                   {experience.user?.image ? (
-                    <img
+                    <Image
                       src={experience.user.image}
                       alt={experience.user?.firstname || "Host"}
-                      className="object-cover w-full h-full"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center font-bold text-neutral-500 text-sm">
@@ -128,7 +130,7 @@ function ExperienceClient({ experience, currentUser }: Props) {
                   <BiGroup size={28} className="text-brand-500" />
                   <div className="flex flex-col">
                     <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Groupe</span>
-                    <span className="text-[14px] font-bold text-neutral-700">Jusqu'à {experience.maxGroupSize} pers.</span>
+                    <span className="text-[14px] font-bold text-neutral-700">Jusqu&apos;à {experience.maxGroupSize} pers.</span>
                   </div>
                 </div>
 
@@ -168,7 +170,7 @@ function ExperienceClient({ experience, currentUser }: Props) {
 
               {/* Map where we'll be */}
               <div className="flex flex-col gap-4">
-                <h2 className="text-lg font-bold text-neutral-800">Où se déroule l'activité</h2>
+                <h2 className="text-lg font-bold text-neutral-800">Où se déroule l&apos;activité</h2>
                 <Map center={coordinates} />
               </div>
 
