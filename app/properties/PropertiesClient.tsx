@@ -40,19 +40,21 @@ function PropertiesClient({ listings, currentUser }: Props) {
 
   return (
     <Container>
-      <Heading title="Properties" subtitle="List of your properties" />
-      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
-        {listings.map((listing: any) => (
-          <ListingCard
-            key={listing.id}
-            data={listing}
-            actionId={listing.id}
-            onAction={onDelete}
-            disabled={deletingId === listing.id}
-            actionLabel="Delete property"
-            currentUser={currentUser}
-          />
-        ))}
+      <div className="pt-24 pb-12">
+        <Heading title="Mes Propriétés" subtitle="La liste complète de vos logements" />
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+          {listings.map((listing: any) => (
+            <ListingCard
+              key={listing.id}
+              data={listing}
+              actionId={listing.id}
+              onAction={onDelete}
+              disabled={deletingId === listing.id}
+              actionLabel="Supprimer le logement"
+              currentUser={currentUser}
+            />
+          ))}
+        </div>
       </div>
     </Container>
   );

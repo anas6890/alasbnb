@@ -57,7 +57,7 @@ export default async function getListings(params: IListingsParams) {
       const city = countryPart ? cityPart : null;
       const country = countryPart || locationValue;
 
-      const locationFilters = [{ location: { is: { country } } }];
+      const locationFilters: any[] = [{ location: { is: { country } } }];
       if (city) {
         locationFilters.unshift({ location: { is: { city } } });
       }

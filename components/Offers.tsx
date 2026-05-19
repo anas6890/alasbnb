@@ -1,9 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TbPool, TbWifi, TbCar, TbToolsKitchen2, TbTv, TbPaw } from "react-icons/tb";
-import { PiWashingMachine } from "react-icons/pi";
-import { MdOutlineSecurity, MdOutlineFireExtinguisher, MdOutlineSensors } from "react-icons/md";
+import { TbPool, TbWifi, TbCar, TbToolsKitchen2, TbPaw } from "react-icons/tb";
+import { MdOutlineSecurity, MdOutlineFireExtinguisher, MdOutlineSensors, MdTv, MdOutlineLocalLaundryService } from "react-icons/md";
 import React, { useState } from "react";
 
 type Props = {
@@ -16,8 +15,8 @@ const amenityIconMap: Record<string, any> = {
   "Stationnement gratuit sur place": TbCar,
   "Piscine": TbPool,
   "Animaux acceptés": TbPaw,
-  "Télévision": TbTv,
-  "Lave-linge": PiWashingMachine,
+  "Télévision": MdTv,
+  "Lave-linge": MdOutlineLocalLaundryService,
   "Détecteur de monoxyde de carbone": MdOutlineSensors,
   "Détecteur de fumée": MdOutlineFireExtinguisher,
   "Caméras de surveillance extérieures présentes sur place": MdOutlineSecurity

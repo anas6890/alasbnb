@@ -23,6 +23,7 @@ function useFavorite({ listingId, currentUser }: Props) {
   const toggleFavorite = useCallback(
     async (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
+      e.preventDefault();
 
       if (!currentUser) {
         return loginModel.onOpen();

@@ -4,7 +4,7 @@ import useLoginModel from "@/hook/useLoginModal";
 import useRegisterModal from "@/hook/useRegisterModal";
 import useRentModal from "@/hook/useRentModal";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { SafeUser } from "@/types";
 import { signOut, useSession } from "next-auth/react";
@@ -12,6 +12,7 @@ import { useCallback, useState } from "react";
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
 import { AiOutlineMenu } from "react-icons/ai";
+import { FiUser, FiBriefcase, FiHeart, FiList, FiHome, FiPlusCircle, FiLogOut, FiLogIn, FiUserPlus, FiRepeat } from "react-icons/fi";
 import Avatar from "../Avatar";
 import MenuItem from "./MenuItem";
 
@@ -22,6 +23,8 @@ interface Props {
 function UserMenu({ currentUser }: Props) {
   const { data: session } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+  const isHostMode = pathname?.startsWith("/hosting");
   const registerModel = useRegisterModal();
   const loginModel = useLoginModel();
   const rentModel = useRentModal();
@@ -35,13 +38,19 @@ function UserMenu({ currentUser }: Props) {
     setIsOpen((value) => !value);
   }, []);
 
+  const navigateTo = useCallback((path: string) => {
+    setIsOpen(false);
+    router.push(path);
+  }, [router]);
+
   const onRent = useCallback(() => {
+    setIsOpen(false);
     if (!finalUser) {
       return loginModel.onOpen();
     }
 
-    rentModel.onOpen();
-  }, [finalUser, loginModel, rentModel]);
+    router.push("/hosting/create");
+  }, [finalUser, loginModel, router]);
 
   return (
     <div className="relative">
@@ -75,31 +84,68 @@ function UserMenu({ currentUser }: Props) {
           <div className="flex flex-col cursor-pointer">
             {finalUser ? (
               <>
-                <MenuItem
-                  onClick={() => router.push("/trips")}
-                  label={t.bookings}
-                />
-                <MenuItem
-                  onClick={() => router.push("/favorites")}
-                  label={t.wishlist}
-                />
-                <MenuItem
-                  onClick={() => router.push("/reservations")}
-                  label={t.reservations}
-                />
-                <MenuItem
-                  onClick={() => router.push("/properties")}
-                  label={t.properties}
-                />
-
-                <MenuItem onClick={onRent} label={t.host} />
-                <hr />
-                <MenuItem onClick={() => signOut()} label={t.logout} />
+                {isHostMode ? (
+                  <>
+                    <MenuItem
+                      onClick={() => navigateTo("/")}
+                      label="Mode voyageur"
+                      icon={FiRepeat}
+                    />
+                    <hr className="my-1 border-neutral-200" />
+                    <MenuItem
+                      onClick={() => navigateTo("/hosting")}
+                      label="Tableau de bord"
+                      icon={FiHome}
+                    />
+                    <MenuItem
+                      onClick={() => navigateTo("/hosting/listings")}
+                      label="Mes annonces"
+                      icon={FiList}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <MenuItem
+                      onClick={() => navigateTo("/hosting")}
+                      label="Mode hôte"
+                      icon={FiRepeat}
+                    />
+                    <hr className="my-1 border-neutral-200" />
+                    <MenuItem
+                      onClick={() => navigateTo("/profile")}
+                      label={t.profile || "Profil"}
+                      icon={FiUser}
+                    />
+                    <MenuItem
+                      onClick={() => navigateTo("/trips")}
+                      label={t.bookings}
+                      icon={FiBriefcase}
+                    />
+                    <MenuItem
+                      onClick={() => navigateTo("/favorites")}
+                      label={t.wishlist}
+                      icon={FiHeart}
+                    />
+                    <MenuItem
+                      onClick={() => navigateTo("/reservations")}
+                      label={t.reservations}
+                      icon={FiList}
+                    />
+                    <MenuItem
+                      onClick={() => navigateTo("/properties")}
+                      label={t.properties}
+                      icon={FiHome}
+                    />
+                    <MenuItem onClick={onRent} label={t.host} icon={FiPlusCircle} />
+                  </>
+                )}
+                <hr className="my-1 border-neutral-200" />
+                <MenuItem onClick={() => { setIsOpen(false); signOut(); }} label={t.logout} icon={FiLogOut} />
               </>
             ) : (
               <>
-                <MenuItem onClick={loginModel.onOpen} label={t.login} />
-                <MenuItem onClick={registerModel.onOpen} label={t.signup} />
+                <MenuItem onClick={() => { setIsOpen(false); loginModel.onOpen(); }} label={t.login} icon={FiLogIn} />
+                <MenuItem onClick={() => { setIsOpen(false); registerModel.onOpen(); }} label={t.signup} icon={FiUserPlus} />
               </>
             )}
           </div>

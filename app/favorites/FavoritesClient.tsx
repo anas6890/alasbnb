@@ -11,15 +11,17 @@ type Props = {
 function FavoritesClient({ listings, currentUser }: Props) {
   return (
     <Container>
-      <Heading title="Favorites" subtitle="List of places you have favorited!" />
-      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
-        {listings.map((listing) => (
-          <ListingCard
-            currentUser={currentUser}
-            key={listing.id}
-            data={listing}
-          />
-        ))}
+      <div className="pt-24 pb-12">
+        <Heading title="Vos favoris" subtitle="La liste des logements que vous avez aimés !" />
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+          {listings.map((listing) => (
+            <ListingCard
+              currentUser={currentUser}
+              key={listing.id}
+              data={listing}
+            />
+          ))}
+        </div>
       </div>
     </Container>
   );

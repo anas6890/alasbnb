@@ -39,7 +39,7 @@ export default async function getExperiences(searchParams: IExperiencesParams = 
       const city = countryPart ? cityPart : null;
       const country = countryPart || locationValue;
 
-      const locationFilters = [{ location: { is: { country } } }];
+      const locationFilters: any[] = [{ location: { is: { country } } }];
       if (city) {
         locationFilters.unshift({ location: { is: { city } } });
       }

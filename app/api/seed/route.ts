@@ -315,9 +315,10 @@ export async function GET() {
     const resWouarda = await prisma.reservation.create({
       data: {
         userId: userWouarda.id,
+        type: "LISTING",
         listingId: villaMarrakech.id,
-        startDate: new Date(new Date().setDate(new Date().getDate() - 10)),
-        endDate: new Date(new Date().setDate(new Date().getDate() - 8)),
+        checkIn: new Date(new Date().setDate(new Date().getDate() - 10)),
+        checkOut: new Date(new Date().setDate(new Date().getDate() - 8)),
         totalPrice: 374,
         status: "CONFIRMED",
       },
@@ -327,9 +328,10 @@ export async function GET() {
     const resFrancklin = await prisma.reservation.create({
       data: {
         userId: userFrancklin.id,
+        type: "LISTING",
         listingId: villaMarrakech.id,
-        startDate: new Date(new Date().setDate(new Date().getDate() - 25)),
-        endDate: new Date(new Date().setDate(new Date().getDate() - 18)),
+        checkIn: new Date(new Date().setDate(new Date().getDate() - 25)),
+        checkOut: new Date(new Date().setDate(new Date().getDate() - 18)),
         totalPrice: 1309,
         status: "CONFIRMED",
       },
@@ -339,9 +341,10 @@ export async function GET() {
     const resDkl = await prisma.reservation.create({
       data: {
         userId: userDkl.id,
+        type: "LISTING",
         listingId: villaMarrakech.id,
-        startDate: new Date(new Date().setDate(new Date().getDate() - 15)),
-        endDate: new Date(new Date().setDate(new Date().getDate() - 13)),
+        checkIn: new Date(new Date().setDate(new Date().getDate() - 15)),
+        checkOut: new Date(new Date().setDate(new Date().getDate() - 13)),
         totalPrice: 374,
         status: "CONFIRMED",
       },
@@ -351,9 +354,10 @@ export async function GET() {
     const resSeverine = await prisma.reservation.create({
       data: {
         userId: userSeverine.id,
+        type: "LISTING",
         listingId: villaMarrakech.id,
-        startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
-        endDate: new Date(new Date().setDate(new Date().getDate() - 6)),
+        checkIn: new Date(new Date().setDate(new Date().getDate() - 7)),
+        checkOut: new Date(new Date().setDate(new Date().getDate() - 6)),
         totalPrice: 187,
         status: "CONFIRMED",
       },
@@ -363,9 +367,10 @@ export async function GET() {
     const resNabil = await prisma.reservation.create({
       data: {
         userId: userNabil.id,
+        type: "LISTING",
         listingId: villaMarrakech.id,
-        startDate: new Date(new Date().setDate(new Date().getDate() - 30)),
-        endDate: new Date(new Date().setDate(new Date().getDate() - 28)),
+        checkIn: new Date(new Date().setDate(new Date().getDate() - 30)),
+        checkOut: new Date(new Date().setDate(new Date().getDate() - 28)),
         totalPrice: 374,
         status: "CONFIRMED",
       },
@@ -375,9 +380,10 @@ export async function GET() {
     const resInsaf = await prisma.reservation.create({
       data: {
         userId: userInsaf.id,
+        type: "LISTING",
         listingId: villaMarrakech.id,
-        startDate: new Date(),
-        endDate: new Date(new Date().setDate(new Date().getDate() + 2)),
+        checkIn: new Date(),
+        checkOut: new Date(new Date().setDate(new Date().getDate() + 2)),
         totalPrice: 374,
         status: "CONFIRMED",
       },
@@ -387,9 +393,10 @@ export async function GET() {
     const resParis = await prisma.reservation.create({
       data: {
         userId: userFrancklin.id,
+        type: "LISTING",
         listingId: penthouseParis.id,
-        startDate: new Date(new Date().setDate(new Date().getDate() - 5)),
-        endDate: new Date(new Date().setDate(new Date().getDate() - 2)),
+        checkIn: new Date(new Date().setDate(new Date().getDate() - 5)),
+        checkOut: new Date(new Date().setDate(new Date().getDate() - 2)),
         totalPrice: 1020,
         status: "CONFIRMED",
       },
@@ -399,9 +406,10 @@ export async function GET() {
     const resQuad = await prisma.reservation.create({
       data: {
         userId: userWouarda.id,
+        type: "EXPERIENCE",
         sessionId: sessionQuad.id,
-        startDate: new Date(),
-        endDate: new Date(),
+        checkIn: new Date(),
+        checkOut: new Date(),
         totalPrice: 120,
         status: "CONFIRMED",
       },

@@ -84,6 +84,7 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         listingId: listing?.id,
+        cancellationPolicy: listing.cancellationPolicy,
       })
       .then(() => {
         toast.success("Success!");
@@ -156,6 +157,7 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
                 onSubmit={onCreateReservation}
                 disabled={isLoading}
                 disabledDates={disableDates}
+                cancellationPolicy={listing.cancellationPolicy}
               />
             </div>
           </div>

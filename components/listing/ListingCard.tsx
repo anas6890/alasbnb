@@ -114,6 +114,23 @@ function ListingCard({
   const { city, country } = reservation?.listing?.location || data?.location || { city: "", country: "" };
   const type = reservation?.listing?.type || data?.type || "";
 
+  const renderStatusBadge = () => {
+    if (!reservation) return null;
+    
+    switch (reservation.status) {
+      case "PENDING":
+        return <div className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">En attente</div>;
+      case "CONFIRMED":
+        return <div className="absolute top-3 left-3 bg-teal-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">Confirmée</div>;
+      case "CANCELLED":
+        return <div className="absolute top-3 left-3 bg-rose-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">Annulée</div>;
+      case "COMPLETED":
+        return <div className="absolute top-3 left-3 bg-neutral-600 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">Terminée</div>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Link
       href={`/listings/${data.id}`}
@@ -138,9 +155,7 @@ function ListingCard({
               src={data.images?.[0] || ""}
               alt="listing"
             />
-            <div className="absolute top-3 left-3 bg-brand-50/95 text-brand-700 backdrop-blur-sm px-3 py-1.5 rounded-full text-[10px] font-bold shadow-sm border border-brand-100">
-              {language === "fr" ? "Coup de cœur" : "Guest favorite"}
-            </div>
+            {renderStatusBadge()}
             <div className="absolute top-3 right-3">
               <HeartButton listingId={data.id} currentUser={currentUser} />
             </div>

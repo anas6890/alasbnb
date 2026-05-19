@@ -17,9 +17,8 @@ import Input from "../inputs/Input";
 import Calendar from "../inputs/Calendar";
 import { categories } from "../navbar/Categories";
 import Modal from "./Modal";
-import { TbPool, TbWifi, TbCar, TbToolsKitchen2, TbTv, TbPaw } from "react-icons/tb";
-import { PiWashingMachine } from "react-icons/pi";
-import { MdOutlineSecurity, MdOutlineFireExtinguisher, MdOutlineSensors } from "react-icons/md";
+import { TbPool, TbWifi, TbCar, TbToolsKitchen2, TbPaw } from "react-icons/tb";
+import { MdOutlineSecurity, MdOutlineFireExtinguisher, MdOutlineSensors, MdTv, MdOutlineLocalLaundryService } from "react-icons/md";
 
 const AMENITIES_LIST = [
   { label: "Cuisine", icon: TbToolsKitchen2 },
@@ -27,8 +26,8 @@ const AMENITIES_LIST = [
   { label: "Stationnement gratuit sur place", icon: TbCar },
   { label: "Piscine", icon: TbPool },
   { label: "Animaux acceptés", icon: TbPaw },
-  { label: "Télévision", icon: TbTv },
-  { label: "Lave-linge", icon: PiWashingMachine },
+  { label: "Télévision", icon: MdTv },
+  { label: "Lave-linge", icon: MdOutlineLocalLaundryService },
   { label: "Détecteur de monoxyde de carbone", icon: MdOutlineSensors },
   { label: "Détecteur de fumée", icon: MdOutlineFireExtinguisher },
   { label: "Caméras de surveillance extérieures présentes sur place", icon: MdOutlineSecurity }

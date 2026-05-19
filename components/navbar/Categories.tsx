@@ -1,9 +1,9 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
-import { GiBoatFishing, GiWoodCabin, GiTreehouse } from "react-icons/gi";
-import { MdOutlineVilla, MdOutlineApartment } from "react-icons/md";
-import { TbHome } from "react-icons/tb";
+import { GiBoatFishing, GiWoodCabin, GiTreehouse, GiCampingTent, GiCookingPot, GiPalette, GiSpottedBug } from "react-icons/gi";
+import { MdOutlineVilla, MdOutlineApartment, MdOutlineNaturePeople, MdOutlineSelfImprovement } from "react-icons/md";
+import { TbHome, TbMoodSmile } from "react-icons/tb";
 import CategoryBox from "../CategoryBox";
 import Container from "../Container";
 
@@ -40,6 +40,39 @@ export const categories = [
   },
 ];
 
+export const experienceCategories = [
+  {
+    label: "cuisine",
+    icon: GiCookingPot,
+    description: "Découvrez des saveurs locales !",
+  },
+  {
+    label: "art",
+    icon: GiPalette,
+    description: "Exprimez votre créativité !",
+  },
+  {
+    label: "sport",
+    icon: GiCampingTent,
+    description: "Bougez et dépassez-vous !",
+  },
+  {
+    label: "nature",
+    icon: MdOutlineNaturePeople,
+    description: "Reconnectez-vous avec la nature !",
+  },
+  {
+    label: "bien-être",
+    icon: MdOutlineSelfImprovement,
+    description: "Détendez-vous et prenez soin de vous !",
+  },
+  {
+    label: "culture",
+    icon: TbMoodSmile,
+    description: "Explorez de nouvelles traditions !",
+  },
+];
+
 type Props = {};
 
 function Categories({}: Props) {
@@ -48,15 +81,18 @@ function Categories({}: Props) {
   const pathname = usePathname();
 
   const isMainPage = pathname === "/";
+  const isExperiencePage = pathname === "/experiences";
 
-  if (!isMainPage) {
+  if (!isMainPage && !isExperiencePage) {
     return null;
   }
 
+  const currentCategories = isExperiencePage ? experienceCategories : categories;
+
   return (
     <Container>
-      <div className="pt-4 flex flex-row items-center justify-between overflow-x-auto">
-        {categories.map((items, index) => (
+      <div className="pt-4 flex flex-row items-center justify-between overflow-x-auto no-scrollbar">
+        {currentCategories.map((items, index) => (
           <CategoryBox
             key={index}
             icon={items.icon}
