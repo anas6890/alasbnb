@@ -14,7 +14,6 @@ import CitySelect from "@/components/inputs/CitySelect";
 import Input from "@/components/inputs/Input";
 import Counter from "@/components/inputs/Counter";
 import ImageUpload from "@/components/inputs/ImageUpload";
-import Button from "@/components/Button";
 import { TbToolsKitchen2, TbWifi, TbCar, TbPool, TbPaw, TbClock } from "react-icons/tb";
 import { MdTv, MdOutlineLocalLaundryService, MdOutlineSensors, MdOutlineFireExtinguisher, MdOutlineSecurity, MdOutlineHomeWork, MdOutlineMap } from "react-icons/md";
 
@@ -22,11 +21,13 @@ enum STEPS {
   TYPE = 0,
   CATEGORY = 1,
   LOCATION = 2,
-  INFO = 3,
-  AMENITIES = 4,
-  IMAGES = 5,
-  DESCRIPTION = 6,
-  PRICE = 7,
+  FLOOR_PLAN = 3,
+  BATHROOMS = 4,
+  AMENITIES = 5,
+  IMAGES = 6,
+  DESCRIPTION = 7,
+  CONDITIONS = 8,
+  PRICE = 9,
 }
 
 const AMENITIES_LIST = [
@@ -74,6 +75,11 @@ const CreateListingPage = () => {
       price: 1,
       title: "",
       description: "",
+      petsAllowed: false,
+      smokingAllowed: false,
+      partiesAllowed: false,
+      checkInTime: 15,
+      checkOutTime: 11,
     },
   });
 
@@ -93,6 +99,11 @@ const CreateListingPage = () => {
   const duration = watch("duration");
   const images = watch("images");
   const amenities = watch("amenities") || [];
+  const petsAllowed = watch("petsAllowed");
+  const smokingAllowed = watch("smokingAllowed");
+  const partiesAllowed = watch("partiesAllowed");
+  const checkInTime = watch("checkInTime");
+  const checkOutTime = watch("checkOutTime");
 
   const Map = useMemo(
     () =>
@@ -151,12 +162,14 @@ const CreateListingPage = () => {
   };
 
   let bodyContent = (
-    <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-10">
-      <Heading
-        title="Que souhaitez-vous proposer sur AlasBnB ?"
-        subtitle="Choisissez le type d'annonce"
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="flex flex-col gap-10 max-w-[640px] mx-auto py-12 px-4">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-[32px] leading-tight font-bold text-neutral-900">
+          Que souhaitez-vous proposer sur AlasBnB ?
+        </h1>
+        <p className="text-[18px] text-neutral-500 font-light">Choisissez le type d'annonce</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
          <div 
            onClick={() => {
              setCustomValue("type", "LISTING");
@@ -167,7 +180,7 @@ const CreateListingPage = () => {
             <MdOutlineHomeWork size={40} className="text-brand-500" />
             <div>
                <p className="font-bold text-lg">Un logement</p>
-               <p className="text-sm text-neutral-500 text-balance">Appartement, maison, villa, ou tout autre type d'hébergement.</p>
+               <p className="text-sm text-neutral-500 text-balance">Appartement, maison, villa, ou tout autre type d&apos;hébergement.</p>
             </div>
          </div>
          <div 
@@ -190,12 +203,14 @@ const CreateListingPage = () => {
   if (step === STEPS.CATEGORY) {
     const currentCats = creationType === "EXPERIENCE" ? experienceCategories : categories;
     bodyContent = (
-      <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-10">
-        <Heading
-          title={creationType === "EXPERIENCE" ? "Quelle est la thématique de votre expérience ?" : "Lequel de ces termes décrit le mieux votre logement ?"}
-          subtitle="Choisissez une catégorie"
-        />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-10 max-w-[640px] mx-auto py-12 px-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-[32px] leading-tight font-bold text-neutral-900">
+            {creationType === "EXPERIENCE" ? "Quelle est la thématique de votre expérience ?" : "Lequel de ces termes décrit le mieux votre logement ?"}
+          </h1>
+          <p className="text-[18px] text-neutral-500 font-light">Choisissez une catégorie</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {currentCats.map((item) => (
             <div key={item.label} className="col-span-1">
               <CategoryInput
@@ -243,17 +258,17 @@ const CreateListingPage = () => {
     );
   }
 
-  if (step === STEPS.INFO) {
+  if (step === STEPS.FLOOR_PLAN) {
     bodyContent = (
       <div className="flex flex-col gap-10 max-w-[800px] mx-auto py-10">
         <Heading
-          title={creationType === "EXPERIENCE" ? "Détails de votre expérience" : "Quelques informations de base sur votre logement"}
-          subtitle={creationType === "EXPERIENCE" ? "Combien de personnes et quelle durée ?" : "Quels sont les équipements disponibles ?"}
+          title={creationType === "EXPERIENCE" ? "Détails de votre expérience" : "Quelques informations de base"}
+          subtitle={creationType === "EXPERIENCE" ? "Combien de personnes et quelle durée ?" : "De combien d'espace disposez-vous ?"}
         />
         <div className="space-y-6">
           <Counter
             title={creationType === "EXPERIENCE" ? "Nombre max de participants" : "Voyageurs"}
-            subtitle={creationType === "EXPERIENCE" ? "Combien de personnes peuvent participer ?" : "Combien de voyageurs pouvez-vous accueillir ?"}
+            subtitle={creationType === "EXPERIENCE" ? "Combien de personnes peuvent participer ?" : "Capacité d'accueil maximale"}
             value={guestCount}
             onChange={(value) => setCustomValue("guestCount", value)}
           />
@@ -262,39 +277,55 @@ const CreateListingPage = () => {
             <>
               <Counter
                 title="Chambres"
-                subtitle="De combien de chambres disposez-vous ?"
+                subtitle="Nombre de chambres disponibles"
                 value={roomCount}
                 onChange={(value) => setCustomValue("roomCount", value)}
               />
               <hr />
               <Counter
                 title="Lits"
-                subtitle="De combien de lits disposez-vous ?"
+                subtitle="Nombre total de lits"
                 value={bedCount}
                 onChange={(value) => setCustomValue("bedCount", value)}
-              />
-              <hr />
-              <Counter
-                title="Salles de bain"
-                subtitle="De combien de salles de bain disposez-vous ?"
-                value={bathroomCount}
-                onChange={(value) => setCustomValue("bathroomCount", value)}
               />
             </>
           ) : (
             <div className="flex flex-col gap-2">
                <div className="flex flex-row items-center gap-2 font-bold text-neutral-800">
                   <TbClock size={20} />
-                  Durée de l'expérience (en minutes)
+                  Durée de l&apos;expérience (en minutes)
                </div>
                <input 
                  type="number" 
                  value={duration} 
                  onChange={(e) => setCustomValue("duration", parseInt(e.target.value))}
-                 className="p-4 border-2 rounded-xl focus:border-black outline-none transition"
+                 className="p-4 border-2 rounded-xl focus:border-black outline-none transition w-full max-w-[200px]"
                />
             </div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  if (step === STEPS.BATHROOMS) {
+    if (creationType === "EXPERIENCE") {
+      onNext();
+      return null;
+    }
+    bodyContent = (
+      <div className="flex flex-col gap-10 max-w-[800px] mx-auto py-10">
+        <Heading
+          title="Parlez-nous des salles de bain"
+          subtitle="Combien de salles de bain sont à la disposition des voyageurs ?"
+        />
+        <div className="space-y-6">
+          <Counter
+            title="Salles de bain"
+            subtitle="Complètes ou demi-salles de bain"
+            value={bathroomCount}
+            onChange={(value) => setCustomValue("bathroomCount", value)}
+          />
         </div>
       </div>
     );
@@ -377,26 +408,158 @@ const CreateListingPage = () => {
     );
   }
 
+  if (step === STEPS.CONDITIONS) {
+    if (creationType === "EXPERIENCE") {
+      onNext();
+      return null;
+    }
+    bodyContent = (
+      <div className="flex flex-col gap-10 max-w-[800px] mx-auto py-10">
+        <Heading
+          title="Définissez vos règles et horaires"
+          subtitle="Que doivent savoir les voyageurs avant de réserver ?"
+        />
+        
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-4">
+            <h3 className="font-bold text-xl text-neutral-900">Règlement intérieur</h3>
+            
+            <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
+              <div className="flex flex-col">
+                <span className="font-semibold text-lg">Animaux de compagnie</span>
+                <span className="text-neutral-500">Acceptez-vous les animaux ?</span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked={petsAllowed} onChange={(e) => setCustomValue("petsAllowed", e.target.checked)} className="sr-only peer" />
+                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
+              <div className="flex flex-col">
+                <span className="font-semibold text-lg">Fumeurs</span>
+                <span className="text-neutral-500">Est-il autorisé de fumer à l'intérieur ?</span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked={smokingAllowed} onChange={(e) => setCustomValue("smokingAllowed", e.target.checked)} className="sr-only peer" />
+                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
+              <div className="flex flex-col">
+                <span className="font-semibold text-lg">Fêtes et événements</span>
+                <span className="text-neutral-500">Acceptez-vous les soirées ?</span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked={partiesAllowed} onChange={(e) => setCustomValue("partiesAllowed", e.target.checked)} className="sr-only peer" />
+                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+              </label>
+            </div>
+          </div>
+
+          <hr className="border-neutral-200" />
+
+          <div className="flex flex-col gap-4">
+            <h3 className="font-bold text-xl text-neutral-900">Horaires</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="font-semibold">Arrivée à partir de :</label>
+                <select 
+                  value={checkInTime} 
+                  onChange={(e) => setCustomValue("checkInTime", parseInt(e.target.value))}
+                  className="p-4 border border-neutral-200 rounded-xl focus:border-black outline-none bg-white font-medium"
+                >
+                  {[12,13,14,15,16,17,18,19,20].map(hour => (
+                    <option key={hour} value={hour}>{hour}:00</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="font-semibold">Départ avant :</label>
+                <select 
+                  value={checkOutTime} 
+                  onChange={(e) => setCustomValue("checkOutTime", parseInt(e.target.value))}
+                  className="p-4 border border-neutral-200 rounded-xl focus:border-black outline-none bg-white font-medium"
+                >
+                  {[9,10,11,12,13].map(hour => (
+                    <option key={hour} value={hour}>{hour}:00</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
   if (step === STEPS.PRICE) {
     bodyContent = (
-      <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-10">
+      <div className="flex flex-col gap-10 max-w-[800px] mx-auto py-10">
         <Heading
           title="Maintenant, fixez votre prix"
           subtitle={creationType === "EXPERIENCE" ? "Combien facturez-vous par personne ?" : "Combien facturez-vous par nuit ?"}
         />
-        <div className="flex items-center justify-center py-20 bg-neutral-50 rounded-3xl border border-neutral-200">
-           <div className="w-[300px]">
-              <Input
-                id="price"
-                label="Prix"
-                formatPrice
-                type="number"
-                disabled={isLoading}
-                register={register}
-                errors={errors}
-                required
-              />
-           </div>
+        
+        <div className="flex flex-col gap-8">
+          {/* Price Input Section */}
+          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-[32px] border-2 border-neutral-200 shadow-sm transition">
+            <div className="flex items-center justify-center bg-neutral-50 p-6 rounded-3xl border border-neutral-200">
+               <span className="text-[64px] font-bold text-neutral-900">€</span>
+               <input
+                 id="price"
+                 type="number"
+                 min="1"
+                 disabled={isLoading}
+                 {...register("price", { required: true, valueAsNumber: true })}
+                 className="text-[80px] font-bold text-neutral-900 bg-transparent outline-none w-[200px] ml-4 placeholder-neutral-200 appearance-none"
+                 placeholder="00"
+               />
+            </div>
+            <div className="text-neutral-500 text-lg font-medium mt-6">
+              par {creationType === "EXPERIENCE" ? "personne" : "nuit"}
+            </div>
+          </div>
+
+          {/* Discounts Section (UI Only for now) */}
+          {creationType === "LISTING" && (
+            <div className="flex flex-col gap-6 mt-4">
+              <h3 className="text-xl font-bold text-neutral-900">Offrez des réductions</h3>
+              
+              <div className="flex items-start justify-between p-6 border-2 border-neutral-200 rounded-[24px] hover:border-black transition cursor-pointer">
+                <div className="flex flex-col gap-1 pr-6">
+                  <span className="font-bold text-[18px]">Promotion "Nouveau logement"</span>
+                  <span className="text-neutral-500 text-[15px]">Offrez 20 % de réduction à vos 3 premiers voyageurs pour obtenir vos premiers commentaires plus vite.</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 mt-1">
+                  <input type="checkbox" className="sr-only peer" />
+                  <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                </label>
+              </div>
+
+              <div className="flex items-start justify-between p-6 border-2 border-neutral-200 rounded-[24px] hover:border-black transition cursor-pointer">
+                <div className="flex flex-col gap-1 pr-6">
+                  <span className="font-bold text-[18px]">Réduction à la semaine</span>
+                  <span className="text-neutral-500 text-[15px]">Pour les séjours de 7 nuits ou plus. Recommandée : 10 %.</span>
+                </div>
+                <div className="text-xl font-bold text-neutral-400 bg-neutral-100 px-4 py-2 rounded-xl flex-shrink-0">
+                  10 %
+                </div>
+              </div>
+
+              <div className="flex items-start justify-between p-6 border-2 border-neutral-200 rounded-[24px] hover:border-black transition cursor-pointer">
+                <div className="flex flex-col gap-1 pr-6">
+                  <span className="font-bold text-[18px]">Réduction au mois</span>
+                  <span className="text-neutral-500 text-[15px]">Pour les séjours de 28 nuits ou plus. Recommandée : 20 %.</span>
+                </div>
+                <div className="text-xl font-bold text-neutral-400 bg-neutral-100 px-4 py-2 rounded-xl flex-shrink-0">
+                  20 %
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -404,46 +567,45 @@ const CreateListingPage = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <div className="px-10 py-6 border-b flex items-center justify-between">
-         <div className="font-bold text-2xl tracking-tighter text-brand-500">AlasBnB.</div>
-         <button 
-           onClick={() => router.push("/hosting/listings")}
-           className="text-sm font-semibold border px-4 py-2 rounded-full hover:bg-neutral-50 transition"
-         >
-           Quitter
-         </button>
-      </div>
-
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto px-10">
+      <div className="flex-1 overflow-y-auto px-10 pb-32">
         {bodyContent}
       </div>
 
       {/* Footer / Navigation */}
-      <div className="px-10 py-4 border-t flex flex-col gap-4">
-        {/* Progress Bar */}
-        <div className="w-full h-1 bg-neutral-100 rounded-full overflow-hidden">
-           <div 
-             className="h-full bg-black transition-all duration-500" 
-             style={{ width: `${((step + 1) / (Object.keys(STEPS).length / 2)) * 100}%` }}
-           />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <button
-            disabled={step === STEPS.TYPE || (typeParam && step === STEPS.CATEGORY)}
-            onClick={onBack}
-            className="font-semibold underline disabled:no-underline disabled:text-neutral-300 disabled:cursor-not-allowed"
-          >
-            Retour
-          </button>
-          <div className="w-[150px]">
-             <Button
-               disabled={isLoading || (step === STEPS.CATEGORY && !category)}
-               label={step === STEPS.PRICE ? "Publier" : "Suivant"}
-               onClick={handleSubmit(onSubmit)}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-6 md:px-10 py-4 z-50">
+        <div className="flex flex-col gap-4 max-w-[1200px] mx-auto">
+          {/* Progress Bar */}
+          <div className="w-full h-1 bg-neutral-200 rounded-full overflow-hidden">
+             <div 
+               className="h-full bg-neutral-900 transition-all duration-500" 
+               style={{ width: `${((step + 1) / (Object.keys(STEPS).length / 2)) * 100}%` }}
              />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => router.push("/hosting/listings")}
+                className="font-bold text-[16px] text-neutral-500 hover:text-neutral-900 transition"
+              >
+                Quitter
+              </button>
+              <button
+                disabled={!!(step === STEPS.TYPE || (typeParam && step === STEPS.CATEGORY))}
+                onClick={onBack}
+                className="font-bold text-[16px] underline hover:bg-neutral-100 px-4 py-2 rounded-lg transition disabled:opacity-0 disabled:pointer-events-none"
+              >
+                Retour
+              </button>
+            </div>
+            <button
+              disabled={isLoading || (step === STEPS.CATEGORY && !category)}
+              onClick={handleSubmit(onSubmit)}
+              className="bg-neutral-900 hover:bg-black text-white font-semibold text-[16px] px-8 py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {step === STEPS.PRICE ? "Publier" : "Suivant"}
+            </button>
           </div>
         </div>
       </div>

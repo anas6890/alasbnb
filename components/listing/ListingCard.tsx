@@ -4,7 +4,7 @@ import { SafeReservation, SafeUser, safeListing } from "@/types";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo } from "react";
 import Button from "../Button";
 import HeartButton from "../HeartButton";
@@ -21,6 +21,7 @@ type Props = {
   actionId?: string;
   currentUser?: SafeUser | null;
   children?: React.ReactNode;
+  isExperience?: boolean;
 };
 
 function ListingCard({
@@ -32,9 +33,11 @@ function ListingCard({
   actionId = "",
   currentUser,
   children,
+  isExperience,
 }: Props) {
   const { language } = useLanguage();
   const t = translations[language] || translations.fr;
+  const router = useRouter();
 
   const handleCancel = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -117,7 +120,14 @@ function ListingCard({
   const renderStatusBadge = () => {
     if (!reservation) return null;
     
-    switch (reservation.status) {
+    // Check if the reservation is past
+    const isPast = reservation.type === "EXPERIENCE" 
+      ? (reservation.session && new Date(reservation.session.dateTime) < new Date())
+      : (reservation.checkOut && new Date(reservation.checkOut) < new Date());
+
+    const status = isPast && reservation.status === "CONFIRMED" ? "COMPLETED" : reservation.status;
+
+    switch (status) {
       case "PENDING":
         return <div className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">En attente</div>;
       case "CONFIRMED":
@@ -131,72 +141,61 @@ function ListingCard({
     }
   };
 
+  const targetPath = isExperience ? `/experiences/${data.id}` : `/listings/${data.id}`;
+
   return (
-    <Link
-      href={`/listings/${data.id}`}
-      className="col-span-1"
-      prefetch
+    <div
+      onClick={() => router.push(targetPath)}
+      className="block w-full h-full"
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        whileHover={{ y: -4 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -8 }}
         transition={{
-          duration: 0.2,
-          ease: [0.25, 1, 0.5, 1],
+          duration: 0.4,
+          ease: [0.22, 1, 0.36, 1],
         }}
-        className="cursor-pointer group"
+        className="cursor-pointer group h-full"
       >
-        <div className="flex flex-col gap-3 w-full bg-white rounded-2xl p-2 border border-neutral-100 hover:shadow-md transition-shadow duration-200">
-          <div className="aspect-square w-full relative overflow-hidden rounded-xl">
+        <div className="flex flex-col gap-2 w-full transition-all duration-500 h-full">
+          <div className="aspect-[20/19] w-full relative overflow-hidden rounded-[16px]">
             <Image
               fill
-              className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-200 ease-out"
+              className="object-cover h-full w-full group-hover:scale-110 transition-transform duration-700 ease-out"
               src={data.images?.[0] || ""}
               alt="listing"
             />
             {renderStatusBadge()}
-            <div className="absolute top-3 right-3">
+            <div className="absolute top-4 right-4">
               <HeartButton listingId={data.id} currentUser={currentUser} />
             </div>
           </div>
           
-          <div className="px-1 flex flex-col gap-1">
-            <div className="flex flex-row justify-between items-start">
-              <div className="font-semibold text-[15px] text-neutral-800 line-clamp-1">
-                {type} · {city}
-              </div>
-              <div className="flex items-center gap-1 text-[13px] text-neutral-800 font-medium">
-                <span className="text-[#f59e0b]">★</span>
-                <span>
-                  {data.avgRating > 0 ? (
-                    <>
-                      {data.avgRating.toFixed(1)}
-                      <span className="text-neutral-400 font-light text-xs ml-0.5">
-                        ({data.totalReviews})
-                      </span>
-                    </>
-                  ) : (
-                    language === "fr" ? "Nouveau" : "New"
-                  )}
-                </span>
-              </div>
+          <div className="flex flex-col gap-0.5 mt-2">
+            <div className="text-[15px] text-neutral-800 font-normal truncate">
+              <span className="capitalize">{type}</span> · {city}
             </div>
-            <div className="text-[13px] text-neutral-400 font-medium">
+            
+            <div className="text-[15px] text-neutral-500 font-normal truncate">
               {reservationDate || availabilityDate || (language === "fr" ? "Dates flexibles" : "Flexible dates")}
             </div>
-            <div className="flex flex-row items-center gap-1 mt-1">
-              <div className="font-bold text-neutral-900">
-                €{price}
-              </div>
-              <div className="font-normal text-neutral-500 text-xs">
-                {reservation ? t.total : `/ ${t.night}`}
-              </div>
+
+            <div className="flex flex-row items-center mt-1 text-[15px] text-neutral-500">
+              <span className="font-semibold text-neutral-800">{price} €</span>
+              <span className="ml-1">
+                {reservation ? t.total : `pour 1 ${t.night.toLowerCase()}`}
+              </span>
+              <span className="mx-1.5">·</span>
+              <span className="flex items-center gap-1">
+                <span className="text-[12px] mt-0.5">★</span>
+                <span>{data.avgRating > 0 ? data.avgRating.toFixed(2) : (language === "fr" ? "Nouveau" : "New")}</span>
+              </span>
             </div>
           </div>
           
           {onAction && actionLabel && (
-            <div className="px-1 mt-2">
+            <div className="px-2 mt-auto">
               <Button
                 disabled={disabled}
                 small
@@ -208,7 +207,7 @@ function ListingCard({
           {children}
         </div>
       </motion.div>
-    </Link>
+    </div>
   );
 }
 

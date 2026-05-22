@@ -2,18 +2,21 @@ import prisma from "@/lib/prismadb";
 
 interface IParams {
   listingId?: string;
+  experienceId?: string;
 }
 
 export default async function getReviews(params: IParams) {
   try {
-    const { listingId } = params;
+    const { listingId, experienceId } = params;
 
     const query: any = {};
 
     if (listingId) {
-      query.reservation = {
-        listingId: listingId
-      };
+      query.listingId = listingId;
+    }
+
+    if (experienceId) {
+      query.experienceId = experienceId;
     }
 
     const reviews = await prisma.review.findMany({

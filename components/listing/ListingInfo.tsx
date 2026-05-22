@@ -9,13 +9,14 @@ import Avatar from "../Avatar";
 import ListingCategory from "./ListingCategory";
 import Sleep from "../Sleep";
 import Offers from "../Offers";
+import Link from "next/link";
 
 const Map = dynamic(() => import("../Map"), {
   ssr: false,
 });
 
 import { FiKey, FiAward } from "react-icons/fi";
-import { TbPool } from "react-icons/tb";
+import { TbPool, TbShieldCheck } from "react-icons/tb";
 
 type Props = {
   user: SafeUser;
@@ -38,6 +39,7 @@ type Props = {
   totalReviews?: number;
   amenities?: string[];
   location?: any;
+  listingId: string;
 };
 
 function ListingInfo({
@@ -55,6 +57,7 @@ function ListingInfo({
   totalReviews = 0,
   amenities = [],
   location,
+  listingId,
 }: Props) {
   const coordinates = lat && lng ? [lat, lng] : undefined;
 
@@ -62,11 +65,10 @@ function ListingInfo({
     <div className="col-span-4 flex flex-col gap-8">
       {/* Header Info */}
       <div className="flex flex-col gap-2">
-        <div className="text-xl font-semibold flex flex-row items-center justify-between w-full">
-          <div>Logement entier : {category?.label || "logement"} - {user?.firstname}</div>
-          <Avatar src={user?.image} userName={user?.firstname} />
-        </div>
-        <div className="flex flex-row items-center gap-2 font-light text-neutral-500 text-sm">
+        <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">
+          Logement entier : {category?.label?.toLowerCase() || "logement"}
+        </h2>
+        <div className="flex flex-row items-center gap-1.5 font-normal text-neutral-600 text-[15px]">
           <div>{maxGuests} voyageurs</div>
           <div>·</div>
           <div>{bedrooms} chambres</div>
@@ -76,7 +78,7 @@ function ListingInfo({
           <div>{bathrooms} salles de bain</div>
         </div>
       </div>
-      <hr />
+      <hr className="border-neutral-200" />
 
       {/* Guest Favorite / Coup de cœur voyageurs banner */}
       {avgRating >= 4.5 && (
@@ -107,16 +109,38 @@ function ListingInfo({
       )}
 
       {/* Host Experience & Unique Selling Points */}
-      <div className="flex flex-col gap-6">
-        {/* Host card */}
-        <div className="flex flex-row items-start gap-4">
-          <Avatar src={user?.image} userName={user?.firstname} />
-          <div className="flex flex-col gap-0.5">
-            <div className="font-semibold text-neutral-800 text-[15px]">Hôte : {user?.firstname}</div>
-            <div className="text-sm text-neutral-500 font-light">
-              6 mois d&apos;expérience en tant qu&apos;hôte sur Alasbnb
+      <div className="flex flex-col gap-8">
+        
+        {/* Clickable Host Card */}
+        <Link href={`/users/${user.id}`} className="group">
+          <div className="flex flex-row items-center gap-5 p-4 rounded-2xl border border-transparent hover:border-neutral-200 hover:bg-neutral-50 transition-all duration-300">
+            <div className="relative">
+              <Avatar src={user?.image} userName={user?.firstname} />
+              {user.isVerified && (
+                <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
+                  <div className="bg-brand-500 rounded-full p-0.5 text-white">
+                    <TbShieldCheck size={12} />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <div className="font-bold text-neutral-900 text-lg group-hover:underline decoration-2 underline-offset-2">
+                Hôte : {user?.firstname}
+              </div>
+              <div className="text-[15px] text-neutral-500 font-normal">
+                Cliquez pour voir le profil et les autres annonces
+              </div>
             </div>
           </div>
+        </Link>
+        <div className="pl-[72px] -mt-4">
+          <Link
+            href={`/listings/${listingId}/contact`}
+            className="px-6 py-3 border border-neutral-900 rounded-xl font-semibold text-neutral-900 hover:bg-neutral-100 transition-colors inline-block"
+          >
+            Contacter l'hôte
+          </Link>
         </div>
 
         {/* Dynamic highlights */}
@@ -156,13 +180,7 @@ function ListingInfo({
       </div>
       <hr />
 
-      {/* Auto-translation banner */}
-      <div className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4 flex flex-col gap-1">
-        <div className="text-xs text-neutral-500 font-light leading-relaxed">
-          Certaines informations ont été traduites automatiquement. <span className="underline font-semibold cursor-pointer text-neutral-800">Afficher le texte d&apos;origine</span>
-        </div>
-      </div>
-      <hr />
+
 
       {/* Description */}
       <div className="flex flex-col gap-2">

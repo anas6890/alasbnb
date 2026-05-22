@@ -20,6 +20,11 @@ interface ClientLayoutProps {
 export default function ClientLayout({ currentUser, children }: ClientLayoutProps) {
   const pathname = usePathname();
   const isHostMode = pathname?.startsWith("/hosting");
+  const isListingDetail = pathname?.startsWith("/listings/");
+  const isTripsPage = pathname?.startsWith("/trips");
+  const isHome = pathname === "/" || pathname === "/experiences";
+  
+  const paddingClass = isHostMode ? "" : isHome ? "pt-[142px] pb-20" : "pt-28 pb-20";
 
   return (
     <ClientOnly>
@@ -30,7 +35,7 @@ export default function ClientLayout({ currentUser, children }: ClientLayoutProp
       <LoginModal />
       <RentModal />
       {!isHostMode && <Navbar currentUser={currentUser} />}
-      <div className={!isHostMode ? "pt-64 pb-20" : ""}>
+      <div className={paddingClass}>
         {children}
       </div>
       {!isHostMode && <Footer />}

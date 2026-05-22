@@ -80,7 +80,7 @@ export default async function HostListingsPage() {
           <div className="flex flex-col gap-4">
             <h3 className="text-xl font-bold text-neutral-800">Mes expériences</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
-              {experiences.map((experience) => (
+              {experiences.map((experience: any) => (
                 <ExperienceCard
                   key={experience.id}
                   data={experience}

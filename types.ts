@@ -17,6 +17,7 @@ export type SafeReservation = Omit<
   checkIn: string | null;
   checkOut: string | null;
   listing: safeListing | null;
+  user?: SafeUser | null;
 };
 
 export type SafeUser = Omit<

@@ -4,7 +4,8 @@ import EmptyState from "@/components/EmptyState";
 import MessageClient from "./MessageClient";
 import prisma from "@/lib/prismadb";
 
-export default async function MessagePage({ params }: { params: { reservationId: string } }) {
+export default async function MessagePage(props: { params: Promise<{ reservationId: string }> }) {
+  const params = await props.params;
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {

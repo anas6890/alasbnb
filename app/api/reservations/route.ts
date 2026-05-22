@@ -11,36 +11,136 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  const { listingId, startDate, endDate, totalPrice } = body;
+  const { listingId, experienceId, type = "LISTING", startDate, endDate, totalPrice, adults, children, infants, pets } = body;
 
-  if (!listingId || !startDate || !endDate || !totalPrice) {
-    return NextResponse.error();
+  if (!startDate || !totalPrice) {
+    return new NextResponse("Missing data", { status: 400 });
   }
 
-  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
-  if (!listing) {
-    return NextResponse.error();
-  }
+  if (type === "EXPERIENCE") {
+    if (!experienceId) return new NextResponse("Missing experienceId", { status: 400 });
 
-  const pricePerNight = listing.pricePerNight;
+    const experience = await prisma.experience.findUnique({
+      where: { id: experienceId },
+      include: { user: true }
+    });
 
-  const listenAndReservation = await prisma.listing.update({
-    where: {
-      id: listingId,
-    },
-    data: {
-      reservations: {
-        create: {
-          userId: currentUser.id,
-          checkIn: new Date(startDate),
-          checkOut: new Date(endDate),
-          totalPrice: totalPrice,
-          pricePerNight: pricePerNight,
-          type: "LISTING",
+    if (!experience) return new NextResponse("Experience not found", { status: 404 });
+
+    const dateTime = new Date(startDate);
+    const guests = adults || 1;
+
+    // Find or create session
+    let session = await prisma.experienceSession.findFirst({
+      where: {
+        experienceId,
+        dateTime,
+        isCancelled: false
+      }
+    });
+
+    if (!session) {
+      session = await prisma.experienceSession.create({
+        data: {
+          experienceId,
+          dateTime,
+          spotsTotal: experience.maxGroupSize,
+          spotsLeft: experience.maxGroupSize
+        }
+      });
+    }
+
+    if (session.spotsLeft < guests) {
+      return new NextResponse("Not enough spots available", { status: 400 });
+    }
+
+    // Decrement spots
+    await prisma.experienceSession.update({
+      where: { id: session.id },
+      data: { spotsLeft: session.spotsLeft - guests }
+    });
+
+    const reservation = await prisma.reservation.create({
+      data: {
+        userId: currentUser.id,
+        sessionId: session.id,
+        type: "EXPERIENCE",
+        totalPrice,
+        pricePerPerson: experience.pricePerPerson,
+        adults: guests,
+        status: "PENDING",
+        experienceSnapshot: {
+          experienceId: experience.id,
+          title: experience.title,
+          category: experience.category,
+          city: experience.location.city,
+          country: experience.location.country,
+          image: experience.images[0]
         },
-      },
-    },
+        hostSnapshot: {
+          hostId: experience.user.id,
+          firstname: experience.user.firstname,
+          lastname: experience.user.lastname,
+          image: experience.user.image
+        }
+      }
+    });
+
+    return NextResponse.json(reservation);
+  }
+
+  // LISTING logic
+  if (!listingId || !endDate) {
+    return new NextResponse("Missing listing data", { status: 400 });
+  }
+
+  const listing = await prisma.listing.findUnique({ 
+    where: { id: listingId },
+    include: { user: true }
   });
 
-  return NextResponse.json(listenAndReservation);
+  if (!listing) {
+    return new NextResponse("Listing not found", { status: 404 });
+  }
+
+  const checkIn = new Date(startDate);
+  const checkOut = new Date(endDate);
+  const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+
+  // Create the reservation with snapshots as defined in Prisma schema
+  const reservation = await prisma.reservation.create({
+    data: {
+      userId: currentUser.id,
+      listingId: listingId,
+      type: "LISTING",
+      checkIn,
+      checkOut,
+      nights,
+      totalPrice,
+      pricePerNight: listing.pricePerNight,
+      adults: adults || 1,
+      children: children || 0,
+      infants: infants || 0,
+      pets: pets || 0,
+      status: "PENDING",
+      listingSnapshot: {
+        listingId: listing.id,
+        title: listing.title,
+        type: listing.type,
+        city: listing.location.city,
+        country: listing.location.country,
+        image: listing.images[0],
+        lat: listing.location.lat,
+        lng: listing.location.lng
+      },
+      hostSnapshot: {
+        hostId: listing.user.id,
+        firstname: listing.user.firstname,
+        lastname: listing.user.lastname,
+        image: listing.user.image
+      }
+    }
+  });
+
+  return NextResponse.json(reservation);
 }

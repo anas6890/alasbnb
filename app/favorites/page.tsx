@@ -7,11 +7,14 @@ import FavoritesClient from "./FavoritesClient";
 
 type Props = {};
 
-const FavoritePage = async (props: Props) => {
-  const [currentUser, listings] = await Promise.all([
+const FavoritePage = async (props: { searchParams: Promise<{ type?: string }> }) => {
+  const searchParams = await props.searchParams;
+  const [currentUser, favoritesObj] = await Promise.all([
     getCurrentUser(),
     getFavoriteListings()
   ]);
+  const viewType = searchParams?.type === "EXPERIENCE" ? "EXPERIENCE" : "LISTING";
+  const { listings, experiences } = favoritesObj as any;
 
   if (!currentUser) {
     return (
@@ -21,12 +24,23 @@ const FavoritePage = async (props: Props) => {
     );
   }
 
-  if (listings.length === 0) {
+  if (viewType === "LISTING" && listings.length === 0) {
     return (
       <ClientOnly>
         <EmptyState
-          title="No favorites found"
-          subtitle="Looks like you have no favorite listings."
+          title="Aucun favori"
+          subtitle="Vous n'avez pas encore de logements favoris."
+        />
+      </ClientOnly>
+    );
+  }
+
+  if (viewType === "EXPERIENCE" && experiences.length === 0) {
+    return (
+      <ClientOnly>
+        <EmptyState
+          title="Aucun favori"
+          subtitle="Vous n'avez pas encore d'expériences favorites."
         />
       </ClientOnly>
     );
@@ -34,7 +48,11 @@ const FavoritePage = async (props: Props) => {
 
   return (
     <ClientOnly>
-      <FavoritesClient listings={listings} currentUser={currentUser} />
+      <FavoritesClient 
+        listings={viewType === "EXPERIENCE" ? experiences : listings} 
+        currentUser={currentUser} 
+        viewType={viewType}
+      />
     </ClientOnly>
   );
 };

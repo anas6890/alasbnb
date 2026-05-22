@@ -4,9 +4,8 @@ import { SafeUser } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import React, { useState } from "react";
-import { FiChevronLeft, FiChevronRight, FiShare2, FiHeart, FiX } from "react-icons/fi";
-import { TbGrid3X3 } from "react-icons/tb";
-import HeartButton from "../HeartButton";
+import { TbGrid3X3, TbHeart, TbHeartFilled } from "react-icons/tb";
+import useFavorite from "@/hook/useFavorite";
 
 type Props = {
   title: string;
@@ -31,6 +30,11 @@ function ListingHead({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const { hasFavorited, toggleFavorite } = useFavorite({
+    listingId: id,
+    currentUser,
+  });
+
   const openLightbox = (index: number) => {
     setCurrentIndex(index);
     setIsModalOpen(true);
@@ -50,7 +54,7 @@ function ListingHead({
   const renderPhotos = () => {
     if (photoList.length >= 5) {
       return (
-        <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[45vh] md:h-[55vh] w-full rounded-3xl overflow-hidden relative group">
+        <div className="grid grid-cols-4 grid-rows-2 gap-2.5 h-[50vh] md:h-[60vh] w-full rounded-[32px] overflow-hidden relative group shadow-sm">
           {/* Left Large Photo */}
           <div
             onClick={() => openLightbox(0)}
@@ -61,7 +65,7 @@ function ListingHead({
               alt="Cover Image"
               fill
               priority
-              className="object-cover hover:scale-102 hover:brightness-90 transition-all duration-300 ease-out"
+              className="object-cover hover:scale-[1.02] hover:brightness-90 transition-all duration-500 ease-out"
             />
           </div>
           {/* Top-Middle Photo */}
@@ -73,7 +77,7 @@ function ListingHead({
               src={photoList[1]}
               alt="Photo 2"
               fill
-              className="object-cover hover:scale-105 hover:brightness-90 transition-all duration-300 ease-out"
+              className="object-cover hover:scale-[1.03] hover:brightness-90 transition-all duration-500 ease-out"
             />
           </div>
           {/* Top-Right Photo */}
@@ -85,7 +89,7 @@ function ListingHead({
               src={photoList[2]}
               alt="Photo 3"
               fill
-              className="object-cover hover:scale-105 hover:brightness-90 transition-all duration-300 ease-out"
+              className="object-cover hover:scale-[1.03] hover:brightness-90 transition-all duration-500 ease-out"
             />
           </div>
           {/* Bottom-Middle Photo */}
@@ -97,7 +101,7 @@ function ListingHead({
               src={photoList[3]}
               alt="Photo 4"
               fill
-              className="object-cover hover:scale-105 hover:brightness-90 transition-all duration-300 ease-out"
+              className="object-cover hover:scale-[1.03] hover:brightness-90 transition-all duration-500 ease-out"
             />
           </div>
           {/* Bottom-Right Photo */}
@@ -109,7 +113,7 @@ function ListingHead({
               src={photoList[4]}
               alt="Photo 5"
               fill
-              className="object-cover hover:scale-105 hover:brightness-90 transition-all duration-300 ease-out"
+              className="object-cover hover:scale-[1.03] hover:brightness-90 transition-all duration-500 ease-out"
             />
           </div>
 
@@ -119,9 +123,9 @@ function ListingHead({
               e.stopPropagation();
               openLightbox(0);
             }}
-            className="absolute bottom-6 right-6 flex items-center gap-2 bg-white/95 hover:bg-white text-neutral-800 px-4 py-2 rounded-xl text-xs font-semibold shadow-md transition hover:scale-102 border border-neutral-200 z-10 select-none"
+            className="absolute bottom-6 right-6 flex items-center gap-2.5 bg-white/95 backdrop-blur-md hover:bg-white text-neutral-900 px-5 py-2.5 rounded-full text-sm font-bold shadow-[0_4px_15px_rgba(0,0,0,0.1)] transition-all hover:scale-105 border border-white/50 z-10 select-none"
           >
-            <TbGrid3X3 size={16} />
+            <TbGrid3X3 size={18} />
             <span>Afficher toutes les photos</span>
           </button>
         </div>
@@ -176,19 +180,18 @@ function ListingHead({
   return (
     <>
       {/* Title & Share/Save Buttons */}
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-row justify-between items-end w-full">
-          <h1 className="text-xl md:text-2xl font-semibold text-neutral-800 leading-tight">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-row justify-between items-start w-full">
+          <h1 className="text-3xl md:text-4xl font-black text-neutral-900 tracking-tight leading-tight max-w-[80%]">
             {title}
           </h1>
-          <div className="flex items-center gap-4 text-xs font-semibold text-neutral-600 select-none">
-            <button className="flex items-center gap-2 hover:bg-neutral-100 px-3 py-2 rounded-lg transition">
-              <FiShare2 size={15} />
-              <span className="underline">Partager</span>
-            </button>
-            <button className="flex items-center gap-2 hover:bg-neutral-100 px-3 py-2 rounded-lg transition">
-              <FiHeart size={15} />
-              <span className="underline">Enregistrer</span>
+          <div className="flex items-center gap-3 text-sm font-semibold text-neutral-800 select-none">
+            <button 
+              onClick={(e: any) => toggleFavorite(e)}
+              className="flex items-center gap-2 hover:bg-neutral-50 px-4 py-2 rounded-xl transition-all active:scale-95 border border-transparent hover:border-neutral-200"
+            >
+              {hasFavorited ? <TbHeartFilled size={20} className="text-rose-500" /> : <TbHeart size={20} />}
+              <span className="font-bold underline decoration-1 underline-offset-2">{hasFavorited ? "Enregistré" : "Enregistrer"}</span>
             </button>
           </div>
         </div>
@@ -210,9 +213,9 @@ function ListingHead({
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition shadow-sm"
+                className="p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition shadow-sm font-bold"
               >
-                <FiX size={22} />
+                ✕
               </button>
             </div>
 
@@ -224,7 +227,7 @@ function ListingHead({
                   onClick={handlePrev}
                   className="absolute left-2 md:left-6 p-3 rounded-full bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-95 text-white transition shadow-md z-50"
                 >
-                  <FiChevronLeft size={28} />
+                  <span className="text-xl">←</span>
                 </button>
               )}
 
@@ -256,7 +259,7 @@ function ListingHead({
                   onClick={handleNext}
                   className="absolute right-2 md:right-6 p-3 rounded-full bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-95 text-white transition shadow-md z-50"
                 >
-                  <FiChevronRight size={28} />
+                  <span className="text-xl">➔</span>
                 </button>
               )}
             </div>

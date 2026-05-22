@@ -75,8 +75,8 @@ function Navbar({ currentUser }: Props) {
   }, [currentUser, loginModel, router, mode]);
 
   return (
-    <div className="fixed top-0 left-0 w-full bg-white z-50 transition-all duration-300 border-b-[1px] shadow-sm">
-      <div className={`transition-all duration-300 ${isCompact ? "py-2" : "py-4"}`}>
+    <div className="fixed top-0 left-0 w-full glass z-50 transition-all duration-300">
+      <div className={`transition-all duration-500 ${isCompact ? "py-1.5" : "py-1.5"}`}>
         <Container>
           <div className="flex flex-row items-center justify-between gap-3 md:gap-0 relative h-[64px]">
             <div className="flex-none">
@@ -87,7 +87,7 @@ function Navbar({ currentUser }: Props) {
             <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center">
 
               {/* The Switcher: Logements / Expériences */}
-              <div className={`flex flex-row items-center gap-8 text-[16px] transition-all duration-300 ${isCompact ? "opacity-0 scale-95 pointer-events-none absolute pt-4" : "opacity-100 scale-100 relative pointer-events-auto"}`}>
+              <div className={`flex flex-row items-center gap-10 text-[15px] transition-all duration-500 ${isCompact ? "opacity-0 scale-90 pointer-events-none absolute" : "opacity-100 scale-100 relative pointer-events-auto"}`}>
 
                 {/* Logements */}
                 <div
@@ -98,20 +98,14 @@ function Navbar({ currentUser }: Props) {
                       houseVideoRef.current.play();
                     }
                   }}
-                  onMouseEnter={() => {
-                    if (houseVideoRef.current) {
-                      houseVideoRef.current.currentTime = 0;
-                      houseVideoRef.current.play();
-                    }
-                  }}
-                  className={`cursor-pointer transition relative pb-2 flex flex-row items-center gap-2 hover:text-neutral-800 ${pathname === "/" ? "text-neutral-900 font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-1/2 after:h-[2px] after:bg-black" : "font-medium text-neutral-500"}`}
+                  className={`cursor-pointer transition-all duration-300 relative px-4 py-2 rounded-full flex flex-row items-center gap-2.5 group ${pathname === "/" ? "bg-neutral-100/80 text-neutral-900 font-bold shadow-sm" : "text-neutral-500 font-medium hover:bg-neutral-50 hover:text-neutral-900"}`}
                 >
                   <video
                     ref={houseVideoRef}
                     autoPlay
                     muted
                     playsInline
-                    className="w-10 h-10 object-cover bg-transparent opacity-80"
+                    className="w-10 h-10 object-cover bg-transparent opacity-90 group-hover:scale-110 transition-transform duration-300"
                   >
                     <source src="https://a0.muscache.com/videos/search-bar-icons/webm/house-selected.webm#t=0.001" type="video/webm" />
                     <source src="https://a0.muscache.com/videos/search-bar-icons/hevc/house-selected.mov#t=0.001" type="video/mp4" />
@@ -128,20 +122,14 @@ function Navbar({ currentUser }: Props) {
                       balloonVideoRef.current.play();
                     }
                   }}
-                  onMouseEnter={() => {
-                    if (balloonVideoRef.current) {
-                      balloonVideoRef.current.currentTime = 0;
-                      balloonVideoRef.current.play();
-                    }
-                  }}
-                  className={`cursor-pointer transition relative pb-2 flex flex-row items-center gap-2 hover:text-neutral-800 ${pathname === "/experiences" ? "text-neutral-900 font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-1/2 after:h-[2px] after:bg-black" : "font-medium text-neutral-500"}`}
+                  className={`cursor-pointer transition-all duration-300 relative px-4 py-2 rounded-full flex flex-row items-center gap-2.5 group ${pathname === "/experiences" ? "bg-neutral-100/80 text-neutral-900 font-bold shadow-sm" : "text-neutral-500 font-medium hover:bg-neutral-50 hover:text-neutral-900"}`}
                 >
                   <video
                     ref={balloonVideoRef}
                     autoPlay
                     muted
                     playsInline
-                    className="w-10 h-10 object-cover bg-transparent opacity-80"
+                    className="w-10 h-10 object-cover bg-transparent opacity-90 group-hover:scale-110 transition-transform duration-300"
                   >
                     <source src="https://a0.muscache.com/videos/search-bar-icons/webm/balloon-twirl.webm" type="video/webm" />
                     <source src="https://a0.muscache.com/videos/search-bar-icons/hevc/balloon-twirl.mov" type="video/mp4" />
@@ -152,36 +140,35 @@ function Navbar({ currentUser }: Props) {
               </div>
 
               {/* Compact Search Bar (Visible only when scrolled or compact mode) */}
-              <div className={`flex w-auto justify-center transition-all duration-300 ${showCompactSearch ? "opacity-100 scale-100 translate-y-0 visible relative pointer-events-auto" : "opacity-0 scale-95 translate-y-4 invisible absolute pointer-events-none"}`}>
+              <div className={`flex w-auto justify-center transition-all duration-500 ${showCompactSearch ? "opacity-100 scale-100 translate-y-0 visible relative pointer-events-auto" : "opacity-0 scale-90 translate-y-4 invisible absolute pointer-events-none"}`}>
                 <Search mode={mode} compact />
               </div>
             </div>
 
-            <div className="flex flex-row items-center gap-3 flex-none">
+            <div className="flex flex-row items-center gap-4 flex-none">
               <div
                 onClick={onRent}
-                className="hidden md:block text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
+                className="hidden md:block text-[13px] font-bold py-3 px-5 rounded-full hover:bg-neutral-100 transition-all duration-300 cursor-pointer text-neutral-800"
               >
                 {mode === "experiences" ? "Proposer une expérience" : "Mettre mon logement sur AlasBnB"}
               </div>
               <div
                 onClick={languageModal.onOpen}
-                className="p-3 hover:bg-neutral-100 rounded-full transition cursor-pointer"
+                className="p-3 hover:bg-neutral-100 rounded-full transition-all duration-300 cursor-pointer text-neutral-600"
               >
-                <MdLanguage size={18} />
+                <MdLanguage size={20} />
               </div>
               <UserMenu currentUser={currentUser} />
             </div>
           </div>
           
           {/* Big Search Bar Area (Hidden when scrolled) */}
-          <div className={`flex items-center justify-center transition-all duration-300 origin-top overflow-hidden flex-col ${showBigSearch ? "h-[90px] opacity-100 my-3 scale-y-100" : "h-0 opacity-0 my-0 scale-y-0"}`}>
+          <div className={`flex items-center justify-center transition-all duration-500 origin-top overflow-hidden flex-col ${showBigSearch ? "h-[54px] opacity-100 mt-2 mb-1 scale-y-100" : "h-0 opacity-0 my-0 scale-y-0"}`}>
             <Search mode={mode} />
           </div>
 
         </Container>
       </div>
-      <Categories />
     </div>
   );
 }

@@ -59,10 +59,10 @@ function Search({ mode = "logements", compact = false }: Props) {
     return (
       <div
         onClick={() => searchModal.onOpen(STEP_LOCATION)}
-        className="border border-gray-200 py-1 pl-2 pr-1 rounded-full shadow-md hover:shadow-lg transition cursor-pointer flex flex-row items-center justify-between text-[15px] font-medium text-gray-800 bg-white"
+        className="border border-neutral-200/60 py-1.5 pl-3 pr-1.5 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] transition-all duration-300 cursor-pointer flex flex-row items-center justify-between text-sm bg-white/95 backdrop-blur-xl"
       >
-        <div className="flex flex-row items-center gap-2 px-3 hover:bg-neutral-100 rounded-full transition py-2">
-          <video key={mode} autoPlay muted playsInline className="w-5 h-5 object-cover bg-transparent outline-none">
+        <div className="flex flex-row items-center gap-3 px-4 hover:bg-neutral-100/80 rounded-full transition-colors duration-200 py-1.5 font-bold text-neutral-800">
+          <video key={mode} autoPlay muted playsInline className="w-4 h-4 object-cover bg-transparent opacity-90">
             {isExp ? (
               <>
                 <source src="https://a0.muscache.com/videos/search-bar-icons/webm/balloon-twirl.webm" type="video/webm" />
@@ -75,70 +75,69 @@ function Search({ mode = "logements", compact = false }: Props) {
               </>
             )}
           </video>
-          <span className="font-semibold truncate max-w-[160px]">{destinationLabel}</span>
+          <span className="truncate max-w-[120px]">{destinationLabel}</span>
         </div>
-        <div className="px-4 border-l border-r border-gray-200 flex-1 text-center py-2 hover:bg-neutral-100 rounded-full transition font-semibold">
+        <div className="px-5 border-l border-neutral-200/60 flex-1 text-center py-1.5 hover:bg-neutral-100/80 rounded-full transition-colors duration-200 font-bold text-neutral-800">
           {durationLabel}
         </div>
-        <div className="flex flex-row items-center gap-3 pl-4 pr-1 py-1 hover:bg-neutral-100 rounded-full transition">
-          <span className="text-neutral-500 text-sm truncate max-w-[160px]">{guestLabel}</span>
-          <div className="p-2 bg-brand-500 rounded-full text-white inline-flex items-center justify-center">
-            <BiSearch size={16} />
+        <div className="flex flex-row items-center gap-3 pl-5 pr-1 py-1 hover:bg-neutral-100/80 rounded-full transition-colors duration-200 border-l border-neutral-200/60">
+          <span className="text-neutral-500 font-medium truncate max-w-[120px]">{guestLabel}</span>
+          <div className="p-2 bg-gradient-to-br from-brand-500 to-emerald-500 rounded-full text-white shadow-sm hover:shadow-md transition-all">
+            <BiSearch size={14} />
           </div>
         </div>
       </div>
     );
   }
 
-  // ── EXPANDED ─────────────────────────────────────────────────────────────
   return (
-    <div className="border border-gray-200 w-full md:w-[750px] rounded-full shadow-md hover:shadow-lg bg-white">
-      <div className="flex flex-row items-center h-[58px]">
+    <div className="border border-neutral-200/80 w-full md:w-[820px] rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] bg-white/95 backdrop-blur-md transition-all duration-500">
+      <div className="flex flex-row items-center h-[54px]">
 
         {/* Destination */}
         <div
           onClick={() => searchModal.onOpen(STEP_LOCATION)}
-          className="flex flex-col justify-center flex-1 h-full px-6 rounded-l-full hover:bg-neutral-100 transition cursor-pointer"
+          className="flex flex-col justify-center flex-[1.2] h-full px-8 xl:px-10 rounded-l-full hover:bg-neutral-100 transition-colors duration-200 cursor-pointer"
         >
-          <p className="text-[11px] font-bold text-black">{isFr ? "Destination" : "Where"}</p>
-          <p className={`text-[13px] truncate ${locationValue ? "text-gray-800" : "text-neutral-400"}`}>
+          <p className="text-xs font-bold text-neutral-800 mb-0.5">{isFr ? "Destination" : "Where"}</p>
+          <p className={`text-sm truncate ${locationValue ? "text-neutral-900 font-semibold" : "text-neutral-500 font-normal"}`}>
             {destinationLabel}
           </p>
         </div>
 
-        <div className="h-8 w-px bg-neutral-200 flex-shrink-0" />
+        <div className="h-8 w-[1px] bg-neutral-200 flex-shrink-0" />
 
         {/* Dates */}
         <div
           onClick={() => searchModal.onOpen(STEP_DATE)}
-          className="hidden sm:flex flex-col justify-center flex-1 h-full px-6 hover:bg-neutral-100 transition cursor-pointer"
+          className="hidden sm:flex flex-col justify-center flex-1 h-full px-6 xl:px-8 hover:bg-neutral-100 transition-colors duration-200 cursor-pointer"
         >
-          <p className="text-[11px] font-bold text-black">{isFr ? "Dates" : "When"}</p>
-          <p className={`text-[13px] ${(startDate && endDate) ? "text-gray-800" : "text-neutral-400"}`}>
+          <p className="text-xs font-bold text-neutral-800 mb-0.5">{isFr ? "Dates" : "When"}</p>
+          <p className={`text-sm ${(startDate && endDate) ? "text-neutral-900 font-semibold" : "text-neutral-500 font-normal"}`}>
             {durationLabel}
           </p>
         </div>
 
-        <div className="hidden sm:block h-8 w-px bg-neutral-200 flex-shrink-0" />
+        <div className="hidden sm:block h-8 w-[1px] bg-neutral-200 flex-shrink-0" />
 
         {/* Voyageurs */}
-        <div className="flex flex-row items-center flex-1 h-full pr-2">
+        <div className="flex flex-row items-center flex-[1.1] h-full pr-2">
           <div
             onClick={() => searchModal.onOpen(STEP_GUESTS)}
-            className="hidden sm:flex flex-col justify-center flex-1 h-full pl-6 pr-2 hover:bg-neutral-100 rounded-r-full transition cursor-pointer"
+            className="hidden sm:flex flex-col justify-center flex-1 h-full pl-6 xl:pl-8 pr-4 hover:bg-neutral-100 rounded-r-full transition-colors duration-200 cursor-pointer"
           >
-            <p className="text-[11px] font-bold text-black">{isFr ? "Voyageurs" : "Who"}</p>
-            <p className={`text-[13px] ${guestCount ? "text-gray-800" : "text-neutral-400"}`}>
+            <p className="text-xs font-bold text-neutral-800 mb-0.5">{isFr ? "Voyageurs" : "Who"}</p>
+            <p className={`text-sm truncate ${guestCount ? "text-neutral-900 font-semibold" : "text-neutral-500 font-normal"}`}>
               {guestLabel}
             </p>
           </div>
 
-          {/* Search button */}
           <div
             onClick={() => searchModal.onOpen(STEP_LOCATION)}
-            className="p-4 bg-brand-500 rounded-full text-white ml-2 mr-1 flex items-center justify-center hover:bg-brand-600 transition flex-shrink-0 cursor-pointer"
+            className="h-[40px] px-5 bg-gradient-to-r from-brand-500 to-emerald-500 rounded-full text-white flex items-center justify-center gap-2 hover:from-brand-600 hover:to-emerald-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 cursor-pointer ml-auto"
           >
-            <BiSearch size={18} />
+            <BiSearch size={20} />
+            <span className="font-semibold text-sm hidden lg:block">Rechercher</span>
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import getExperienceById from "@/app/actions/getExperienceById";
+import getReviews from "@/app/actions/getReviews";
 import ClientOnly from "@/components/ClientOnly";
 import EmptyState from "@/components/EmptyState";
 import ExperienceClient from "@/components/experience/ExperienceClient";
@@ -8,10 +9,12 @@ interface IParams {
   experienceId?: string;
 }
 
-const ExperiencePage = async ({ params }: { params: IParams }) => {
-  const [experience, currentUser] = await Promise.all([
+const ExperiencePage = async (props: { params: Promise<IParams> }) => {
+  const params = await props.params;
+  const [experience, currentUser, reviews] = await Promise.all([
     getExperienceById(params),
-    getCurrentUser()
+    getCurrentUser(),
+    getReviews({ experienceId: params.experienceId })
   ]);
 
   if (!experience) {
@@ -27,6 +30,7 @@ const ExperiencePage = async ({ params }: { params: IParams }) => {
       <ExperienceClient
         experience={experience}
         currentUser={currentUser}
+        reviews={reviews}
       />
     </ClientOnly>
   );

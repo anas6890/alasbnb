@@ -1,59 +1,84 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-brand-50: #f0fdfa;
+  --color-brand-500: #0d9488;
+  --color-brand-600: #0f766e;
+  --color-brand-700: #115e59;
+  
+  --font-sans: "Inter", "Plus Jakarta Sans", system-ui, sans-serif;
+  
+  --shadow-card: 0 4px 24px -4px rgba(0, 0, 0, 0.04), 0 2px 8px -2px rgba(0, 0, 0, 0.02);
+  --shadow-card-hover: 0 20px 40px -8px rgba(0, 0, 0, 0.1), 0 10px 20px -4px rgba(0, 0, 0, 0.06);
+}
 
 /* ── Brand variables ─────────────────────────────────────────── */
 :root {
-  --brand-primary:   #00B4D8;
-  --brand-hover:     #0096C7;
-  --brand-deep:      #0077B6;
-  --brand-navy:      #023E8A;
-  --brand-darkest:   #03045E;
-  --radius-card:     12px;
+  --brand-primary: #0d9488;
+  --brand-hover: #0f766e;
+  --brand-deep: #115e59;
+  --brand-navy: #171717;
+  --brand-darkest: #0a0a0a;
+  --radius-card: 20px;
 }
 
 /* ── Base ──────────────────────────────────────────────────────── */
 html, body, :root { height: 100%; }
 
 body {
-  font-family: 'Inter', 'Nunito', sans-serif;
+  font-family: var(--font-sans);
+  background-color: #fafafa;
+  color: #171717;
   -webkit-font-smoothing: antialiased;
-  @apply !scrollbar-thin !scrollbar-track-transparent !scrollbar-thumb-brand-500;
 }
 
 /* ── Leaflet (behind modals) ───────────────────────────────────── */
-.leaflet-bottom,
-.leaflet-control,
-.leaflet-pane,
-.leaflet-top {
+.leaflet-container {
   z-index: 0 !important;
 }
 
 /* ── Date picker ───────────────────────────────────────────────── */
-.rdrMonth             { width: 100% !important; }
-.rdrCalendarWrapper   { font-size: 16px !important; width: 100% !important; }
+.rdrMonth { width: 100% !important; }
+.rdrCalendarWrapper { font-size: 16px !important; width: 100% !important; border-radius: var(--radius-card); overflow: hidden; }
 
 /* Override react-date-range with brand colors */
 .rdrDayStartPreview,
 .rdrDayEndPreview,
-.rdrDayInPreview      { border-color: var(--brand-primary) !important; }
+.rdrDayInPreview { border-color: var(--brand-primary) !important; }
 .rdrStartEdge,
-.rdrEndEdge           { background: var(--brand-primary) !important; }
-.rdrInRange           { background: rgba(0,180,216,0.15) !important; }
+.rdrEndEdge { background: var(--brand-primary) !important; }
+.rdrInRange { background: rgba(0,180,216,0.1) !important; }
 .rdrDayToday .rdrDayNumber span::after { background: var(--brand-primary) !important; }
 
 /* ── Utility: brand button ─────────────────────────────────────── */
 @layer components {
   .btn-brand {
-    @apply bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-full px-6 py-3 transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply bg-brand-500 text-white font-bold rounded-full px-8 py-3.5 transition-all duration-300 shadow-lg shadow-brand-500/20;
   }
+  .btn-brand:hover {
+    @apply bg-brand-600 shadow-xl shadow-brand-500/30 -translate-y-0.5;
+  }
+  .btn-brand:active {
+    @apply scale-95;
+  }
+  
   .btn-brand-outline {
-    @apply border-2 border-brand-500 text-brand-700 hover:bg-brand-50 font-semibold rounded-full px-6 py-3 transition-all duration-200;
+    @apply border-2 border-brand-500 text-brand-700 font-bold rounded-full px-8 py-3.5 transition-all duration-300;
   }
+  .btn-brand-outline:hover {
+    @apply bg-brand-50 -translate-y-0.5;
+  }
+
   .card {
-    @apply rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-200;
+    @apply bg-white rounded-[24px] shadow-card transition-all duration-500 border border-neutral-100;
+  }
+  .card:hover {
+    @apply shadow-card-hover -translate-y-1.5;
+  }
+
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border-b border-white/40 shadow-sm;
   }
 }
 
@@ -64,5 +89,16 @@ body {
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thumb-\[\#FF5A5F\]::-webkit-scrollbar-thumb {
+    background-color: #FF5A5F;
+    border-radius: 10px;
   }
 }

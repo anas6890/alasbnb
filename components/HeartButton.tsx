@@ -27,7 +27,7 @@ function HeartButton({ listingId, currentUser }: Props) {
       />
       <AiFillHeart
         size={24}
-        className={hasFavorited ? "fill-brand-500" : "fill-neutral-500/70"}
+        className={hasFavorited ? "fill-rose-500" : "fill-neutral-500/70"}
       />
     </div>
   );

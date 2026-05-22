@@ -18,12 +18,25 @@ const getFavoriteListings = cache(async () => {
       },
     });
 
-    const safeFavorite = favorites.map((favorite) => ({
+    const favoriteExperiences = await prisma.experience.findMany({
+      where: {
+        id: {
+          in: [...(currentUser.savedExperienceIds || [])],
+        },
+      },
+    });
+
+    const safeListings = favorites.map((favorite) => ({
       ...favorite,
       createdAt: favorite.createdAt.toString(),
     }));
 
-    return safeFavorite;
+    const safeExperiences = favoriteExperiences.map((exp) => ({
+      ...exp,
+      createdAt: exp.createdAt.toString(),
+    }));
+
+    return { listings: safeListings, experiences: safeExperiences };
   } catch (error: any) {
     throw new Error(error.message);
   }

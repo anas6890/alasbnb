@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { pusherServer } from "@/lib/pusher";
 
 export async function GET(
   request: Request,
-  { params }: { params: { reservationId: string } }
+  props: { params: Promise<{ reservationId: string }> }
 ) {
   try {
+    const params = await props.params;
+    const { reservationId } = params;
+    
     const currentUser = await getCurrentUser();
     if (!currentUser) return NextResponse.error();
 
-    const { reservationId } = params;
     if (!reservationId || typeof reservationId !== "string") {
       throw new Error("Invalid ID");
     }
@@ -35,13 +38,15 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { reservationId: string } }
+  props: { params: Promise<{ reservationId: string }> }
 ) {
   try {
+    const params = await props.params;
+    const { reservationId } = params;
+
     const currentUser = await getCurrentUser();
     if (!currentUser) return NextResponse.error();
 
-    const { reservationId } = params;
     if (!reservationId || typeof reservationId !== "string") {
       throw new Error("Invalid ID");
     }
@@ -65,9 +70,10 @@ export async function POST(
       }
     });
 
+    await pusherServer.trigger(reservationId, "messages:new", message);
+
     return NextResponse.json(message);
   } catch (error: any) {
     return NextResponse.error();
   }
 }
-

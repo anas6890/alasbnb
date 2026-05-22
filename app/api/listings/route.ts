@@ -26,6 +26,11 @@ export async function POST(request: Request) {
     price,
     dateRange,
     amenities,
+    petsAllowed,
+    smokingAllowed,
+    partiesAllowed,
+    checkInTime,
+    checkOutTime,
   } = body;
 
   const availabilities = [];
@@ -63,6 +68,11 @@ export async function POST(request: Request) {
         },
       },
       pricePerNight: parseInt(price, 10),
+      petsAllowed: Boolean(petsAllowed),
+      smokingAllowed: Boolean(smokingAllowed),
+      partiesAllowed: Boolean(partiesAllowed),
+      checkInTime: checkInTime ? parseInt(checkInTime, 10) : 14,
+      checkOutTime: checkOutTime ? parseInt(checkOutTime, 10) : 11,
       hostId: currentUser.id,
       availabilities: {
         create: availabilities,

@@ -21,13 +21,22 @@ export default async function getReservation(params: IParams) {
     }
 
     if (authorId) {
-      query.listing = { hostId: authorId };
+      query.OR = [
+        { listing: { hostId: authorId } },
+        { session: { experience: { hostId: authorId } } }
+      ];
     }
 
     const reservations = await prisma.reservation.findMany({
       where: query,
       include: {
         listing: true,
+        session: {
+          include: {
+            experience: true
+          }
+        },
+        user: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -43,6 +52,24 @@ export default async function getReservation(params: IParams) {
         ? {
             ...reservation.listing,
             createdAt: reservation.listing.createdAt.toISOString(),
+          }
+        : null,
+      session: reservation.session
+        ? {
+            ...reservation.session,
+            dateTime: reservation.session.dateTime.toISOString(),
+            experience: {
+              ...reservation.session.experience,
+              createdAt: reservation.session.experience.createdAt.toISOString(),
+            }
+          }
+        : null,
+      user: reservation.user
+        ? {
+            ...reservation.user,
+            createdAt: reservation.user.createdAt.toISOString(),
+            updatedAt: reservation.user.updatedAt.toISOString(),
+            emailVerified: reservation.user.emailVerified?.toISOString() || null,
           }
         : null,
     }));

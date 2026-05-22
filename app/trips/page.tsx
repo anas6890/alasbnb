@@ -5,9 +5,8 @@ import getCurrentUser from "../actions/getCurrentUser";
 import getReservation from "../actions/getReservations";
 import TripsClient from "./TripsClient";
 
-type Props = {};
-
-const TripsPage = async (props: Props) => {
+const TripsPage = async (props: { searchParams: Promise<{ success?: string; type?: string }> }) => {
+  const searchParams = await props.searchParams;
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -22,20 +21,16 @@ const TripsPage = async (props: Props) => {
     userId: currentUser.id,
   });
 
-  if (reservations.length === 0) {
-    return (
-      <ClientOnly>
-        <EmptyState
-          title="No trips found"
-          subtitle="Looks like you havent reserved any trips."
-        />
-      </ClientOnly>
-    );
-  }
+
 
   return (
     <ClientOnly>
-      <TripsClient reservations={reservations} currentUser={currentUser} />
+      <TripsClient 
+        reservations={reservations} 
+        currentUser={currentUser} 
+        isSuccess={searchParams?.success === "1"}
+        viewType={searchParams?.type === "EXPERIENCE" ? "EXPERIENCE" : "LISTING"}
+      />
     </ClientOnly>
   );
 };

@@ -105,17 +105,29 @@ export default async function getListings(params: IListingsParams) {
           },
           take: 30,
         },
+        reviews: {
+          select: {
+            avgRating: true,
+          },
+        },
       },
     });
 
-    const safeListings = listing.map((list) => ({
-      ...list,
-      createdAt: list.createdAt.toISOString(),
-      availabilities: list.availabilities?.map((availability) => ({
-        ...availability,
-        date: availability.date.toISOString(),
-      })),
-    }));
+    const safeListings = listing.map((list) => {
+      const dynamicAvgRating = list.reviews && list.reviews.length > 0
+        ? list.reviews.reduce((acc, review) => acc + review.avgRating, 0) / list.reviews.length
+        : 0;
+
+      return {
+        ...list,
+        avgRating: dynamicAvgRating,
+        createdAt: list.createdAt.toISOString(),
+        availabilities: list.availabilities?.map((availability) => ({
+          ...availability,
+          date: availability.date.toISOString(),
+        })),
+      };
+    });
 
     return safeListings;
   } catch (error: any) {

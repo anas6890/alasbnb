@@ -8,8 +8,9 @@ interface IParams {
 
 export async function DELETE(
   request: Request,
-  { params }: { params: IParams }
+  props: { params: Promise<IParams> }
 ) {
+  const params = await props.params;
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -34,8 +35,9 @@ export async function DELETE(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: IParams }
+  props: { params: Promise<IParams> }
 ) {
+  const params = await props.params;
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {

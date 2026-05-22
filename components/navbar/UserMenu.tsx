@@ -4,7 +4,7 @@ import useLoginModel from "@/hook/useLoginModal";
 import useRegisterModal from "@/hook/useRegisterModal";
 import useRentModal from "@/hook/useRentModal";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { SafeUser } from "@/types";
 import { signOut, useSession } from "next-auth/react";
@@ -12,7 +12,7 @@ import { useCallback, useState } from "react";
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
 import { AiOutlineMenu } from "react-icons/ai";
-import { FiUser, FiBriefcase, FiHeart, FiList, FiHome, FiPlusCircle, FiLogOut, FiLogIn, FiUserPlus, FiRepeat } from "react-icons/fi";
+import { FiUser, FiBriefcase, FiHeart, FiList, FiHome, FiPlusCircle, FiLogOut, FiLogIn, FiUserPlus, FiRepeat, FiCalendar } from "react-icons/fi";
 import Avatar from "../Avatar";
 import MenuItem from "./MenuItem";
 
@@ -24,7 +24,12 @@ function UserMenu({ currentUser }: Props) {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isHostMode = pathname?.startsWith("/hosting");
+  
+  // Determine if we are in experience mode based on URL or search params
+  const isExperienceMode = pathname?.startsWith("/experiences") || searchParams?.get("type") === "EXPERIENCE";
+
   const registerModel = useRegisterModal();
   const loginModel = useLoginModel();
   const rentModel = useRentModal();
@@ -84,6 +89,13 @@ function UserMenu({ currentUser }: Props) {
           <div className="flex flex-col cursor-pointer">
             {finalUser ? (
               <>
+                <div className="px-4 py-3 border-b-[1px] border-neutral-100">
+                  <p className="font-semibold text-neutral-800">
+                    {finalUser.firstname} {finalUser.lastname}
+                  </p>
+                  <p className="text-[11px] text-neutral-500 truncate">{finalUser.email}</p>
+                </div>
+                
                 {isHostMode ? (
                   <>
                     <MenuItem
@@ -91,7 +103,7 @@ function UserMenu({ currentUser }: Props) {
                       label="Mode voyageur"
                       icon={FiRepeat}
                     />
-                    <hr className="my-1 border-neutral-200" />
+                    <hr className="my-1 border-neutral-100" />
                     <MenuItem
                       onClick={() => navigateTo("/hosting")}
                       label="Tableau de bord"
@@ -102,6 +114,11 @@ function UserMenu({ currentUser }: Props) {
                       label="Mes annonces"
                       icon={FiList}
                     />
+                    <MenuItem
+                      onClick={() => navigateTo("/hosting/reservations")}
+                      label="Réservations reçues"
+                      icon={FiCalendar}
+                    />
                   </>
                 ) : (
                   <>
@@ -110,33 +127,22 @@ function UserMenu({ currentUser }: Props) {
                       label="Mode hôte"
                       icon={FiRepeat}
                     />
-                    <hr className="my-1 border-neutral-200" />
+                    <hr className="my-1 border-neutral-100" />
                     <MenuItem
                       onClick={() => navigateTo("/profile")}
                       label={t.profile || "Profil"}
                       icon={FiUser}
                     />
                     <MenuItem
-                      onClick={() => navigateTo("/trips")}
-                      label={t.bookings}
+                      onClick={() => navigateTo(isExperienceMode ? "/trips?type=EXPERIENCE" : "/trips?type=LISTING")}
+                      label={t.bookings || "Mes réservations"}
                       icon={FiBriefcase}
                     />
                     <MenuItem
-                      onClick={() => navigateTo("/favorites")}
+                      onClick={() => navigateTo(isExperienceMode ? "/favorites?type=EXPERIENCE" : "/favorites?type=LISTING")}
                       label={t.wishlist}
                       icon={FiHeart}
                     />
-                    <MenuItem
-                      onClick={() => navigateTo("/reservations")}
-                      label={t.reservations}
-                      icon={FiList}
-                    />
-                    <MenuItem
-                      onClick={() => navigateTo("/properties")}
-                      label={t.properties}
-                      icon={FiHome}
-                    />
-                    <MenuItem onClick={onRent} label={t.host} icon={FiPlusCircle} />
                   </>
                 )}
                 <hr className="my-1 border-neutral-200" />

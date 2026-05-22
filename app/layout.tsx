@@ -1,4 +1,4 @@
-import { Nunito } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "../styles/globals.css";
 import getCurrentUser from "./actions/getCurrentUser";
 import NextAuthProvider from "./providers/NextAuthProvider";
@@ -10,7 +10,7 @@ export const metadata = {
   icons: "/assets/logo.png",
 };
 
-const font = Nunito({
+const font = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 

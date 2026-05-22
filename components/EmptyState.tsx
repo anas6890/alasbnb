@@ -20,10 +20,7 @@ function EmptyState({
   const router = useRouter();
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
+    <div
       className="h-[60vh] flex flex-col gap-2 justify-center items-center"
     >
       <Heading center title={title} subtitle={subtitle} />
@@ -36,7 +33,7 @@ function EmptyState({
           />
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 

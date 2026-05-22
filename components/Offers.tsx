@@ -11,15 +11,21 @@ type Props = {
 
 const amenityIconMap: Record<string, any> = {
   "Cuisine": TbToolsKitchen2,
+  "Kitchen": TbToolsKitchen2,
   "Wifi": TbWifi,
   "Stationnement gratuit sur place": TbCar,
+  "Parking": TbCar,
   "Piscine": TbPool,
+  "Pool": TbPool,
   "Animaux acceptés": TbPaw,
   "Télévision": MdTv,
+  "TV": MdTv,
   "Lave-linge": MdOutlineLocalLaundryService,
   "Détecteur de monoxyde de carbone": MdOutlineSensors,
   "Détecteur de fumée": MdOutlineFireExtinguisher,
-  "Caméras de surveillance extérieures présentes sur place": MdOutlineSecurity
+  "Caméras de surveillance extérieures présentes sur place": MdOutlineSecurity,
+  "AC": MdOutlineSensors,
+  "Breakfast": TbToolsKitchen2,
 };
 
 const DEFAULT_AMENITIES = [

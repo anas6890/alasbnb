@@ -13,8 +13,10 @@ import React from "react";
 
 import Container from "../Container";
 import ListingHead from "../listing/ListingHead";
+import ListingReviews from "../listing/ListingReviews";
 import Button from "../Button";
 import Calendar from "../inputs/Calendar";
+import Counter from "../inputs/Counter";
 import { BiTimeFive, BiGroup, BiCommentDetail, BiWorld, BiCheckCircle } from "react-icons/bi";
 import dynamic from "next/dynamic";
 
@@ -31,20 +33,25 @@ const initialDateRange = {
 type Props = {
   experience: any;
   currentUser?: SafeUser | null;
+  reviews?: any[];
 };
 
-function ExperienceClient({ experience, currentUser }: Props) {
+function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
   const router = useRouter();
   const loginModal = useLoginModel();
 
   const [isLoading, setIsLoading] = useState(false);
   const [dateRange, setDateRange] = useState<Range>(initialDateRange);
+  const [guests, setGuests] = useState(1);
 
   const coordinates = useMemo(() => {
     const lat = experience.location?.lat;
     const lng = experience.location?.lng;
     return lat && lng ? [lat, lng] : undefined;
   }, [experience]);
+
+  const total = reviews.reduce((sum, review) => sum + Number(review.avgRating || 5), 0);
+  const averageRating = reviews.length ? (total / reviews.length).toFixed(1) : (experience.avgRating || 0);
 
   const onCreateReservation = useCallback(() => {
     if (!currentUser) {
@@ -58,15 +65,22 @@ function ExperienceClient({ experience, currentUser }: Props) {
         experienceId: experience.id,
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
-        totalPrice: experience.pricePerPerson,
+        totalPrice: experience.pricePerPerson * guests,
+        adults: guests,
         type: "EXPERIENCE",
       })
-      .then(() => {
-        toast.success("Expérience réservée avec succès !");
-        router.push("/trips");
+      .then((response) => {
+        toast.success("Réservation créée ! Redirection vers le paiement...");
+        return axios.post("/api/stripe/checkout", {
+          reservationId: response.data.id
+        });
       })
-      .catch(() => {
+      .then((response) => {
+        window.location.href = response.data.url;
+      })
+      .catch((err) => {
         toast.error("Une erreur s'est produite lors de la réservation.");
+        console.error(err);
       })
       .finally(() => {
         setIsLoading(false);
@@ -169,9 +183,14 @@ function ExperienceClient({ experience, currentUser }: Props) {
               )}
 
               {/* Map where we'll be */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 pb-6 border-b border-neutral-100">
                 <h2 className="text-lg font-bold text-neutral-800">Où se déroule l&apos;activité</h2>
                 <Map center={coordinates} />
+              </div>
+
+              {/* Reviews */}
+              <div className="pt-2">
+                <ListingReviews reviews={reviews} averageRating={averageRating} />
               </div>
 
             </div>
@@ -196,6 +215,21 @@ function ExperienceClient({ experience, currentUser }: Props) {
                 <hr className="border-neutral-100" />
                 
                 <div className="p-6">
+                  <Counter
+                    title="Places"
+                    subtitle={`Maximum ${experience.maxGroupSize} personnes`}
+                    value={guests}
+                    onChange={(val) => {
+                      if (val >= 1 && val <= experience.maxGroupSize) {
+                        setGuests(val);
+                      }
+                    }}
+                  />
+                </div>
+
+                <hr className="border-neutral-100" />
+                
+                <div className="p-6">
                   <Button
                     disabled={isLoading}
                     label="Réserver ma place"
@@ -207,7 +241,7 @@ function ExperienceClient({ experience, currentUser }: Props) {
 
                 <div className="p-6 flex flex-row items-center justify-between font-bold text-lg text-neutral-800">
                   <p>Total</p>
-                  <p>€{experience.pricePerPerson}</p>
+                  <p>€{experience.pricePerPerson * guests}</p>
                 </div>
               </div>
             </div>

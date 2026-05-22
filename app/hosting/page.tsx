@@ -4,6 +4,7 @@ import getCurrentUser from "../actions/getCurrentUser";
 import getListings from "../actions/getListings";
 import getReservations from "../actions/getReservations";
 import { FiHome, FiDollarSign, FiCalendar, FiStar } from "react-icons/fi";
+import Image from "next/image";
 
 export default async function HostingPage() {
   const currentUser = await getCurrentUser();
@@ -25,7 +26,7 @@ export default async function HostingPage() {
       <div className="pt-8">
         <Heading
           title={`Bienvenue, ${currentUser?.firstname}`}
-          subtitle="Voici un aperçu de votre activité d'hôte."
+          subtitle="Voici un aperçu de votre activité d&apos;hôte."
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
@@ -54,8 +55,8 @@ export default async function HostingPage() {
                 {reservations.slice(0, 5).map((res) => (
                   <div key={res.id} className="flex items-center justify-between p-4 rounded-xl bg-neutral-50">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-neutral-200 rounded-lg overflow-hidden">
-                         {res.listing?.images?.[0] && <img src={res.listing.images[0]} className="w-full h-full object-cover" />}
+                      <div className="w-12 h-12 bg-neutral-200 rounded-lg overflow-hidden relative">
+                         {res.listing?.images?.[0] && <Image src={res.listing.images[0]} alt="listing" fill className="object-cover" />}
                       </div>
                       <div>
                         <p className="font-semibold text-sm text-neutral-800">{res.listing?.title}</p>
@@ -77,14 +78,14 @@ export default async function HostingPage() {
           <div className="bg-white p-8 rounded-2xl border border-neutral-200 shadow-sm">
             <h3 className="text-lg font-bold mb-6 text-neutral-800">Vos annonces performantes</h3>
              {listings.length === 0 ? (
-              <p className="text-neutral-500 text-sm italic">Vous n'avez pas encore d'annonces.</p>
+              <p className="text-neutral-500 text-sm italic">Vous n&apos;avez pas encore d&apos;annonces.</p>
             ) : (
               <div className="space-y-4">
                 {listings.slice(0, 5).map((list) => (
                   <div key={list.id} className="flex items-center justify-between p-4 rounded-xl bg-neutral-50">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-neutral-200 rounded-lg overflow-hidden">
-                         {list.images?.[0] && <img src={list.images[0]} className="w-full h-full object-cover" />}
+                      <div className="w-12 h-12 bg-neutral-200 rounded-lg overflow-hidden relative">
+                         {list.images?.[0] && <Image src={list.images[0]} alt="listing" fill className="object-cover" />}
                       </div>
                       <div>
                         <p className="font-semibold text-sm text-neutral-800">{list.title}</p>
