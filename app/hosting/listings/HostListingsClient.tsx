@@ -1,13 +1,14 @@
 "use client";
 
 import { safeListing, SafeUser } from "@/types";
-import Container from "@/components/Container";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { FiPlus, FiMoreHorizontal, FiEdit2, FiTrash2, FiEye, FiCheckCircle, FiClock, FiGrid, FiList } from "react-icons/fi";
 import axios from "axios";
 import { toast } from "react-toastify";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 interface HostListingsClientProps {
   listings: safeListing[];
@@ -20,6 +21,8 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
   experiences,
   currentUser,
 }) => {
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"listings" | "experiences">("listings");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -33,11 +36,11 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
 
     axios.delete(endpoint)
       .then(() => {
-        toast.success("Annonce supprimée");
+        toast.success(t.host_listings_toast_deleted);
         router.refresh();
       })
       .catch(() => {
-        toast.error("Une erreur est survenue");
+        toast.error(t.host_listings_toast_error);
       })
       .finally(() => {
         setDeletingId("");
@@ -48,32 +51,32 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
     <div className="flex flex-col gap-8 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h1 className="text-3xl font-black text-neutral-900 tracking-tight mb-2">Mes annonces</h1>
-          <p className="text-neutral-500 font-medium">Gérez vos propriétés et vos expériences en un seul endroit.</p>
+          <h1 className="text-3xl font-black text-neutral-900 tracking-tight mb-2">{t.host_listings_title}</h1>
+          <p className="text-neutral-500 font-medium">{t.host_listings_subtitle}</p>
         </div>
         <button
           onClick={() => router.push(`/hosting/create?type=${activeTab === 'listings' ? 'LISTING' : 'EXPERIENCE'}`)}
           className="flex items-center gap-2 bg-neutral-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-black transition shadow-lg active:scale-95"
         >
           <FiPlus size={20} />
-          Créer une annonce
+          {t.host_listings_create}
         </button>
       </div>
 
       {/* Tabs and Controls */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-2 rounded-[24px] border border-neutral-100 shadow-sm text-black">
         <div className="flex gap-2 w-full md:w-auto text-black">
-          <button
+            <button
             onClick={() => setActiveTab("listings")}
             className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl font-bold text-sm transition ${activeTab === 'listings' ? 'bg-neutral-900 text-white shadow-md' : 'text-neutral-500 hover:bg-neutral-50'}`}
           >
-            Logements ({listings.length})
+            {t.logements} ({listings.length})
           </button>
           <button
             onClick={() => setActiveTab("experiences")}
             className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl font-bold text-sm transition ${activeTab === 'experiences' ? 'bg-neutral-900 text-white shadow-md' : 'text-neutral-500 hover:bg-neutral-50'}`}
           >
-            Expériences ({experiences.length})
+            {t.experiences} ({experiences.length})
           </button>
         </div>
 
@@ -99,8 +102,8 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
             <FiList size={48} />
           </div>
           <div className="flex flex-col gap-1">
-            <p className="text-xl font-black text-neutral-900 italic">Aucune annonce trouvée</p>
-            <p className="text-neutral-400 font-bold uppercase tracking-widest text-xs">Commencez par créer votre première offre</p>
+            <p className="text-xl font-black text-neutral-900 italic">{t.host_listings_none_found}</p>
+            <p className="text-neutral-400 font-bold uppercase tracking-widest text-xs">{t.host_listings_none_desc}</p>
           </div>
         </div>
       ) : (
@@ -125,9 +128,9 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
                 />
                 <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
                     {item.status === "PUBLISHED" ? (
-                        <><FiCheckCircle className="text-teal-600" size={14} /><span className="text-[10px] font-black text-neutral-800 uppercase tracking-tight">Actif</span></>
+                        <><FiCheckCircle className="text-teal-600" size={14} /><span className="text-[10px] font-black text-neutral-800 uppercase tracking-tight">{t.host_listings_status_active}</span></>
                     ) : (
-                        <><FiClock className="text-amber-500" size={14} /><span className="text-[10px] font-black text-neutral-800 uppercase tracking-tight">Draft</span></>
+                        <><FiClock className="text-amber-500" size={14} /><span className="text-[10px] font-black text-neutral-800 uppercase tracking-tight">{t.host_listings_status_draft}</span></>
                     )}
                 </div>
               </div>
@@ -151,7 +154,7 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
                     <div className="flex items-center gap-1 text-sm font-black text-neutral-900 tracking-tighter">
                         €{activeTab === 'listings' ? item.pricePerNight : item.pricePerPerson}
                         <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-tight ml-1">
-                            / {activeTab === 'listings' ? 'nuit' : 'pers'}
+                            / {activeTab === 'listings' ? t.host_listings_per_night : t.host_listings_per_person}
                         </span>
                     </div>
 
@@ -159,13 +162,13 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
                         <button 
                             onClick={() => router.push(activeTab === 'listings' ? `/listings/${item.id}` : `/experiences/${item.id}`)}
                             className="p-2.5 bg-neutral-50 text-neutral-600 rounded-xl hover:bg-neutral-900 hover:text-white transition-all shadow-sm"
-                            title="Voir l'annonce"
+                            title={t.host_listings_view_listing}
                         >
                             <FiEye size={16} />
                         </button>
                         <button 
                             className="p-2.5 bg-neutral-50 text-neutral-600 rounded-xl hover:bg-neutral-900 hover:text-white transition-all shadow-sm"
-                            title="Modifier"
+                            title={t.host_listings_edit}
                         >
                             <FiEdit2 size={16} />
                         </button>
@@ -173,7 +176,7 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
                             disabled={deletingId === item.id}
                             onClick={() => onDelete(item.id)}
                             className="p-2.5 bg-neutral-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                            title="Supprimer"
+                            title={t.host_listings_delete}
                         >
                             <FiTrash2 size={16} />
                         </button>

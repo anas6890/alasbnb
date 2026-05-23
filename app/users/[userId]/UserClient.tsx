@@ -7,6 +7,8 @@ import { TbShieldCheck } from "react-icons/tb";
 import ListingCard from "@/components/listing/ListingCard";
 import ExperienceCard from "@/components/experience/ExperienceCard";
 import { useState } from "react";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 interface UserClientProps {
   user: SafeUser & {
@@ -18,6 +20,8 @@ interface UserClientProps {
 
 export default function UserClient({ user, currentUser }: UserClientProps) {
   const joinedDate = new Date(user.createdAt).getFullYear();
+  const lang = useLanguage((s) => s.language) || "en";
+  const t = translations[lang as keyof typeof translations] || translations.en;
   const [activeTab, setActiveTab] = useState<"listings" | "experiences">("listings");
 
   const experiences = user.experiences || [];
@@ -29,7 +33,7 @@ export default function UserClient({ user, currentUser }: UserClientProps) {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Left Panel - Host Info Card */}
           <div className="md:col-span-4">
-            <div className="bg-white rounded-[32px] p-8 flex flex-col items-center text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-neutral-100 sticky top-24">
+              <div className="bg-white rounded-[32px] p-8 flex flex-col items-center text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-neutral-100 sticky top-24">
               <div className="relative w-36 h-36 rounded-full overflow-hidden mb-6 shadow-md ring-4 ring-neutral-50">
                 <Image
                   src={user.image || "/images/placeholder.jpg"}
@@ -39,12 +43,12 @@ export default function UserClient({ user, currentUser }: UserClientProps) {
                 />
               </div>
               
-              <h1 className="text-3xl font-black text-neutral-900 mb-2">
+                  <h1 className="text-3xl font-black text-neutral-900 mb-2">
                 {user.firstname}
               </h1>
               
               <div className="flex items-center gap-2 text-neutral-500 font-medium mb-8">
-                <span>Hôte depuis {joinedDate}</span>
+                <span>{t.host_since} {joinedDate}</span>
               </div>
 
               {user.isVerified && (
@@ -53,8 +57,8 @@ export default function UserClient({ user, currentUser }: UserClientProps) {
                     <TbShieldCheck size={28} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-neutral-900 text-lg">Identité vérifiée</h3>
-                    <p className="text-neutral-500 text-sm">Cet hôte a fourni une pièce d'identité.</p>
+                    <h3 className="font-bold text-neutral-900 text-lg">{t.verified_identity}</h3>
+                    <p className="text-neutral-500 text-sm">{t.verified_identity_desc}</p>
                   </div>
                 </div>
               )}
@@ -65,16 +69,16 @@ export default function UserClient({ user, currentUser }: UserClientProps) {
           <div className="md:col-span-8 flex flex-col gap-10">
             
             {/* Bio Section */}
-            <div className="bg-white rounded-[32px] p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100">
-              <h2 className="text-2xl font-bold text-neutral-900 mb-6">À propos de {user.firstname}</h2>
+              <div className="bg-white rounded-[32px] p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100">
+              <h2 className="text-2xl font-bold text-neutral-900 mb-6">{t.about_title} {user.firstname}</h2>
               <p className="text-lg text-neutral-600 leading-relaxed font-light whitespace-pre-line">
-                {user.bio || "Cet utilisateur n'a pas encore rédigé de description."}
+                {user.bio || t.no_bio}
               </p>
               
               <div className="flex flex-row flex-wrap gap-4 mt-8 pt-8 border-t border-neutral-100">
                 {user.preferredLang && (
                   <div className="flex items-center gap-2 text-neutral-700 bg-neutral-50 px-4 py-2 rounded-full font-medium">
-                    <span className="text-neutral-400">Parle :</span> {user.preferredLang}
+                    <span className="text-neutral-400">{t.speaks}</span> {user.preferredLang}
                   </div>
                 )}
               </div>
@@ -88,7 +92,7 @@ export default function UserClient({ user, currentUser }: UserClientProps) {
                         className={`pb-4 px-2 text-xl font-bold transition border-b-4 ${activeTab === "listings" ? "border-neutral-900 text-neutral-900" : "border-transparent text-neutral-400 hover:text-neutral-600"}`}
                         onClick={() => setActiveTab("listings")}
                     >
-                        Logements ({user.listings.length})
+                        {t.logements} ({user.listings.length})
                     </button>
                   )}
                   {experiences.length > 0 && (
@@ -96,7 +100,7 @@ export default function UserClient({ user, currentUser }: UserClientProps) {
                         className={`pb-4 px-2 text-xl font-bold transition border-b-4 ${activeTab === "experiences" ? "border-neutral-900 text-neutral-900" : "border-transparent text-neutral-400 hover:text-neutral-600"}`}
                         onClick={() => setActiveTab("experiences")}
                     >
-                        Expériences ({experiences.length})
+                        {t.experiences} ({experiences.length})
                     </button>
                   )}
               </div>

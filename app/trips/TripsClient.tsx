@@ -8,6 +8,8 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 import { toast } from "react-toastify";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 import Link from "next/link";
 import { TbMessageCircle, TbCheck, TbMapSearch, TbClock } from "react-icons/tb";
 import { FiX, FiStar } from "react-icons/fi";
@@ -22,6 +24,8 @@ type Props = {
 
 function TripsClient({ reservations, currentUser, isSuccess }: Props) {
   const router = useRouter();
+  const lang = useLanguage((s) => s.language) || "en";
+  const t = translations[lang as keyof typeof translations] || translations.en;
   const [deletingId, setDeletingId] = useState("");
   const [showBanner, setShowBanner] = useState(isSuccess);
   const [reviewingId, setReviewingId] = useState("");
@@ -55,11 +59,15 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
       axios
         .delete(`/api/reservations/${id}`)
         .then(() => {
-          toast.info("Réservation annulée");
+           const lang = useLanguage.getState().language || "en";
+           const t = translations[lang as keyof typeof translations] || translations.en;
+           toast.info(t.reservation_cancelled);
           router.refresh();
         })
         .catch((error) => {
-          toast.error(error?.response?.data?.error || "Une erreur est survenue");
+          const lang = useLanguage.getState().language || "en";
+          const t = translations[lang as keyof typeof translations] || translations.en;
+          toast.error(error?.response?.data?.error || t.error_occurred);
         })
         .finally(() => {
           setDeletingId("");
@@ -104,9 +112,9 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                   <TbCheck className="text-white text-xl" />
                 </div>
                 <div className="flex flex-col gap-1 pr-8">
-                  <h3 className="text-lg font-bold text-teal-900">Réservation confirmée !</h3>
+                  <h3 className="text-lg font-bold text-teal-900">{t.reservation_confirmed_banner}</h3>
                   <p className="text-teal-800/80 font-medium text-sm">
-                    Votre voyage est confirmé. Préparez vos valises, l'aventure vous attend !
+                    {t.trips_subtitle}
                   </p>
                 </div>
                 <button 
@@ -122,9 +130,9 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
 
         <div className="flex flex-col gap-2 mb-8">
           <h1 className="text-4xl font-black text-neutral-900 tracking-tight">
-            Mes Réservations
+            {t.trips_title}
           </h1>
-          <p className="text-neutral-500 font-medium">Suivez vos voyages en cours et retrouvez vos souvenirs passés.</p>
+          <p className="text-neutral-500 font-medium">{t.trips_subtitle}</p>
         </div>
 
         {/* Tabs for Stays / Experiences */}
@@ -133,21 +141,21 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                 className={`pb-4 px-6 text-lg font-bold transition border-b-4 ${viewType === "LISTING" ? "border-neutral-900 text-neutral-900" : "border-transparent text-neutral-400 hover:text-neutral-600"}`}
                 onClick={() => setViewType("LISTING")}
             >
-                Logements
+                {t.logements}
             </button>
             <button
                 className={`pb-4 px-6 text-lg font-bold transition border-b-4 ${viewType === "EXPERIENCE" ? "border-neutral-900 text-neutral-900" : "border-transparent text-neutral-400 hover:text-neutral-600"}`}
                 onClick={() => setViewType("EXPERIENCE")}
             >
-                Expériences
+                {t.experiences}
             </button>
         </div>
 
         {filteredReservations.length === 0 ? (
           <div className="py-20">
             <EmptyState
-                title={viewType === "LISTING" ? "Aucun logement réservé pour l'instant" : "Aucune expérience réservée pour l'instant"}
-                subtitle={viewType === "LISTING" ? "N'hésitez pas à explorer nos logements uniques pour votre prochain voyage !" : "N'hésitez pas à réserver, ça sera fun !"}
+                title={viewType === "LISTING" ? t.no_listing : t.no_experience}
+                subtitle={viewType === "LISTING" ? t.no_listing_desc : t.no_experience_desc}
             />
           </div>
         ) : (
@@ -158,12 +166,12 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                         <div className="p-2 bg-neutral-900 rounded-lg">
                             <TbMapSearch className="text-white" size={24} />
                         </div>
-                        En cours et à venir
+                        {t.trips_upcoming_header}
                     </h2>
                     
                     {upcomingTrips.length === 0 ? (
                         <p className="text-neutral-500 font-medium bg-neutral-50 p-8 rounded-2xl border border-dashed border-neutral-200 text-center">
-                            Vous n'avez pas de voyage prévu prochainement.
+                            {t.trips_no_upcoming}
                         </p>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
@@ -188,19 +196,19 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                                             className="flex-1 bg-neutral-900 text-white rounded-xl py-3 font-bold text-sm text-center hover:bg-black transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
                                         >
                                             <TbMessageCircle size={20} />
-                                            Contacter l'hôte
+                                            {t.host_reservations_send_message}
                                         </button>
                                         <button
                                             className="p-3 bg-white text-rose-500 border-2 border-rose-100 rounded-xl hover:bg-rose-50 hover:border-rose-200 transition-all disabled:opacity-50"
                                             onClick={() => onCancel(reservation.id)}
                                             disabled={deletingId === reservation.id}
-                                            title="Annuler la réservation"
+                                            title={t.cancel}
                                         >
                                             <FiX size={20} />
                                         </button>
                                     </div>
                                     <div className="text-[11px] text-center font-bold text-neutral-400 uppercase tracking-widest">
-                                        Réservation {reservation.status.toLowerCase()}
+                                        {t.reservation_label} {t[`status_${reservation.status.toLowerCase()}` as string]}
                                     </div>
                                 </div>
                             </ListingCard>
@@ -216,12 +224,12 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                         <div className="p-2 bg-neutral-100 rounded-lg text-neutral-600">
                             <TbClock size={24} />
                         </div>
-                        Historique (Voyages terminés)
+                        {t.trips_history}
                     </h2>
                     
                     {pastTrips.length === 0 ? (
                         <p className="text-neutral-500 font-medium bg-neutral-50 p-8 rounded-2xl border border-dashed border-neutral-200 text-center">
-                            Votre historique est vide pour le moment.
+                            {t.trips_history_empty}
                         </p>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
@@ -258,7 +266,7 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                                             className="w-full bg-white text-neutral-900 border-2 border-neutral-900 rounded-xl py-3 font-bold text-sm hover:bg-neutral-900 hover:text-white transition-all flex items-center justify-center gap-2 shadow-sm group"
                                         >
                                             <FiStar className="text-amber-500 group-hover:fill-amber-500" size={18} />
-                                            Laisser un avis
+                                            {t.leave_review}
                                         </button>
                                     )}
                                 </div>

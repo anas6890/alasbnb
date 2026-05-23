@@ -4,6 +4,8 @@ import getExperiences from "@/app/actions/getExperiences";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import Container from "@/components/Container";
 import ExperienceCard from "@/components/experience/ExperienceCard";
+import { cookies } from "next/headers";
+import { translations } from "@/lib/translations";
 
 interface ExperiencesProps {
   searchParams: {
@@ -19,6 +21,10 @@ interface ExperiencesProps {
 }
 
 export default async function ExperiencesPage(props: { searchParams: Promise<any> }) {
+  const cookieStore = await cookies();
+  const language = cookieStore.get("language")?.value || "en";
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   const searchParams = await props.searchParams;
   const experiences = await getExperiences(searchParams);
   const currentUser = await getCurrentUser();
@@ -26,7 +32,7 @@ export default async function ExperiencesPage(props: { searchParams: Promise<any
   if (experiences.length === 0) {
     return (
       <ClientOnly>
-        <EmptyState title="Aucune experience" subtitle="Aucune experience ne correspond a votre recherche." />
+        <EmptyState title={t.no_experience} subtitle={t.no_experience_desc} />
       </ClientOnly>
     );
   }
@@ -41,10 +47,10 @@ export default async function ExperiencesPage(props: { searchParams: Promise<any
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent opacity-80" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pt-4">
           <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-2xl mb-2 max-w-4xl">
-            Vivez l&apos;exceptionnel.
+            {t.exp_hero_title}
           </h1>
           <p className="text-sm md:text-lg text-neutral-200 font-light max-w-2xl drop-shadow-md">
-            Des moments inoubliables, créés par des experts passionnés.
+            {t.exp_hero_subtitle}
           </p>
         </div>
       </div>

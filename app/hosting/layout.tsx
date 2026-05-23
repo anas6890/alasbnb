@@ -6,6 +6,8 @@ import UserMenu from "@/components/navbar/UserMenu";
 import { SafeUser } from "@/types";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 import { 
   FiLayout, 
   FiList, 
@@ -24,12 +26,14 @@ interface HostLayoutProps {
 
 const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
   const pathname = usePathname();
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   const navigation = [
-    { name: "Tableau de bord", href: "/hosting", icon: FiLayout },
-    { name: "Mes annonces", href: "/hosting/listings", icon: FiList },
-    { name: "Réservations", href: "/hosting/reservations", icon: FiCalendar },
-    { name: "Messages", href: "/messages", icon: FiMessageSquare },
+    { name: t.dashboard, href: "/hosting", icon: FiLayout },
+    { name: t.my_listings, href: "/hosting/listings", icon: FiList },
+    { name: t.reservations, href: "/hosting/reservations", icon: FiCalendar },
+    { name: t.messages, href: "/messages", icon: FiMessageSquare },
   ];
 
   return (
@@ -45,7 +49,7 @@ const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
               className="hidden lg:flex items-center gap-2 text-sm font-bold text-neutral-500 hover:text-neutral-900 transition"
             >
               <FiArrowLeft size={18} />
-              Retour au mode voyageur
+              {t.return_guest_mode}
             </Link>
           </div>
 
@@ -55,7 +59,7 @@ const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
               className="hidden md:flex items-center gap-2 bg-neutral-900 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-black transition shadow-sm"
             >
               <FiPlus size={18} />
-              Créer
+              {t.create}
             </Link>
             <UserMenu currentUser={currentUser} />
           </div>
@@ -89,7 +93,7 @@ const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
           <div className="p-4 mt-auto border-t border-neutral-100">
             <button className="flex items-center gap-4 w-full px-4 py-3.5 rounded-2xl text-[15px] font-bold text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900 transition">
               <FiSettings size={20} />
-              Paramètres
+              {t.settings}
             </button>
           </div>
         </aside>

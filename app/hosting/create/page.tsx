@@ -8,6 +8,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { categories, experienceCategories } from "@/components/navbar/Categories";
 
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
+import Calendar from "@/components/inputs/Calendar";
 import Heading from "@/components/Heading";
 import CategoryInput from "@/components/inputs/CategoryInput";
 import CitySelect from "@/components/inputs/CitySelect";
@@ -27,7 +30,8 @@ enum STEPS {
   IMAGES = 6,
   DESCRIPTION = 7,
   CONDITIONS = 8,
-  PRICE = 9,
+  AVAILABILITY = 9,
+  PRICE = 10,
 }
 
 const AMENITIES_LIST = [
@@ -50,6 +54,9 @@ const CreateListingPage = () => {
 
   const [step, setStep] = useState(STEPS.TYPE);
   const [isLoading, setIsLoading] = useState(false);
+  const { language } = useLanguage();
+  // Prefer English fallback to avoid accidentally showing French when a key is missing
+  const t = translations[language] || translations.en;
 
   const {
     register,
@@ -57,7 +64,7 @@ const CreateListingPage = () => {
     setValue,
     watch,
     formState: { errors },
-    reset,
+    
   } = useForm<FieldValues>({
     defaultValues: {
       type: typeParam === "EXPERIENCE" ? "EXPERIENCE" : "LISTING", // Initialize based on URL
@@ -80,6 +87,11 @@ const CreateListingPage = () => {
       partiesAllowed: false,
       checkInTime: 15,
       checkOutTime: 11,
+      dateRange: {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: "selection",
+      },
     },
   });
 
@@ -104,6 +116,7 @@ const CreateListingPage = () => {
   const partiesAllowed = watch("partiesAllowed");
   const checkInTime = watch("checkInTime");
   const checkOutTime = watch("checkOutTime");
+  const dateRange = watch("dateRange");
 
   const Map = useMemo(
     () =>
@@ -149,12 +162,12 @@ const CreateListingPage = () => {
     axios
       .post(url, data)
       .then(() => {
-        toast.success("Annonce créée avec succès !");
+        toast.success(t.listing_success);
         router.push("/hosting/listings");
         router.refresh();
       })
       .catch(() => {
-        toast.error("Une erreur est survenue.");
+        toast.error(t.error_occurred);
       })
       .finally(() => {
         setIsLoading(false);
@@ -165,9 +178,9 @@ const CreateListingPage = () => {
     <div className="flex flex-col gap-10 max-w-[640px] mx-auto py-12 px-4">
       <div className="flex flex-col gap-2">
         <h1 className="text-[32px] leading-tight font-bold text-neutral-900">
-          Que souhaitez-vous proposer sur AlasBnB ?
+          {t.create_type_title}
         </h1>
-        <p className="text-[18px] text-neutral-500 font-light">Choisissez le type d'annonce</p>
+        <p className="text-[18px] text-neutral-500 font-light">{t.create_type_subtitle}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
          <div 
@@ -179,8 +192,8 @@ const CreateListingPage = () => {
          >
             <MdOutlineHomeWork size={40} className="text-brand-500" />
             <div>
-               <p className="font-bold text-lg">Un logement</p>
-               <p className="text-sm text-neutral-500 text-balance">Appartement, maison, villa, ou tout autre type d&apos;hébergement.</p>
+               <p className="font-bold text-lg">{t.type_listing}</p>
+               <p className="text-sm text-neutral-500 text-balance">{t.type_listing_desc}</p>
             </div>
          </div>
          <div 
@@ -192,8 +205,8 @@ const CreateListingPage = () => {
          >
             <MdOutlineMap size={40} className="text-teal-600" />
             <div>
-               <p className="font-bold text-lg">Une expérience</p>
-               <p className="text-sm text-neutral-500 text-balance">Une activité guidée, un cours, une excursion ou une aventure unique.</p>
+               <p className="font-bold text-lg">{t.type_experience}</p>
+               <p className="text-sm text-neutral-500 text-balance">{t.type_experience_desc}</p>
             </div>
          </div>
       </div>
@@ -206,9 +219,9 @@ const CreateListingPage = () => {
       <div className="flex flex-col gap-10 max-w-[640px] mx-auto py-12 px-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-[32px] leading-tight font-bold text-neutral-900">
-            {creationType === "EXPERIENCE" ? "Quelle est la thématique de votre expérience ?" : "Lequel de ces termes décrit le mieux votre logement ?"}
+            {creationType === "EXPERIENCE" ? t.category_exp_title : t.category_listing_title}
           </h1>
-          <p className="text-[18px] text-neutral-500 font-light">Choisissez une catégorie</p>
+          <p className="text-[18px] text-neutral-500 font-light">{t.create_type_subtitle}</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {currentCats.map((item) => (
@@ -230,8 +243,8 @@ const CreateListingPage = () => {
     bodyContent = (
       <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-10">
         <Heading
-          title={creationType === "EXPERIENCE" ? "Où se déroule votre expérience ?" : "Où se situe votre logement ?"}
-          subtitle="Aidez les voyageurs à vous trouver !"
+          title={creationType === "EXPERIENCE" ? t.location_exp_title : t.location_listing_title}
+          subtitle={t.location_exp_subtitle}
         />
         <CitySelect
           value={location}
@@ -245,7 +258,7 @@ const CreateListingPage = () => {
         />
         <Input
           id="address"
-          label="Adresse précise"
+          label={t.address_precise}
           disabled={isLoading}
           register={register}
           errors={errors}
@@ -262,13 +275,13 @@ const CreateListingPage = () => {
     bodyContent = (
       <div className="flex flex-col gap-10 max-w-[800px] mx-auto py-10">
         <Heading
-          title={creationType === "EXPERIENCE" ? "Détails de votre expérience" : "Quelques informations de base"}
-          subtitle={creationType === "EXPERIENCE" ? "Combien de personnes et quelle durée ?" : "De combien d'espace disposez-vous ?"}
+          title={creationType === "EXPERIENCE" ? t.details_exp_title : t.details_listing_title}
+          subtitle={creationType === "EXPERIENCE" ? t.details_exp_subtitle : t.details_listing_subtitle}
         />
         <div className="space-y-6">
           <Counter
-            title={creationType === "EXPERIENCE" ? "Nombre max de participants" : "Voyageurs"}
-            subtitle={creationType === "EXPERIENCE" ? "Combien de personnes peuvent participer ?" : "Capacité d'accueil maximale"}
+            title={creationType === "EXPERIENCE" ? t.max_participants : t.guest_capacity}
+            subtitle={creationType === "EXPERIENCE" ? t.max_participants_subtitle : t.guest_capacity_subtitle}
             value={guestCount}
             onChange={(value) => setCustomValue("guestCount", value)}
           />
@@ -276,15 +289,15 @@ const CreateListingPage = () => {
           {creationType === "LISTING" ? (
             <>
               <Counter
-                title="Chambres"
-                subtitle="Nombre de chambres disponibles"
+                title={t.bedrooms}
+                subtitle={t.bedrooms_subtitle}
                 value={roomCount}
                 onChange={(value) => setCustomValue("roomCount", value)}
               />
               <hr />
               <Counter
-                title="Lits"
-                subtitle="Nombre total de lits"
+                title={t.beds}
+                subtitle={t.beds_subtitle}
                 value={bedCount}
                 onChange={(value) => setCustomValue("bedCount", value)}
               />
@@ -293,7 +306,7 @@ const CreateListingPage = () => {
             <div className="flex flex-col gap-2">
                <div className="flex flex-row items-center gap-2 font-bold text-neutral-800">
                   <TbClock size={20} />
-                  Durée de l&apos;expérience (en minutes)
+                  {t.exp_duration}
                </div>
                <input 
                  type="number" 
@@ -316,13 +329,13 @@ const CreateListingPage = () => {
     bodyContent = (
       <div className="flex flex-col gap-10 max-w-[800px] mx-auto py-10">
         <Heading
-          title="Parlez-nous des salles de bain"
-          subtitle="Combien de salles de bain sont à la disposition des voyageurs ?"
+          title={t.bathrooms_title}
+          subtitle={t.bathrooms_subtitle}
         />
         <div className="space-y-6">
           <Counter
-            title="Salles de bain"
-            subtitle="Complètes ou demi-salles de bain"
+            title={t.bathrooms_count}
+            subtitle={t.bathrooms_count_subtitle}
             value={bathroomCount}
             onChange={(value) => setCustomValue("bathroomCount", value)}
           />
@@ -340,8 +353,8 @@ const CreateListingPage = () => {
     bodyContent = (
       <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-10">
         <Heading
-          title="Quels équipements proposez-vous ?"
-          subtitle="Sélectionnez tout ce qui s'applique."
+          title={t.amenities_title}
+          subtitle={t.amenities_subtitle}
         />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {AMENITIES_LIST.map((item) => {
@@ -369,8 +382,8 @@ const CreateListingPage = () => {
     bodyContent = (
       <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-10">
         <Heading
-          title={creationType === "EXPERIENCE" ? "Ajoutez des photos de votre expérience" : "Ajoutez des photos de votre logement"}
-          subtitle="Montrez aux voyageurs ce qui les attend !"
+          title={creationType === "EXPERIENCE" ? t.images_exp_title : t.images_listing_title}
+          subtitle={t.images_subtitle_expected}
         />
         <ImageUpload
           onChange={(value) => setCustomValue("images", value)}
@@ -384,12 +397,12 @@ const CreateListingPage = () => {
     bodyContent = (
       <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-10">
         <Heading
-          title="Comment décririez-vous votre annonce ?"
-          subtitle="Faites court et efficace !"
+          title={t.desc_title}
+          subtitle={t.desc_subtitle}
         />
         <Input
           id="title"
-          label="Titre"
+          label={t.title_label || "Titre"}
           disabled={isLoading}
           register={register}
           errors={errors}
@@ -398,7 +411,7 @@ const CreateListingPage = () => {
         <hr />
         <Input
           id="description"
-          label="Description"
+          label={t.description_label || "Description"}
           disabled={isLoading}
           register={register}
           errors={errors}
@@ -416,18 +429,18 @@ const CreateListingPage = () => {
     bodyContent = (
       <div className="flex flex-col gap-10 max-w-[800px] mx-auto py-10">
         <Heading
-          title="Définissez vos règles et horaires"
-          subtitle="Que doivent savoir les voyageurs avant de réserver ?"
+          title={t.rules_title}
+          subtitle={t.rules_subtitle}
         />
         
         <div className="flex flex-col gap-8">
           <div className="flex flex-col gap-4">
-            <h3 className="font-bold text-xl text-neutral-900">Règlement intérieur</h3>
+            <h3 className="font-bold text-xl text-neutral-900">{t.house_rules}</h3>
             
             <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
               <div className="flex flex-col">
-                <span className="font-semibold text-lg">Animaux de compagnie</span>
-                <span className="text-neutral-500">Acceptez-vous les animaux ?</span>
+                <span className="font-semibold text-lg">{t.pets}</span>
+                <span className="text-neutral-500">{t.pets_desc}</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" checked={petsAllowed} onChange={(e) => setCustomValue("petsAllowed", e.target.checked)} className="sr-only peer" />
@@ -437,8 +450,8 @@ const CreateListingPage = () => {
 
             <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
               <div className="flex flex-col">
-                <span className="font-semibold text-lg">Fumeurs</span>
-                <span className="text-neutral-500">Est-il autorisé de fumer à l'intérieur ?</span>
+                <span className="font-semibold text-lg">{t.smoking}</span>
+                <span className="text-neutral-500">{t.smoking_desc}</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" checked={smokingAllowed} onChange={(e) => setCustomValue("smokingAllowed", e.target.checked)} className="sr-only peer" />
@@ -448,8 +461,8 @@ const CreateListingPage = () => {
 
             <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
               <div className="flex flex-col">
-                <span className="font-semibold text-lg">Fêtes et événements</span>
-                <span className="text-neutral-500">Acceptez-vous les soirées ?</span>
+                <span className="font-semibold text-lg">{t.parties}</span>
+                <span className="text-neutral-500">{t.parties_desc}</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" checked={partiesAllowed} onChange={(e) => setCustomValue("partiesAllowed", e.target.checked)} className="sr-only peer" />
@@ -461,10 +474,10 @@ const CreateListingPage = () => {
           <hr className="border-neutral-200" />
 
           <div className="flex flex-col gap-4">
-            <h3 className="font-bold text-xl text-neutral-900">Horaires</h3>
+            <h3 className="font-bold text-xl text-neutral-900">{t.schedule}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <label className="font-semibold">Arrivée à partir de :</label>
+                <label className="font-semibold">{t.checkin_from}</label>
                 <select 
                   value={checkInTime} 
                   onChange={(e) => setCustomValue("checkInTime", parseInt(e.target.value))}
@@ -476,7 +489,7 @@ const CreateListingPage = () => {
                 </select>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="font-semibold">Départ avant :</label>
+                <label className="font-semibold">{t.checkout_before}</label>
                 <select 
                   value={checkOutTime} 
                   onChange={(e) => setCustomValue("checkOutTime", parseInt(e.target.value))}
@@ -495,12 +508,32 @@ const CreateListingPage = () => {
     );
   }
 
+  if (step === STEPS.AVAILABILITY) {
+    bodyContent = (
+      <div className="flex flex-col gap-8 max-w-[800px] mx-auto py-10">
+        <Heading
+          title={t.availability_title}
+          subtitle={t.availability_subtitle}
+        />
+        <div className="text-neutral-500 mb-2 font-medium">
+          {t.availability_help}
+        </div>
+        <div className="overflow-x-auto rounded-3xl border border-neutral-200 shadow-sm p-4 bg-white">
+          <Calendar
+            value={dateRange}
+            onChange={(value) => setCustomValue("dateRange", value.selection)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (step === STEPS.PRICE) {
     bodyContent = (
       <div className="flex flex-col gap-10 max-w-[800px] mx-auto py-10">
         <Heading
-          title="Maintenant, fixez votre prix"
-          subtitle={creationType === "EXPERIENCE" ? "Combien facturez-vous par personne ?" : "Combien facturez-vous par nuit ?"}
+          title={t.price_title}
+          subtitle={creationType === "EXPERIENCE" ? t.price_exp_subtitle : t.price_listing_subtitle}
         />
         
         <div className="flex flex-col gap-8">
@@ -519,19 +552,19 @@ const CreateListingPage = () => {
                />
             </div>
             <div className="text-neutral-500 text-lg font-medium mt-6">
-              par {creationType === "EXPERIENCE" ? "personne" : "nuit"}
+              {t.per} {creationType === "EXPERIENCE" ? t.person : t.night}
             </div>
           </div>
 
           {/* Discounts Section (UI Only for now) */}
           {creationType === "LISTING" && (
             <div className="flex flex-col gap-6 mt-4">
-              <h3 className="text-xl font-bold text-neutral-900">Offrez des réductions</h3>
+              <h3 className="text-xl font-bold text-neutral-900">{t.offer_discounts}</h3>
               
               <div className="flex items-start justify-between p-6 border-2 border-neutral-200 rounded-[24px] hover:border-black transition cursor-pointer">
                 <div className="flex flex-col gap-1 pr-6">
-                  <span className="font-bold text-[18px]">Promotion "Nouveau logement"</span>
-                  <span className="text-neutral-500 text-[15px]">Offrez 20 % de réduction à vos 3 premiers voyageurs pour obtenir vos premiers commentaires plus vite.</span>
+                  <span className="font-bold text-[18px]">{t.promo_new}</span>
+                  <span className="text-neutral-500 text-[15px]">{t.promo_new_desc}</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 mt-1">
                   <input type="checkbox" className="sr-only peer" />
@@ -541,8 +574,8 @@ const CreateListingPage = () => {
 
               <div className="flex items-start justify-between p-6 border-2 border-neutral-200 rounded-[24px] hover:border-black transition cursor-pointer">
                 <div className="flex flex-col gap-1 pr-6">
-                  <span className="font-bold text-[18px]">Réduction à la semaine</span>
-                  <span className="text-neutral-500 text-[15px]">Pour les séjours de 7 nuits ou plus. Recommandée : 10 %.</span>
+                  <span className="font-bold text-[18px]">{t.discount_week}</span>
+                  <span className="text-neutral-500 text-[15px]">{t.discount_week_desc}</span>
                 </div>
                 <div className="text-xl font-bold text-neutral-400 bg-neutral-100 px-4 py-2 rounded-xl flex-shrink-0">
                   10 %
@@ -551,8 +584,8 @@ const CreateListingPage = () => {
 
               <div className="flex items-start justify-between p-6 border-2 border-neutral-200 rounded-[24px] hover:border-black transition cursor-pointer">
                 <div className="flex flex-col gap-1 pr-6">
-                  <span className="font-bold text-[18px]">Réduction au mois</span>
-                  <span className="text-neutral-500 text-[15px]">Pour les séjours de 28 nuits ou plus. Recommandée : 20 %.</span>
+                  <span className="font-bold text-[18px]">{t.discount_month}</span>
+                  <span className="text-neutral-500 text-[15px]">{t.discount_month_desc}</span>
                 </div>
                 <div className="text-xl font-bold text-neutral-400 bg-neutral-100 px-4 py-2 rounded-xl flex-shrink-0">
                   20 %
@@ -589,14 +622,14 @@ const CreateListingPage = () => {
                 onClick={() => router.push("/hosting/listings")}
                 className="font-bold text-[16px] text-neutral-500 hover:text-neutral-900 transition"
               >
-                Quitter
+                {t.exit}
               </button>
               <button
                 disabled={!!(step === STEPS.TYPE || (typeParam && step === STEPS.CATEGORY))}
                 onClick={onBack}
                 className="font-bold text-[16px] underline hover:bg-neutral-100 px-4 py-2 rounded-lg transition disabled:opacity-0 disabled:pointer-events-none"
               >
-                Retour
+                {t.back}
               </button>
             </div>
             <button
@@ -604,7 +637,7 @@ const CreateListingPage = () => {
               onClick={handleSubmit(onSubmit)}
               className="bg-neutral-900 hover:bg-black text-white font-semibold text-[16px] px-8 py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {step === STEPS.PRICE ? "Publier" : "Suivant"}
+              {step === STEPS.PRICE ? t.publish : t.next}
             </button>
           </div>
         </div>

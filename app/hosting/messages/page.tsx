@@ -2,9 +2,9 @@ import EmptyState from "@/components/EmptyState";
 import ClientOnly from "@/components/ClientOnly";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import prisma from "@/lib/prismadb";
-import MessagesClient from "./MessagesClient";
+import MessagesClient from "@/app/messages/MessagesClient";
 
-const MessagesPage = async () => {
+const HostMessagesPage = async () => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -17,7 +17,7 @@ const MessagesPage = async () => {
 
   const rawConversations = await prisma.conversation.findMany({
     where: {
-      guestId: currentUser.id
+      hostId: currentUser.id
     },
     include: {
       guest: true,
@@ -57,9 +57,9 @@ const MessagesPage = async () => {
 
   return (
     <ClientOnly>
-      <MessagesClient conversations={safeConversations} currentUser={currentUser} />
+      <MessagesClient conversations={safeConversations} currentUser={currentUser} isHostMode={true} />
     </ClientOnly>
   );
 };
 
-export default MessagesPage;
+export default HostMessagesPage;

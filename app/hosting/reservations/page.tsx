@@ -2,15 +2,20 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 import getReservations from "@/app/actions/getReservations";
 import ClientOnly from "@/components/ClientOnly";
 import EmptyState from "@/components/EmptyState";
+import { cookies } from "next/headers";
+import { translations } from "@/lib/translations";
 import HostReservationsClient from "./HostReservationsClient";
 
 const HostReservationsPage = async () => {
   const currentUser = await getCurrentUser();
+  const cookieStore = await cookies();
+  const language = cookieStore.get("language")?.value || "en";
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   if (!currentUser) {
     return (
       <ClientOnly>
-        <EmptyState title="Non autorisé" subtitle="Veuillez vous connecter" />
+        <EmptyState title={t.unauthorized} subtitle={t.please_login} />
       </ClientOnly>
     );
   }
@@ -22,8 +27,8 @@ const HostReservationsPage = async () => {
     return (
       <ClientOnly>
         <EmptyState
-          title="Aucune réservation"
-          subtitle="Vous n'avez pas encore reçu de demandes de réservation."
+          title={t.host_reservations_none_found}
+          subtitle={t.host_reservations_none_found}
         />
       </ClientOnly>
     );

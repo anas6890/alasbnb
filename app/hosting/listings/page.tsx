@@ -3,17 +3,22 @@ import getListings from "@/app/actions/getListings";
 import getExperiences from "@/app/actions/getExperiences";
 import ClientOnly from "@/components/ClientOnly";
 import EmptyState from "@/components/EmptyState";
+import { cookies } from "next/headers";
+import { translations } from "@/lib/translations";
 import HostListingsClient from "./HostListingsClient";
 
 const HostListingsPage = async () => {
   const currentUser = await getCurrentUser();
+  const cookieStore = await cookies();
+  const language = cookieStore.get("language")?.value || "en";
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   if (!currentUser) {
     return (
       <ClientOnly>
         <EmptyState
-          title="Non autorisé"
-          subtitle="Veuillez vous connecter pour gérer vos annonces."
+          title={t.unauthorized}
+          subtitle={t.please_login}
         />
       </ClientOnly>
     );

@@ -2,19 +2,21 @@
 
 import useLoginModel from "@/hook/useLoginModal";
 import useRegisterModal from "@/hook/useRegisterModal";
-import useRentModal from "@/hook/useRentModal";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-toastify";
 
 import { SafeUser } from "@/types";
 import { signOut, useSession } from "next-auth/react";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
 import { AiOutlineMenu } from "react-icons/ai";
-import { FiUser, FiBriefcase, FiHeart, FiList, FiHome, FiPlusCircle, FiLogOut, FiLogIn, FiUserPlus, FiRepeat, FiCalendar, FiMessageCircle } from "react-icons/fi";
+import { FiUser, FiBriefcase, FiHeart, FiList, FiHome, FiLogOut, FiLogIn, FiUserPlus, FiRepeat, FiCalendar, FiMessageCircle } from "react-icons/fi";
 import Avatar from "../Avatar";
 import MenuItem from "./MenuItem";
+import axios from "axios";
+import { pusherClient } from "@/lib/pusher";
 
 interface Props {
   currentUser?: SafeUser | null;
@@ -32,30 +34,50 @@ function UserMenu({ currentUser }: Props) {
 
   const registerModel = useRegisterModal();
   const loginModel = useLoginModel();
-  const rentModel = useRentModal();
   const [isOpen, setIsOpen] = useState(false);
   const { language } = useLanguage();
-  const t = translations[language] || translations.fr;
+  const t = translations[language] || translations.en;
 
   const finalUser = currentUser || (session?.user as SafeUser);
+
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+
+  useEffect(() => {
+    if (finalUser) {
+      axios.get('/api/messages/unread').then((res) => {
+        setHasUnreadMessages(res.data.unread);
+      });
+
+      if (pusherClient) {
+        pusherClient.subscribe(`user-${finalUser.id}`);
+        
+        const unreadHandler = () => {
+          setHasUnreadMessages(true);
+        };
+        
+        pusherClient.bind("messages:unread", unreadHandler);
+
+        return () => {
+          if (pusherClient) {
+            pusherClient.unsubscribe(`user-${finalUser.id}`);
+            pusherClient.unbind("messages:unread", unreadHandler);
+          }
+        };
+      }
+    }
+  }, [finalUser]);
 
   const toggleOpen = useCallback(() => {
     setIsOpen((value) => !value);
   }, []);
 
-  const navigateTo = useCallback((path: string) => {
+  const navigateTo = useCallback((path: string, showToast?: string) => {
     setIsOpen(false);
+    if (showToast) {
+      toast.success(showToast);
+    }
     router.push(path);
   }, [router]);
-
-  const onRent = useCallback(() => {
-    setIsOpen(false);
-    if (!finalUser) {
-      return loginModel.onOpen();
-    }
-
-    router.push("/hosting/create");
-  }, [finalUser, loginModel, router]);
 
   return (
     <div className="relative">
@@ -63,8 +85,11 @@ function UserMenu({ currentUser }: Props) {
 
         <div
           onClick={toggleOpen}
-          className="p-4 md:py-1 md:px-2 border-[1px] flex flex-row items-center gap-3 rounded-full cursor-pointer hover:shadow-md transition"
+          className="p-4 md:py-1 md:px-2 border-[1px] flex flex-row items-center gap-3 rounded-full cursor-pointer hover:shadow-md transition relative"
         >
+          {hasUnreadMessages && (
+            <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+          )}
           <AiOutlineMenu />
           <div className="hidden md:block">
             {finalUser ? (
@@ -99,48 +124,51 @@ function UserMenu({ currentUser }: Props) {
                 {isHostMode ? (
                   <>
                     <MenuItem
-                      onClick={() => navigateTo("/")}
-                      label="Mode voyageur"
+                      onClick={() => navigateTo("/", t.switched_to_guest)}
+                      label={t.mode_guest}
                       icon={FiRepeat}
                     />
                     <hr className="my-1 border-neutral-100" />
                     <MenuItem
                       onClick={() => navigateTo("/hosting")}
-                      label="Tableau de bord"
+                      label={t.dashboard}
                       icon={FiHome}
                     />
                     <MenuItem
                       onClick={() => navigateTo("/hosting/listings")}
-                      label="Mes annonces"
+                      label={t.my_listings}
                       icon={FiList}
                     />
                     <MenuItem
                       onClick={() => navigateTo("/hosting/reservations")}
-                      label="Réservations reçues"
+                      label={t.received_reservations}
                       icon={FiCalendar}
                     />
                     <MenuItem
-                      onClick={() => navigateTo("/messages")}
-                      label="Messages"
+                      onClick={() => {
+                        setHasUnreadMessages(false);
+                        navigateTo("/hosting/messages");
+                      }}
+                      label={t.messages}
                       icon={FiMessageCircle}
                     />
                   </>
                 ) : (
                   <>
                     <MenuItem
-                      onClick={() => navigateTo("/hosting")}
-                      label="Mode hôte"
+                      onClick={() => navigateTo("/hosting", t.switched_to_host)}
+                      label={t.mode_host}
                       icon={FiRepeat}
                     />
                     <hr className="my-1 border-neutral-100" />
                     <MenuItem
                       onClick={() => navigateTo("/profile")}
-                      label={t.profile || "Profil"}
+                      label={t.profile}
                       icon={FiUser}
                     />
                     <MenuItem
                       onClick={() => navigateTo(isExperienceMode ? "/trips?type=EXPERIENCE" : "/trips?type=LISTING")}
-                      label={t.bookings || "Mes réservations"}
+                      label={t.bookings}
                       icon={FiBriefcase}
                     />
                     <MenuItem
@@ -149,8 +177,11 @@ function UserMenu({ currentUser }: Props) {
                       icon={FiHeart}
                     />
                     <MenuItem
-                      onClick={() => navigateTo("/messages")}
-                      label="Messages"
+                      onClick={() => {
+                        setHasUnreadMessages(false);
+                        navigateTo("/messages");
+                      }}
+                      label={t.messages}
                       icon={FiMessageCircle}
                     />
                   </>

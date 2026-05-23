@@ -4,10 +4,16 @@ import getCurrentUser from "../actions/getCurrentUser";
 import getListings from "../actions/getListings";
 import getReservations from "../actions/getReservations";
 import getExperiences from "../actions/getExperiences";
-import { FiHome, FiDollarSign, FiCalendar, FiStar, FiActivity } from "react-icons/fi";
+import { FiHome, FiDollarSign, FiStar, FiActivity } from "react-icons/fi";
 import Image from "next/image";
+import { cookies } from "next/headers";
+import { translations } from "@/lib/translations";
 
 export default async function HostingPage() {
+  const cookieStore = await cookies();
+  const language = cookieStore.get("language")?.value || "en";
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   const currentUser = await getCurrentUser();
   const [listings, experiences, reservations] = await Promise.all([
     getListings({ userId: currentUser?.id }),
@@ -22,17 +28,17 @@ export default async function HostingPage() {
   const allHostItems = [...listings, ...experiences];
 
   const stats = [
-    { label: "Revenus totaux", value: `€${totalEarnings}`, icon: FiDollarSign, color: "text-green-600", bg: "bg-green-100" },
-    { label: "Annonces actives", value: activeListings, icon: FiHome, color: "text-blue-600", bg: "bg-blue-100" },
-    { label: "Expériences actives", value: activeExperiences, icon: FiActivity, color: "text-teal-600", bg: "bg-teal-100" },
+    { label: t.host_dashboard_total_earnings, value: `€${totalEarnings}`, icon: FiDollarSign, color: "text-green-600", bg: "bg-green-100" },
+    { label: t.host_dashboard_active_listings, value: activeListings, icon: FiHome, color: "text-blue-600", bg: "bg-blue-100" },
+    { label: t.host_dashboard_active_experiences, value: activeExperiences, icon: FiActivity, color: "text-teal-600", bg: "bg-teal-100" },
   ];
 
   return (
     <Container>
       <div className="pt-8 pb-20">
         <Heading
-          title={`Bienvenue, ${currentUser?.firstname}`}
-          subtitle="Voici un aperçu global de votre activité d&apos;hôte."
+          title={`${t.host_dashboard_welcome}${currentUser?.firstname}`}
+          subtitle={t.host_dashboard_subtitle}
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
@@ -56,11 +62,11 @@ export default async function HostingPage() {
           <div className="bg-white p-8 md:p-10 rounded-[40px] border border-neutral-100 shadow-sm">
             <h3 className="text-xl font-black mb-8 text-neutral-900 italic flex items-center gap-3">
               <div className="w-8 h-1 bg-brand-500 rounded-full"></div>
-              Réservations récentes
+              {t.host_dashboard_recent_reservations}
             </h3>
             {reservations.length === 0 ? (
               <div className="py-16 text-center flex flex-col items-center gap-4 bg-neutral-50 rounded-[32px] border-2 border-dashed border-neutral-200">
-                <p className="text-neutral-400 font-bold uppercase tracking-widest text-xs">Aucune réservation pour le moment</p>
+                <p className="text-neutral-400 font-bold uppercase tracking-widest text-xs">{t.host_dashboard_no_reservations}</p>
               </div>
             ) : (
               <div className="space-y-5">
@@ -78,10 +84,10 @@ export default async function HostingPage() {
                           <p className="font-black text-[15px] text-neutral-900 line-clamp-1 group-hover:text-brand-600 transition-colors">{title}</p>
                           <div className="flex items-center gap-2 mt-1">
                               <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${res.type === 'EXPERIENCE' ? 'bg-teal-500 text-white' : 'bg-brand-500 text-white'}`}>
-                                {res.type === 'EXPERIENCE' ? 'Exp' : 'Log'}
+                                {res.type === 'EXPERIENCE' ? t.host_dashboard_listing_type_exp : t.host_dashboard_listing_type_log}
                               </span>
                               <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-tighter">
-                                {new Date(res.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                                {new Date(res.createdAt).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'short' })}
                               </p>
                           </div>
                         </div>
@@ -92,7 +98,7 @@ export default async function HostingPage() {
                             res.status === 'CONFIRMED' ? 'bg-teal-500 text-white' : 
                             res.status === 'PENDING' ? 'bg-amber-500 text-white' : 'bg-neutral-300 text-white'
                         }`}>
-                          {res.status === 'CONFIRMED' ? 'Payé' : res.status === 'PENDING' ? 'Attente' : res.status}
+                          {res.status === 'CONFIRMED' ? t.host_dashboard_paid : res.status === 'PENDING' ? t.host_dashboard_awaiting : res.status}
                         </span>
                       </div>
                     </div>
@@ -110,7 +116,7 @@ export default async function HostingPage() {
             </h3>
              {allHostItems.length === 0 ? (
               <div className="py-16 text-center flex flex-col items-center gap-4 bg-neutral-50 rounded-[32px] border-2 border-dashed border-neutral-200">
-                <p className="text-neutral-400 font-bold uppercase tracking-widest text-xs">Vous n&apos;avez pas encore d&apos;annonces</p>
+                <p className="text-neutral-400 font-bold uppercase tracking-widest text-xs">{t.host_dashboard_no_listings}</p>
               </div>
             ) : (
               <div className="space-y-5">

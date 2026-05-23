@@ -6,6 +6,8 @@ import Logo from "./Logo";
 import UserMenu from "./UserMenu";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 type Props = {
   currentUser?: SafeUser | null;
@@ -13,12 +15,14 @@ type Props = {
 
 function HostNavbar({ currentUser }: Props) {
   const pathname = usePathname();
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   const menuItems = [
-    { label: "Tableau de bord", href: "/hosting" },
-    { label: "Annonces", href: "/hosting/listings" },
-    { label: "Réservations", href: "/hosting/reservations" },
-    { label: "Messages", href: "/messages" },
+    { label: t.dashboard, href: "/hosting" },
+    { label: t.my_listings, href: "/hosting/listings" },
+    { label: t.reservations, href: "/hosting/reservations" },
+    { label: t.messages, href: "/messages" },
   ];
 
   return (
@@ -50,7 +54,7 @@ function HostNavbar({ currentUser }: Props) {
                 href="/"
                 className="hidden md:block text-xs font-bold px-3 py-2 border-[1px] border-neutral-200 rounded-full hover:bg-neutral-100 transition cursor-pointer"
               >
-                Passer en mode voyageur
+                {t.return_guest_mode}
               </Link>
               <UserMenu currentUser={currentUser} />
             </div>

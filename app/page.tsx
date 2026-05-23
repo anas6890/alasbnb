@@ -5,12 +5,18 @@ import ListingCarousel from "@/components/listing/ListingCarousel";
 import getCurrentUser from "./actions/getCurrentUser";
 import getListings, { IListingsParams } from "./actions/getListings";
 import { safeListing } from "@/types";
+import { cookies } from "next/headers";
+import { translations } from "@/lib/translations";
 
 interface HomeProps {
   searchParams: IListingsParams;
 }
 
 export default async function Home(props: { searchParams: Promise<IListingsParams> }) {
+  const cookieStore = await cookies();
+  const language = cookieStore.get("language")?.value || "en";
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   const searchParams = await props.searchParams;
   const [listing, currentUser] = await Promise.all([
     getListings(searchParams),
@@ -20,7 +26,7 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
   if (listing.length === 0) {
     return (
       <ClientOnly>
-        <EmptyState showReset />
+        <EmptyState title={t.no_listing} subtitle={t.no_listing_desc} showReset />
       </ClientOnly>
     );
   }
@@ -28,7 +34,7 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
   // Group listings by city
   const groupedListings: Record<string, safeListing[]> = {};
   listing.forEach((list) => {
-    const city = list.location?.city || "Ailleurs";
+    const city = list.location?.city || t.elsewhere;
     if (!groupedListings[city]) {
       groupedListings[city] = [];
     }
@@ -49,10 +55,10 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
         
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pt-4">
           <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-2xl mb-2 max-w-4xl">
-            L&apos;élégance à chaque destination.
+            {t.home_hero_title}
           </h1>
           <p className="text-sm md:text-lg text-neutral-200 font-light max-w-2xl drop-shadow-md">
-            Découvrez une collection exclusive de propriétés et d&apos;expériences conçues pour les voyageurs les plus exigeants.
+            {t.home_hero_subtitle}
           </p>
         </div>
       </div>
@@ -62,7 +68,7 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
           {cityKeys.map((city) => (
             <ListingCarousel
               key={city}
-              title={`Logements à découvrir - ${city}`}
+              title={`${t.home_explore}${city}`}
               listings={groupedListings[city]}
               currentUser={currentUser}
             />

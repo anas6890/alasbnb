@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { pusherServer } from "@/lib/pusher";
 
 interface IParams {
   conversationId?: string;
@@ -17,6 +18,19 @@ export async function GET(
     const resolvedParams = await params;
     const { conversationId } = resolvedParams;
     if (!conversationId) return NextResponse.json({ error: "ID requis" }, { status: 400 });
+
+    // Mark messages as read
+    await prisma.message.updateMany({
+      where: {
+        conversationId: conversationId,
+        receiverId: currentUser.id,
+        isRead: false
+      },
+      data: {
+        isRead: true,
+        readAt: new Date()
+      }
+    });
 
     const messages = await prisma.message.findMany({
       where: {
@@ -91,6 +105,9 @@ export async function POST(
         data: { updatedAt: new Date() }
       });
   
+      await pusherServer.trigger(`conversation-${conversationId}`, 'messages:new', message);
+      await pusherServer.trigger(`user-${receiverId}`, 'messages:unread', { count: 1 });
+
       return NextResponse.json(message);
   
     } catch (error) {

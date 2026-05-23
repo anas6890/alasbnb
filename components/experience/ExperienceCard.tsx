@@ -8,6 +8,8 @@ import { motion } from "framer-motion";
 import React from "react";
 import { usePrice } from "@/hook/usePrice";
 import HeartButton from "../HeartButton";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 type Props = {
   data: Experience;
@@ -16,6 +18,8 @@ type Props = {
 
 export default function ExperienceCard({ data, currentUser }: Props) {
   const { formattedPrice } = usePrice(data.pricePerPerson);
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   return (
     <div className="col-span-1">
@@ -60,7 +64,7 @@ export default function ExperienceCard({ data, currentUser }: Props) {
                         </span>
                       </>
                     ) : (
-                      "New"
+                      t.new
                     )}
                   </span>
                 </div>
@@ -73,7 +77,7 @@ export default function ExperienceCard({ data, currentUser }: Props) {
                   {formattedPrice}
                 </div>
                 <div className="font-normal text-neutral-500 text-xs">
-                  / person
+                  {`/ ${t.person}`}
                 </div>
               </div>
             </div>

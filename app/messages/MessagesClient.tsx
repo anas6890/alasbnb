@@ -3,26 +3,34 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { SafeConversation, SafeMessage, SafeUser } from "@/types";
 import Avatar from "@/components/Avatar";
 import { pusherClient } from "@/lib/pusher";
 import { useSearchParams } from "next/navigation";
 import { IoChevronBack } from "react-icons/io5";
 
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
+
 interface MessagesClientProps {
   conversations: SafeConversation[];
   currentUser: SafeUser;
+  isHostMode?: boolean;
 }
 
 const MessagesClient: React.FC<MessagesClientProps> = ({
   conversations: initialConversations,
   currentUser,
+  isHostMode = false,
 }) => {
   const searchParams = useSearchParams();
   const selectedId = searchParams?.get("selected");
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
+  const locale = language === "fr" ? fr : enUS;
 
-  const [activeTab, setActiveTab] = useState<"guest" | "host">("guest");
+  const activeTab = isHostMode ? "host" : "guest";
   const [conversations, setConversations] = useState(initialConversations);
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
   
@@ -40,7 +48,6 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
     if (selectedId) {
         const found = initialConversations.find(c => c.id === selectedId);
         if (found) {
-            setActiveTab(found.guestId === currentUser.id ? "guest" : "host");
             setSelectedConversation(found);
             setIsMobileChatOpen(true);
         }
@@ -139,29 +146,9 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
         w-full md:w-1/3 lg:w-1/4 border-r border-neutral-200 bg-white flex-col z-20
       `}>
         <div className="p-6 border-b border-neutral-200 bg-white">
-          <h1 className="text-2xl font-black text-neutral-900 mb-6 italic tracking-tight">Messages</h1>
-          
-          {/* Tabs for Guest/Host */}
-          <div className="flex bg-neutral-100 p-1.5 rounded-2xl shadow-inner border border-neutral-200/50">
-            <button 
-                onClick={() => {
-                    setActiveTab("guest");
-                    setSelectedConversation(null);
-                }}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'guest' ? 'bg-white text-neutral-900 shadow-md transform scale-[1.02]' : 'text-neutral-500 hover:text-neutral-700'}`}
-            >
-                Voyageur
-            </button>
-            <button 
-                onClick={() => {
-                    setActiveTab("host");
-                    setSelectedConversation(null);
-                }}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'host' ? 'bg-white text-neutral-900 shadow-md transform scale-[1.02]' : 'text-neutral-500 hover:text-neutral-700'}`}
-            >
-                Hôte
-            </button>
-          </div>
+          <h1 className="text-2xl font-black text-neutral-900 italic tracking-tight">
+            {activeTab === "host" ? t.messages_host_title : t.messages_guest_title}
+          </h1>
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -174,8 +161,8 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
               </div>
               <p className="text-[15px] font-bold text-neutral-400 max-w-[200px] leading-snug">
                 {activeTab === "guest" 
-                    ? "Aucune discussion avec vos hôtes pour le moment." 
-                    : "Vous n'avez pas encore reçu de demandes."}
+                    ? t.msg_no_hosts 
+                    : t.msg_no_guests}
               </p>
             </div>
           ) : (
@@ -194,15 +181,15 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
                   <div className="flex flex-col flex-1 overflow-hidden">
                     <div className="flex justify-between items-center w-full mb-0.5">
                       <span className="font-black text-[15px] truncate text-neutral-900 group-hover:text-brand-600 transition-colors">
-                        {otherUser?.firstname || "Utilisateur"}
+                        {otherUser?.firstname || t.msg_user}
                       </span>
-                      <span className="text-[10px] font-black uppercase text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-md">
-                        {format(new Date(conv.updatedAt), "d MMM", { locale: fr })}
-                      </span>
+                         <span className="text-[10px] font-black uppercase text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-md">
+                         {format(new Date(conv.updatedAt), "d MMM", { locale })}
+                       </span>
                     </div>
                     {conv.listing && (
                       <span className="text-[12px] text-neutral-500 font-bold truncate italic">
-                        {activeTab === "guest" ? "Concernant : " : "Votre annonce : "}{conv.listing.title}
+                        {activeTab === "guest" ? t.msg_regarding : t.msg_your_listing}{conv.listing.title}
                       </span>
                     )}
                   </div>
@@ -234,7 +221,7 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
                   <h2 className="font-black text-neutral-900 text-lg">{getOtherUser(selectedConversation)?.firstname}</h2>
                   <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.5)]"></div>
-                      <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-tighter">En ligne</p>
+                      <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-tighter">{t.msg_online}</p>
                   </div>
                 </div>
               </div>
@@ -245,7 +232,7 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
                           <img src={selectedConversation.listing.images?.[0]} className="object-cover w-full h-full" alt="listing" />
                       </div>
                       <div className="flex flex-col">
-                          <span className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Annonce</span>
+                          <span className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">{t.msg_listing}</span>
                           <span className="text-xs font-bold text-neutral-800 truncate max-w-[150px]">{selectedConversation.listing.title}</span>
                       </div>
                   </div>
@@ -256,11 +243,11 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
             <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 bg-[#fcfcfc] custom-scrollbar">
               {isLoading ? (
                 <div className="flex justify-center items-center h-full text-neutral-400">
-                  <div className="animate-pulse font-black uppercase tracking-widest text-xs">Chargement de vos échanges...</div>
+                  <div className="animate-pulse font-black uppercase tracking-widest text-xs">{t.msg_loading}</div>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex justify-center items-center h-full text-neutral-400 text-sm italic">
-                  Début de votre conversation avec {getOtherUser(selectedConversation)?.firstname}
+                  {t.msg_start}{getOtherUser(selectedConversation)?.firstname}
                 </div>
               ) : (
                 messages.map((message) => {
@@ -301,7 +288,7 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
               <div className="flex items-end gap-3 bg-neutral-50 p-3 rounded-3xl border-2 border-neutral-100 focus-within:border-neutral-900 focus-within:bg-white transition-all duration-300 shadow-inner">
                 <textarea
                   className="flex-1 bg-transparent outline-none max-h-32 min-h-[44px] resize-none px-4 py-2.5 text-[15px] font-medium placeholder:text-neutral-400"
-                  placeholder="Écrivez votre message ici..."
+                  placeholder={t.msg_write_here}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => {
@@ -331,8 +318,8 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
                 </svg>
             </div>
             <div className="text-center flex flex-col gap-2">
-                <p className="text-xl font-black text-neutral-800 italic">Sélectionnez une discussion</p>
-                <p className="text-sm font-bold text-neutral-400 uppercase tracking-widest">Pour commencer à échanger</p>
+                <p className="text-xl font-black text-neutral-800 italic">{t.msg_select}</p>
+                <p className="text-sm font-bold text-neutral-400 uppercase tracking-widest">{t.msg_to_start}</p>
             </div>
           </div>
         )}

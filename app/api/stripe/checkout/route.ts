@@ -2,6 +2,8 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { cookies } from "next/headers";
+import { translations } from "@/lib/translations";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2022-11-15" as any, // Or latest
@@ -31,6 +33,10 @@ export async function POST(request: Request) {
       return new NextResponse("Reservation not found", { status: 404 });
     }
 
+    const cookieStore = await cookies();
+    const language = cookieStore.get("language")?.value || "en";
+    const t = translations[language as keyof typeof translations] || translations.en;
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
@@ -39,11 +45,11 @@ export async function POST(request: Request) {
             currency: reservation.currency.toLowerCase(),
             product_data: {
               name: reservation.type === 'EXPERIENCE' 
-                ? (reservation.session?.experience?.title || "Expérience") 
-                : (reservation.listingSnapshot?.title || "Hébergement"),
-              description: reservation.type === 'EXPERIENCE' 
-                ? "Réservation d'une expérience" 
-                : `Réservation du ${reservation.checkIn?.toLocaleDateString()} au ${reservation.checkOut?.toLocaleDateString()}`,
+                ? (reservation.session?.experience?.title || t.experiences)
+                : (reservation.listingSnapshot?.title || t.logements),
+              description: reservation.type === 'EXPERIENCE'
+                ? (t.reservation_label || "Reservation")
+                : `Reservation from ${reservation.checkIn?.toLocaleDateString()} to ${reservation.checkOut?.toLocaleDateString()}`,
             },
             unit_amount: reservation.totalPrice * 100, // Stripe expects cents
           },

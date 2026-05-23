@@ -3,6 +3,8 @@ import getExperienceById from "@/app/actions/getExperienceById";
 import getReviews from "@/app/actions/getReviews";
 import ClientOnly from "@/components/ClientOnly";
 import EmptyState from "@/components/EmptyState";
+import { cookies } from "next/headers";
+import { translations } from "@/lib/translations";
 import ExperienceClient from "@/components/experience/ExperienceClient";
 
 interface IParams {
@@ -11,6 +13,10 @@ interface IParams {
 
 const ExperiencePage = async (props: { params: Promise<IParams> }) => {
   const params = await props.params;
+  const cookieStore = await cookies();
+  const language = cookieStore.get("language")?.value || "en";
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   const [experience, currentUser, reviews] = await Promise.all([
     getExperienceById(params),
     getCurrentUser(),
@@ -20,7 +26,11 @@ const ExperiencePage = async (props: { params: Promise<IParams> }) => {
   if (!experience) {
     return (
       <ClientOnly>
-        <EmptyState title="Expérience non trouvée" subtitle="Cette expérience n'existe pas ou a été retirée." />
+        {
+          (() => {
+            return <EmptyState title={t.no_experience} subtitle={t.no_experience_desc} />;
+          })()
+        }
       </ClientOnly>
     );
   }

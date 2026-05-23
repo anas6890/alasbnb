@@ -19,6 +19,8 @@ import ListingReviews from "./listing/ListingReviews";
 import { categories } from "./navbar/Categories";
 import dynamic from "next/dynamic";
 import { usePrice } from "@/hook/usePrice";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 const Map = dynamic(() => import("./Map"), {
   ssr: false,
@@ -125,7 +127,9 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
         cancellationPolicy: listing.cancellationPolicy,
       })
       .then((response) => {
-        toast.success("Réservation créée ! Redirection vers le paiement...");
+        const lang = useLanguage.getState().language || "en";
+        const t = translations[lang as keyof typeof translations] || translations.en;
+        toast.success(t.reservation_created);
         return axios.post("/api/stripe/checkout", {
           reservationId: response.data.id
         });
@@ -134,7 +138,9 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
         window.location.href = response.data.url;
       })
       .catch(() => {
-        toast.error("Une erreur est survenue");
+        const lang = useLanguage.getState().language || "en";
+        const t = translations[lang as keyof typeof translations] || translations.en;
+        toast.error(t.error_occurred);
       })
       .finally(() => {
         setIsLoading(false);

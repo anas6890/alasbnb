@@ -28,7 +28,7 @@ function Navbar({ currentUser }: Props) {
   const languageModal = useLanguageModal();
   const searchModal = useSearchModal();
   const { language } = useLanguage();
-  const t = translations[language] || translations.fr;
+  const t = translations[language] || translations.en;
   const pathname = usePathname();
   const isExperiencePage = pathname === "/experiences" || pathname?.startsWith("/experiences/");
   const mode = isExperiencePage ? "experiences" : "logements";
@@ -111,7 +111,7 @@ function Navbar({ currentUser }: Props) {
                     <source src="https://a0.muscache.com/videos/search-bar-icons/webm/house-selected.webm#t=0.001" type="video/webm" />
                     <source src="https://a0.muscache.com/videos/search-bar-icons/hevc/house-selected.mov#t=0.001" type="video/mp4" />
                   </video>
-                  <span>Logements</span>
+                  <span>{t.logements}</span>
                 </div>
 
                 {/* Expériences */}
@@ -135,7 +135,7 @@ function Navbar({ currentUser }: Props) {
                     <source src="https://a0.muscache.com/videos/search-bar-icons/webm/balloon-twirl.webm" type="video/webm" />
                     <source src="https://a0.muscache.com/videos/search-bar-icons/hevc/balloon-twirl.mov" type="video/mp4" />
                   </video>
-                  <span>Expériences</span>
+                  <span>{t.experiences}</span>
                 </div>
 
               </div>
@@ -151,7 +151,7 @@ function Navbar({ currentUser }: Props) {
                 onClick={onRent}
                 className="hidden md:block text-[13px] font-bold py-3 px-5 rounded-full hover:bg-neutral-100 transition-all duration-300 cursor-pointer text-neutral-800"
               >
-                {mode === "experiences" ? "Proposer une expérience" : "Mettre mon logement sur AlasBnB"}
+                {mode === "experiences" ? t.host_experience : t.host_listing}
               </div>
               <div
                 onClick={languageModal.onOpen}

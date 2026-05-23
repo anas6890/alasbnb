@@ -37,7 +37,8 @@ function ListingCard({
   isExperience,
 }: Props) {
   const { language } = useLanguage();
-  const t = translations[language] || translations.fr;
+  const t = translations[language] || translations.en;
+  const locale = language === "fr" ? fr : enUS;
   const router = useRouter();
 
   const handleCancel = useCallback(
@@ -114,10 +115,10 @@ function ListingCard({
     const start = new Date(reservation.checkIn);
     const end = new Date(reservation.checkOut);
 
-    return `${format(start, "PP")} - ${format(end, "PP")}`;
+    return `${format(start, "PP", { locale })} - ${format(end, "PP", { locale })}`;
   }, [reservation]);
 
-  const { city, country } = reservation?.listing?.location || data?.location || { city: "", country: "" };
+  const { city } = reservation?.listing?.location || data?.location || { city: "", country: "" };
   const type = reservation?.listing?.type || data?.type || "";
 
   const renderStatusBadge = () => {
@@ -132,13 +133,13 @@ function ListingCard({
 
     switch (status) {
       case "PENDING":
-        return <div className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">En attente</div>;
+        return <div className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">{t.status_pending}</div>;
       case "CONFIRMED":
-        return <div className="absolute top-3 left-3 bg-teal-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">Confirmée</div>;
+        return <div className="absolute top-3 left-3 bg-teal-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">{t.status_confirmed}</div>;
       case "CANCELLED":
-        return <div className="absolute top-3 left-3 bg-rose-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">Annulée</div>;
+        return <div className="absolute top-3 left-3 bg-rose-500 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">{t.status_cancelled}</div>;
       case "COMPLETED":
-        return <div className="absolute top-3 left-3 bg-neutral-600 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">Terminée</div>;
+        return <div className="absolute top-3 left-3 bg-neutral-600 text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded-md shadow-sm">{t.status_completed}</div>;
       default:
         return null;
     }
@@ -177,22 +178,22 @@ function ListingCard({
           
           <div className="flex flex-col gap-0.5 mt-2">
             <div className="text-[15px] text-neutral-800 font-normal truncate">
-              <span className="capitalize">{type}</span> · {city}
+              <span className="capitalize">{type === 'EXPERIENCE' ? t.experiences : (type === 'LISTING' ? t.logements : type)}</span> {city && `- ${city}`}
             </div>
             
             <div className="text-[15px] text-neutral-500 font-normal truncate">
-              {reservationDate || availabilityDate || (language === "fr" ? "Dates flexibles" : "Flexible dates")}
+              {reservationDate || availabilityDate || t.dates_flexible}
             </div>
 
             <div className="flex flex-row items-center mt-1 text-[15px] text-neutral-500">
               <span className="font-semibold text-neutral-800">{formattedPrice}</span>
               <span className="ml-1">
-                {reservation ? t.total : `pour 1 ${t.night.toLowerCase()}`}
+                {reservation ? t.total : `${t.for_one} ${isExperience ? t.person : t.night}`}
               </span>
-              <span className="mx-1.5">·</span>
+              <span className="mx-1.5"></span>
               <span className="flex items-center gap-1">
-                <span className="text-[12px] mt-0.5">★</span>
-                <span>{data.avgRating > 0 ? data.avgRating.toFixed(2) : (language === "fr" ? "Nouveau" : "New")}</span>
+                <span className="text-[12px] mt-0.5">˜…</span>
+                <span>{data.avgRating > 0 ? data.avgRating.toFixed(2) : t.new}</span>
               </span>
             </div>
           </div>

@@ -22,7 +22,7 @@ function Search({ mode = "logements", compact = false }: Props) {
   const searchModal = useSearchModal();
   const params = useSearchParams();
   const { language } = useLanguage();
-  const t = translations[language] || translations.fr;
+  const t = translations[language] || translations.en;
   const isFr = language === "fr";
   const isExp = mode === "experiences";
 
@@ -137,7 +137,7 @@ function Search({ mode = "logements", compact = false }: Props) {
             className="h-[40px] px-5 bg-gradient-to-r from-brand-500 to-emerald-500 rounded-full text-white flex items-center justify-center gap-2 hover:from-brand-600 hover:to-emerald-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 cursor-pointer ml-auto"
           >
             <BiSearch size={20} />
-            <span className="font-semibold text-sm hidden lg:block">Rechercher</span>
+            <span className="font-semibold text-sm hidden lg:block">{t.search}</span>
           </div>
         </div>
 
