@@ -8,12 +8,14 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 type Props = {
   listingId: string;
   currentUser?: SafeUser | null;
+  isExperience?: boolean;
 };
 
-function HeartButton({ listingId, currentUser }: Props) {
+function HeartButton({ listingId, currentUser, isExperience }: Props) {
   const { hasFavorited, toggleFavorite } = useFavorite({
     listingId,
     currentUser,
+    isExperience,
   });
 
   return (

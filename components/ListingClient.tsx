@@ -1,6 +1,6 @@
 "use client";
 
-import useLoginModel from "@/hook/useLoginModal";
+import useLoginModal from "@/hook/useLoginModal";
 import { SafeReservation, SafeUser, safeListing } from "@/types";
 import axios from "axios";
 import { differenceInCalendarDays, eachDayOfInterval, format } from "date-fns";
@@ -18,6 +18,7 @@ import ListingReservation from "./listing/ListingReservation";
 import ListingReviews from "./listing/ListingReviews";
 import { categories } from "./navbar/Categories";
 import dynamic from "next/dynamic";
+import { usePrice } from "@/hook/usePrice";
 
 const Map = dynamic(() => import("./Map"), {
   ssr: false,
@@ -40,16 +41,49 @@ type Props = {
 
 function ListingClient({ reservations = [], reviews = [], listing, currentUser }: Props) {
   const router = useRouter();
-  const loginModal = useLoginModel();
+  const loginModal = useLoginModal();
 
-  const { averageRating, totalReviews } = useMemo(() => {
+  const dynamicStats = useMemo(() => {
     if (!reviews || reviews.length === 0) {
-      return { averageRating: 5.0, totalReviews: 0 };
+      return { 
+        avgRating: 0, 
+        totalReviews: 0,
+        avgRatingCleanliness: 0,
+        avgRatingAccuracy: 0,
+        avgRatingCheckin: 0,
+        avgRatingCommunication: 0,
+        avgRatingLocation: 0,
+        avgRatingValue: 0
+      };
     }
-    const total = reviews.reduce((sum, review) => sum + Number(review.avgRating || 5), 0);
-    const avg = total / reviews.length;
-    return { averageRating: parseFloat(avg.toFixed(1)), totalReviews: reviews.length };
+
+    const count = reviews.length;
+    const totals = reviews.reduce((acc, r) => ({
+      avgRating: acc.avgRating + (r.avgRating || 0),
+      cleanliness: acc.cleanliness + (r.ratingCleanliness || 5),
+      accuracy: acc.accuracy + (r.ratingAccuracy || 5),
+      checkin: acc.checkin + (r.ratingCheckin || 5),
+      communication: acc.communication + (r.ratingCommunication || 5),
+      location: acc.location + (r.ratingLocation || 5),
+      value: acc.value + (r.ratingValue || 5),
+    }), { avgRating: 0, cleanliness: 0, accuracy: 0, checkin: 0, communication: 0, location: 0, value: 0 });
+
+    return {
+      avgRating: parseFloat((totals.avgRating / count).toFixed(2)),
+      totalReviews: count,
+      avgRatingCleanliness: parseFloat((totals.cleanliness / count).toFixed(1)),
+      avgRatingAccuracy: parseFloat((totals.accuracy / count).toFixed(1)),
+      avgRatingCheckin: parseFloat((totals.checkin / count).toFixed(1)),
+      avgRatingCommunication: parseFloat((totals.communication / count).toFixed(1)),
+      avgRatingLocation: parseFloat((totals.location / count).toFixed(1)),
+      avgRatingValue: parseFloat((totals.value / count).toFixed(1)),
+    };
   }, [reviews]);
+
+  const listingWithDynamicStats = useMemo(() => ({
+    ...listing,
+    ...dynamicStats
+  }), [listing, dynamicStats]);
 
   const disableDates = useMemo(() => {
     let dates: Date[] = [];
@@ -71,6 +105,9 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
   const [isLoading, setIsLoading] = useState(false);
   const [totalPrice, setTotalPrice] = useState(listing.pricePerNight);
   const [dateRange, setDateRange] = useState<Range>(initialDateRange);
+
+  const { formattedPrice: formattedPricePerNight } = usePrice(listing.pricePerNight);
+  const { formattedPrice: formattedTotalPrice } = usePrice(totalPrice);
 
   const onCreateReservation = useCallback(() => {
     if (!currentUser) {
@@ -148,8 +185,8 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
               lat={listing.location.lat}
               lng={listing.location.lng}
               locationValue={listing.location.country}
-              avgRating={averageRating}
-              totalReviews={totalReviews}
+              avgRating={dynamicStats.avgRating}
+              totalReviews={dynamicStats.totalReviews}
               amenities={listing.amenities}
               location={listing.location}
               listingId={listing.id}
@@ -158,6 +195,8 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
               <ListingReservation
                 price={listing.pricePerNight}
                 totalPrice={totalPrice}
+                formattedPrice={formattedPricePerNight}
+                formattedTotalPrice={formattedTotalPrice}
                 onChangeDate={(value) => setDateRange(value)}
                 dateRange={dateRange}
                 onSubmit={onCreateReservation}
@@ -170,7 +209,7 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
 
           {/* Reviews / Comments Section */}
           <div className="border-t border-neutral-200 mt-8">
-            <ListingReviews reviews={reviews} listing={listing} />
+            <ListingReviews reviews={reviews} listing={listingWithDynamicStats} />
           </div>
 
         </div>

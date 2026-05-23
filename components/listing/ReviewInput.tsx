@@ -5,10 +5,12 @@ import { useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { TbStarFilled, TbStar, TbLoader2 } from "react-icons/tb";
-import { FiSend } from "react-icons/fi";
+import { FiSend, FiX } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 
 interface ReviewInputProps {
   reservationId: string;
+  onCancel?: () => void;
 }
 
 const CATEGORIES = [
@@ -20,7 +22,8 @@ const CATEGORIES = [
   { id: "ratingValue", label: "Qualité-prix" },
 ];
 
-const ReviewInput: React.FC<ReviewInputProps> = ({ reservationId }) => {
+const ReviewInput: React.FC<ReviewInputProps> = ({ reservationId, onCancel }) => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [hoverRatings, setHoverRatings] = useState<Record<string, number>>({});
 
@@ -48,115 +51,117 @@ const ReviewInput: React.FC<ReviewInputProps> = ({ reservationId }) => {
 
   const avgRating = useMemo(() => {
     const total = CATEGORIES.reduce((sum, cat) => sum + (formValues[cat.id] || 5), 0);
-    return (total / CATEGORIES.length).toFixed(1);
+    return parseFloat((total / CATEGORIES.length).toFixed(1));
   }, [formValues]);
 
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
-    if (!data.comment.trim()) {
-      toast.error("Veuillez laisser un commentaire.");
-      return;
-    }
-
     setIsLoading(true);
 
     axios
       .post("/api/reviews", {
+        ...data,
+        avgRating,
         reservationId,
-        ratingCleanliness: data.ratingCleanliness,
-        ratingAccuracy: data.ratingAccuracy,
-        ratingCheckin: data.ratingCheckin,
-        ratingCommunication: data.ratingCommunication,
-        ratingLocation: data.ratingLocation,
-        ratingValue: data.ratingValue,
-        comment: data.comment,
       })
       .then(() => {
-        toast.success("Avis envoyé avec succès !");
+        toast.success("Avis publié avec succès !");
+        router.refresh();
         reset();
+        if (onCancel) onCancel();
       })
       .catch(() => {
-        toast.error("Une erreur s'est produite.");
+        toast.error("Erreur lors de la publication de l'avis");
       })
       .finally(() => {
         setIsLoading(false);
       });
   };
 
+  const handleStarClick = (categoryId: string, rating: number) => {
+    setValue(categoryId, rating);
+  };
+
   return (
-    <div 
-      className="mt-4 flex flex-col gap-6 bg-white border border-neutral-200 p-6 md:p-8 rounded-[32px] shadow-[0_10px_40px_rgba(0,0,0,0.04)]" 
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="bg-white border-2 border-neutral-800 rounded-2xl p-6 shadow-xl flex flex-col gap-6 relative animate-in fade-in zoom-in duration-300">
+      <div className="flex justify-between items-start">
         <div>
-          <h4 className="text-xl font-bold text-neutral-900 tracking-tight">Évaluer votre séjour</h4>
-          <p className="text-sm font-medium text-neutral-500 mt-1">
-            Partagez votre expérience
-          </p>
+          <h3 className="text-xl font-bold text-neutral-900">Comment s'est passé votre séjour ?</h3>
+          <p className="text-sm text-neutral-500 font-medium">Votre avis aide la communauté et l'hôte à s'améliorer.</p>
         </div>
-        <div className="bg-neutral-900 text-white px-4 py-2 rounded-xl flex flex-col items-center justify-center self-start sm:self-auto">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-300">Global</span>
-          <span className="text-lg font-bold leading-none">{avgRating}</span>
-        </div>
+        {onCancel && (
+            <button 
+                onClick={onCancel}
+                className="p-2 hover:bg-neutral-100 rounded-full transition text-neutral-400 hover:text-neutral-900"
+            >
+                <FiX size={20} />
+            </button>
+        )}
       </div>
 
-      <div className="flex flex-col gap-y-5 border-y border-neutral-100 py-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
         {CATEGORIES.map((cat) => (
-          <div key={cat.id} className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-2">
-            <label className="text-sm font-medium text-neutral-800">{cat.label}</label>
-            <div className="flex items-center gap-1 cursor-pointer">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <div
-                  key={star}
-                  onMouseEnter={() => setHoverRatings(prev => ({ ...prev, [cat.id]: star }))}
-                  onMouseLeave={() => setHoverRatings(prev => ({ ...prev, [cat.id]: 0 }))}
-                  onClick={() => setValue(cat.id, star)}
-                  className="p-0.5 transition-transform hover:scale-110"
-                >
-                  {(hoverRatings[cat.id] || formValues[cat.id] || 5) >= star ? (
-                    <TbStarFilled size={24} className="text-neutral-900 drop-shadow-sm transition-colors" />
-                  ) : (
-                    <TbStar size={24} className="text-neutral-200 transition-colors" />
-                  )}
-                </div>
-              ))}
+          <div key={cat.id} className="flex items-center justify-between group">
+            <span className="text-[15px] font-medium text-neutral-700 group-hover:text-neutral-900 transition">{cat.label}</span>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => {
+                const currentRating = formValues[cat.id] || 5;
+                const hoverRating = hoverRatings[cat.id];
+                const isActive = star <= (hoverRating || currentRating);
+
+                return (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => handleStarClick(cat.id, star)}
+                    onMouseEnter={() => setHoverRatings(prev => ({ ...prev, [cat.id]: star }))}
+                    onMouseLeave={() => setHoverRatings(prev => ({ ...prev, [cat.id]: 0 }))}
+                    className="p-0.5 transition-transform hover:scale-125 active:scale-90"
+                  >
+                    {isActive ? (
+                      <TbStarFilled size={18} className="text-neutral-900" />
+                    ) : (
+                      <TbStar size={18} className="text-neutral-300" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-end">
-          <label className="text-[15px] font-bold text-neutral-900">Votre commentaire</label>
-          <span className="text-[12px] font-medium text-neutral-400">{comment?.length || 0} / 500</span>
+        <div className="flex justify-between items-center">
+            <label className="text-[15px] font-bold text-neutral-800">Votre commentaire</label>
+            <span className="text-[11px] font-bold px-2 py-1 bg-neutral-900 text-white rounded-md uppercase tracking-wider">Note : {avgRating}/5</span>
         </div>
         <textarea
-          {...register("comment", { required: true, maxLength: 500 })}
-          disabled={isLoading}
-          placeholder="Comment s'est passé votre séjour ? Qu'avez-vous particulièrement apprécié ?"
-          className={`
-            w-full p-5 bg-neutral-50/50 border rounded-[20px] resize-none min-h-[140px] transition-all
-            focus:bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900
-            text-[15px] font-medium text-neutral-800 placeholder-neutral-400
-            ${errors.comment ? 'border-rose-500 bg-rose-50' : 'border-neutral-200'}
-            ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-          `}
+          {...register("comment", { required: true })}
+          placeholder="Dites-nous en plus sur votre expérience..."
+          className="w-full min-h-[120px] p-4 rounded-xl border-2 border-neutral-200 focus:border-neutral-800 outline-none transition resize-none text-[15px] placeholder:text-neutral-400"
         />
       </div>
 
-      <button
-        onClick={handleSubmit(onSubmit)}
-        disabled={isLoading || !comment?.trim()}
-        className="mt-2 w-full bg-neutral-900 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-neutral-800 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 shadow-md text-[16px]"
-      >
-        {isLoading ? (
-          <TbLoader2 size={24} className="animate-spin" />
-        ) : (
-          <>
-            <FiSend size={20} /> Envoyer l'avis public
-          </>
+      <div className="flex items-center gap-3 w-full pt-2">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex-1 py-3.5 px-4 border-2 border-neutral-200 rounded-xl font-bold text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-all disabled:opacity-50"
+          >
+            Annuler
+          </button>
         )}
-      </button>
+        <button
+          onClick={handleSubmit(onSubmit)}
+          disabled={isLoading || !comment.trim()}
+          className="flex-[2] bg-neutral-900 text-white py-3.5 px-4 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]"
+        >
+          {isLoading ? <TbLoader2 className="animate-spin" size={20} /> : <FiSend size={18} />}
+          Publier mon avis
+        </button>
+      </div>
     </div>
   );
 };

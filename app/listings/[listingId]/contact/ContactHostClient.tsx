@@ -35,7 +35,7 @@ const ContactHostClient: React.FC<ContactHostClientProps> = ({
       });
 
       toast.success("Message envoyé !");
-      router.push(`/messages/${response.data.id}`);
+      router.push(`/messages`);
     } catch (error) {
       toast.error("Une erreur est survenue.");
       setIsLoading(false);

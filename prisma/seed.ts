@@ -1,256 +1,181 @@
-import { PrismaClient, ListingStatus, CancellationPolicy, ReservationType, ReservationStatus } from "@prisma/client";
+import { PrismaClient, ListingStatus, CancellationPolicy, ReservationType, ReservationStatus, NotificationType } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { addDays, subDays } from "date-fns";
 
 const prisma = new PrismaClient();
 
-const images = [
-  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1200&q=80"
+const CITIES = ["Paris", "Lyon", "Marseille", "Bordeaux", "Lille", "Nice", "Annecy", "Strasbourg", "Biarritz", "Chamonix"];
+const CATEGORIES = ["Iconique", "Piscines", "Campagne", "Design", "Bord de mer", "Artique", "Châteaux", "Luxe", "Cabanes", "Villes"];
+const EXP_CATEGORIES = ["Cuisine", "Art et culture", "Nature et plein air", "Sports", "Bien-être", "Vie nocturne"];
+
+const IMAGES = [
+  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688",
+  "https://images.unsplash.com/photo-1493809842364-78817add7ffb",
+  "https://images.unsplash.com/photo-1505691938895-1758d7feb511",
+  "https://images.unsplash.com/photo-1484154218962-a197022b5858",
+  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
+  "https://images.unsplash.com/photo-1613977257363-707ba9348227",
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
+  "https://images.unsplash.com/photo-1502672023488-70e25813eb80",
+  "https://images.unsplash.com/photo-1510798831971-661eb04b3739",
+  "https://images.unsplash.com/photo-1449156059431-787c5bc6173a",
+  "https://images.unsplash.com/photo-1494526585095-c41746248156",
+  "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09",
+  "https://images.unsplash.com/photo-1518780664697-55e3ad937233",
+  "https://images.unsplash.com/photo-1513584684374-8bdb74ec9f88"
+];
+
+const COMMENTS = [
+  "Incroyable séjour ! L'accueil était parfait et le lieu encore plus beau que sur les photos.",
+  "Très bien situé, calme et propre. Je reviendrai sans hésiter.",
+  "Une expérience unique que je recommande à tout le monde.",
+  "Hôte très réactif et arrangeant. Le logement est spacieux et bien équipé.",
+  "Un peu bruyant le samedi soir mais sinon parfait.",
+  "Décoration magnifique et literie très confortable.",
+  "Le guide était passionné et nous a fait découvrir des endroits secrets.",
+  "Rapport qualité-prix excellent. Une vraie perle rare !"
 ];
 
 async function main() {
-  console.log("🌱 Début du nettoyage de la base de données...");
+  console.log("🔥 Réinitialisation Complète et Seed Massive...");
 
-  // Delete all existing data
+  // Reset
+  await prisma.notification.deleteMany();
+  await prisma.message.deleteMany();
+  await prisma.conversation.deleteMany();
   await prisma.review.deleteMany();
   await prisma.reservation.deleteMany();
   await prisma.experienceSession.deleteMany();
   await prisma.experience.deleteMany();
   await prisma.listingAvailability.deleteMany();
   await prisma.listing.deleteMany();
-  await prisma.account.deleteMany();
   await prisma.user.deleteMany();
 
-  console.log("🧹 Base de données nettoyée.");
+  const hashedPass = await bcrypt.hash("testtest", 10);
 
-  // Create users
-  const hashedPassword = await bcrypt.hash("password123", 10);
-
-  const host = await prisma.user.create({
+  // 1. Create Users
+  const testUser = await prisma.user.create({
     data: {
-      email: "host@alasbnb.com",
-      firstname: "Elena",
-      lastname: "Host",
-      hashedPassword,
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
-      bio: "Superhost passionate about sharing beautiful spaces.",
-      isVerified: true
+      email: "test@gmail.com",
+      firstname: "Admin",
+      lastname: "Test",
+      hashedPassword: hashedPass,
+      image: "https://i.pravatar.cc/150?u=test",
+      isVerified: true,
+      bio: "Voyageur fréquent."
     }
   });
 
-  const guest = await prisma.user.create({
-    data: {
-      email: "guest@alasbnb.com",
-      firstname: "Marc",
-      lastname: "Voyageur",
-      hashedPassword,
-      image: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=200&q=80"
-    }
-  });
-
-  console.log("👤 Utilisateurs créés.");
-
-  // Create listings for Madrid
-  const madridListings = [
-    {
-      title: "Appartement - Ventas",
-      type: "apartment",
-      price: 213,
-      rating: 4.76,
-      images: [images[4], images[3], images[2]]
-    },
-    {
-      title: "Appartement - Salamanque",
-      type: "apartment",
-      price: 230,
-      rating: 4.84,
-      images: [images[1], images[5], images[0]]
-    },
-    {
-      title: "Appartement - Tetuán",
-      type: "apartment",
-      price: 340,
-      rating: 4.89,
-      images: [images[5], images[2], images[1]]
-    },
-    {
-      title: "Appartement - Latina",
-      type: "apartment",
-      price: 300,
-      rating: 4.80,
-      images: [images[3], images[0], images[4]]
-    },
-    {
-      title: "Appartement - Gran Vía",
-      type: "apartment",
-      price: 247,
-      rating: 4.77,
-      images: [images[2], images[1], images[5]]
-    }
-  ];
-
-  for (const listing of madridListings) {
-    const createdListing = await prisma.listing.create({
-      data: {
-        hostId: host.id,
-        status: ListingStatus.PUBLISHED,
-        title: listing.title,
-        description: "Un superbe logement au cœur de Madrid. Idéal pour explorer la ville.",
-        type: listing.type,
-        pricePerNight: listing.price,
-        maxGuests: 4,
-        bedrooms: 2,
-        beds: 2,
-        bathrooms: 1,
-        images: listing.images,
-        amenities: ["Wifi", "Kitchen", "AC", "TV"],
-        location: {
-          city: "Madrid",
-          country: "ES",
-          lat: 40.4168,
-          lng: -3.7038
-        },
-        avgRating: listing.rating,
-        totalReviews: Math.floor(Math.random() * 50) + 10
-      }
-    });
-
-    const reservation = await prisma.reservation.create({
-      data: {
-        type: ReservationType.LISTING,
-        userId: guest.id,
-        listingId: createdListing.id,
-        totalPrice: createdListing.pricePerNight * 2,
-        status: ReservationStatus.COMPLETED
-      }
-    });
-
-    await prisma.review.create({
-      data: {
-        authorId: guest.id,
-        reservationId: reservation.id,
-        listingId: createdListing.id,
-        avgRating: listing.rating,
-        comment: "Séjour fantastique à Madrid, hôte très accueillant !"
-      }
-    });
+  const hosts = [];
+  for (let i = 0; i < 15; i++) {
+      const h = await prisma.user.create({
+          data: {
+              email: `user${i}@alasbnb.fr`,
+              firstname: ["Marc", "Sophie", "Jean", "Julie", "Thomas", "Lea", "Antoine", "Sarah", "Pierre", "Camille", "Nicolas", "Ines", "Lucas", "Eva", "Maxime"][i],
+              lastname: "D.",
+              hashedPassword: hashedPass,
+              isVerified: true,
+              image: `https://i.pravatar.cc/150?u=host${i}`,
+              bio: "Hôte Alasbnb."
+          }
+      });
+      hosts.push(h);
   }
 
-  // Create listings for Marrakech
-  const marrakechListings = [
-    {
-      title: "Villa - Marrakech",
-      type: "villa",
-      price: 700,
-      rating: 5.0,
-      images: [images[0], images[2], images[3]]
-    },
-    {
-      title: "Hébergement - Marrakech",
-      type: "house",
-      price: 678,
-      rating: 4.89,
-      images: [images[1], images[0], images[4]]
-    },
-    {
-      title: "Appartement - Marrakech",
-      type: "apartment",
-      price: 97,
-      rating: 4.78,
-      images: [images[2], images[5], images[1]]
-    },
-    {
-      title: "Appartement - Izdihar",
-      type: "apartment",
-      price: 71,
-      rating: 4.85,
-      images: [images[3], images[4], images[2]]
-    },
-    {
-      title: "Villa - Palmeraie",
-      type: "villa",
-      price: 642,
-      rating: 5.0,
-      images: [images[4], images[3], images[0]]
-    }
-  ];
-
-  for (const listing of marrakechListings) {
-    const createdListing = await prisma.listing.create({
+  // 2. Listings and Availabilities
+  console.log("🏠 Logements et Calendriers...");
+  const dbListings = [];
+  for (let i = 0; i < 125; i++) {
+    const host = hosts[i % hosts.length];
+    const city = CITIES[i % CITIES.length];
+    const category = CATEGORIES[i % CATEGORIES.length];
+    
+    const l = await prisma.listing.create({
       data: {
         hostId: host.id,
-        status: ListingStatus.PUBLISHED,
-        title: listing.title,
-        description: "Un magnifique espace à Marrakech. Profitez du soleil et de la culture locale.",
-        type: listing.type,
-        pricePerNight: listing.price,
-        maxGuests: 6,
-        bedrooms: 3,
-        beds: 3,
-        bathrooms: 2,
-        images: listing.images,
-        amenities: ["Wifi", "Pool", "AC", "TV", "Breakfast"],
+        title: `${category} à ${city} #${i+1}`,
+        description: "Logement exceptionnel.",
+        type: category,
+        pricePerNight: Math.floor(Math.random() * 400) + 60,
+        maxGuests: 4, bedrooms: 2, beds: 2, bathrooms: 1,
+        images: [IMAGES[i % IMAGES.length] + "?w=1200", IMAGES[(i+1)%IMAGES.length] + "?w=1200"],
         location: {
-          city: "Marrakech",
-          country: "MA",
-          lat: 31.6295,
-          lng: -7.9811
+            country: "France", city, state: city, lat: 48, lng: 2, zipCode: "75000"
         },
-        avgRating: listing.rating,
-        totalReviews: Math.floor(Math.random() * 100) + 20
+        status: ListingStatus.PUBLISHED,
+        amenities: ["Wifi", "Cuisine"]
       }
     });
+    dbListings.push(l);
 
-    const reservation = await prisma.reservation.create({
-      data: {
-        type: ReservationType.LISTING,
-        userId: guest.id,
-        listingId: createdListing.id,
-        totalPrice: createdListing.pricePerNight * 2,
-        status: ReservationStatus.COMPLETED
-      }
-    });
-
-    await prisma.review.create({
-      data: {
-        authorId: guest.id,
-        reservationId: reservation.id,
-        listingId: createdListing.id,
-        avgRating: listing.rating,
-        comment: "Endroit magique, parfait pour des vacances en famille."
-      }
-    });
+    // Generate 30 days of availability for each listing
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const availabilities = Array.from({ length: 30 }).map((_, day) => ({
+        listingId: l.id,
+        date: addDays(today, day),
+        isAvailable: true
+    }));
+    await prisma.listingAvailability.createMany({ data: availabilities });
   }
-  
-  // Create experiences
-  await prisma.experience.create({
-    data: {
-      hostId: host.id,
-      status: ListingStatus.PUBLISHED,
-      title: "Cours de cuisine marocaine authentique",
-      category: "cuisine",
-      description: "Apprenez à cuisiner un tajine avec une famille locale.",
-      durationMinutes: 180,
-      pricePerPerson: 45,
-      maxGroupSize: 10,
-      images: [images[5]],
-      location: {
-        city: "Marrakech",
-        country: "MA",
-        lat: 31.6295,
-        lng: -7.9811
-      },
-      avgRating: 4.9,
-      totalReviews: 120
+
+  // 3. Experiences and Sessions
+  console.log("🌟 Expériences et Sessions...");
+  const dbExperiences = [];
+  for (let i = 0; i < 120; i++) {
+    const host = hosts[(i+2) % hosts.length];
+    const city = CITIES[i % CITIES.length];
+    const category = EXP_CATEGORIES[i % EXP_CATEGORIES.length];
+    
+    const e = await prisma.experience.create({
+        data: {
+            hostId: host.id,
+            status: ListingStatus.PUBLISHED,
+            title: `Activité ${category} - ${city}`,
+            category,
+            description: "Moment unique.",
+            durationMinutes: 120,
+            pricePerPerson: 50,
+            maxGroupSize: 10,
+            images: [IMAGES[(i+5)%IMAGES.length] + "?w=1000"],
+            location: { country: "France", city, lat: 48, lng: 2 }
+        }
+    });
+    dbExperiences.push(e);
+
+    // 5 Upcoming sessions
+    for(let s=0; s<5; s++) {
+        await prisma.experienceSession.create({
+            data: {
+                experienceId: e.id,
+                dateTime: addDays(new Date(), s + 1),
+                spotsTotal: 10,
+                spotsLeft: 10
+            }
+        });
     }
+  }
+
+  // 4. Notifications for Test User
+  console.log("🔔 Notifications...");
+  await prisma.notification.createMany({
+      data: [
+          { userId: testUser.id, type: NotificationType.MESSAGE_RECEIVED, title: "Nouveau message", body: "Vous avez un nouveau message de Sophie.", link: "/messages" },
+          { userId: testUser.id, type: NotificationType.BOOKING_CONFIRMED, title: "Voyage confirmé", body: "Votre séjour à Paris est confirmé !", link: "/trips" }
+      ]
   });
 
-  console.log("✅ Base de données alimentée avec succès.");
+  // 5. Conversations
+  console.log("💬 Discussions...");
+  const conv = await prisma.conversation.create({
+      data: { guestId: testUser.id, hostId: hosts[0].id, listingId: dbListings[0].id }
+  });
+  await prisma.message.create({
+      data: { senderId: hosts[0].id, receiverId: testUser.id, conversationId: conv.id, content: "Bonjour ! Bienvenue chez moi." }
+  });
+
+  console.log("✅ Seed Total Terminé !");
 }
 
 main()

@@ -122,6 +122,8 @@ export default async function getListings(params: IListingsParams) {
         ...list,
         avgRating: dynamicAvgRating,
         createdAt: list.createdAt.toISOString(),
+        updatedAt: list.updatedAt.toISOString(),
+        deletedAt: list.deletedAt?.toISOString() || null,
         availabilities: list.availabilities?.map((availability) => ({
           ...availability,
           date: availability.date.toISOString(),

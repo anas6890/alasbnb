@@ -25,13 +25,11 @@ const TripsPage = async (props: { searchParams: Promise<{ success?: string; type
 
   return (
     <ClientOnly>
-      <TripsClient 
-        reservations={reservations} 
-        currentUser={currentUser} 
+      <TripsClient
+        reservations={reservations}
+        currentUser={currentUser}
         isSuccess={searchParams?.success === "1"}
-        viewType={searchParams?.type === "EXPERIENCE" ? "EXPERIENCE" : "LISTING"}
-      />
-    </ClientOnly>
+      />    </ClientOnly>
   );
 };
 

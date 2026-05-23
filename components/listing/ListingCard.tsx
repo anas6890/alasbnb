@@ -9,6 +9,7 @@ import React, { useCallback, useMemo } from "react";
 import Button from "../Button";
 import HeartButton from "../HeartButton";
 import useLanguage from "@/hook/useLanguage";
+import { usePrice } from "@/hook/usePrice";
 import { translations } from "@/lib/translations";
 import { enUS, fr } from "date-fns/locale";
 
@@ -51,13 +52,15 @@ function ListingCard({
     [onAction, actionId, disabled]
   );
 
-  const price = useMemo(() => {
+  const rawPrice = useMemo(() => {
     if (reservation) {
       return reservation.totalPrice;
     }
 
     return data.pricePerNight;
   }, [reservation, data.pricePerNight]);
+
+  const { formattedPrice } = usePrice(rawPrice);
 
   const availabilityRange = useMemo(() => {
     const availabilityList = data.availabilities || [];
@@ -182,7 +185,7 @@ function ListingCard({
             </div>
 
             <div className="flex flex-row items-center mt-1 text-[15px] text-neutral-500">
-              <span className="font-semibold text-neutral-800">{price} €</span>
+              <span className="font-semibold text-neutral-800">{formattedPrice}</span>
               <span className="ml-1">
                 {reservation ? t.total : `pour 1 ${t.night.toLowerCase()}`}
               </span>

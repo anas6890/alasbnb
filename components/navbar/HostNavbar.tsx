@@ -18,8 +18,7 @@ function HostNavbar({ currentUser }: Props) {
     { label: "Tableau de bord", href: "/hosting" },
     { label: "Annonces", href: "/hosting/listings" },
     { label: "Réservations", href: "/hosting/reservations" },
-    { label: "Calendrier", href: "/hosting/calendar" },
-    { label: "Messages", href: "/hosting/messages" },
+    { label: "Messages", href: "/messages" },
   ];
 
   return (

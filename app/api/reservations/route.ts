@@ -54,12 +54,6 @@ export async function POST(request: Request) {
       return new NextResponse("Not enough spots available", { status: 400 });
     }
 
-    // Decrement spots
-    await prisma.experienceSession.update({
-      where: { id: session.id },
-      data: { spotsLeft: session.spotsLeft - guests }
-    });
-
     const reservation = await prisma.reservation.create({
       data: {
         userId: currentUser.id,

@@ -24,13 +24,12 @@ const getCurrentUser = cache(async () => {
     if (!currentUser) {
       return null;
     }
-
     return {
       ...currentUser,
       createdAt: currentUser.createdAt.toISOString(),
       updatedAt: currentUser.updatedAt.toISOString(),
       emailVerified: currentUser.emailVerified?.toISOString() || null,
-      deletedAt: currentUser.deletedAt,
+      deletedAt: currentUser.deletedAt?.toISOString() || null,
     };
   } catch (error: any) {
     console.log(

@@ -3,22 +3,25 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { toast } from "react-toastify";
-import useLoginModel from "./useLoginModal";
+import useLoginModal from "./useLoginModal";
 
 type Props = {
   listingId: string;
   currentUser?: SafeUser | null;
+  isExperience?: boolean;
 };
 
-function useFavorite({ listingId, currentUser }: Props) {
+function useFavorite({ listingId, currentUser, isExperience }: Props) {
   const router = useRouter();
-  const loginModel = useLoginModel();
+  const loginModal = useLoginModal();
 
   const hasFavorited = useMemo(() => {
-    const list = currentUser?.savedListingIds || [];
+    const list = isExperience 
+      ? currentUser?.savedExperienceIds || [] 
+      : currentUser?.savedListingIds || [];
 
     return list.includes(listingId);
-  }, [currentUser, listingId]);
+  }, [currentUser, listingId, isExperience]);
 
   const toggleFavorite = useCallback(
     async (e: React.MouseEvent<HTMLDivElement>) => {
@@ -26,26 +29,28 @@ function useFavorite({ listingId, currentUser }: Props) {
       e.preventDefault();
 
       if (!currentUser) {
-        return loginModel.onOpen();
+        return loginModal.onOpen();
       }
 
       try {
         let request;
 
+        const url = `/api/favorites/${listingId}${isExperience ? "?type=EXPERIENCE" : ""}`;
+
         if (hasFavorited) {
-          request = () => axios.delete(`/api/favorites/${listingId}`);
+          request = () => axios.delete(url);
         } else {
-          request = () => axios.post(`/api/favorites/${listingId}`);
+          request = () => axios.post(url);
         }
 
         await request();
         router.refresh();
-        toast.success("Success");
+        toast.success(hasFavorited ? "Retiré des favoris" : "Ajouté aux favoris");
       } catch (error: any) {
-        toast.error("Something Went Wrong");
+        toast.error("Une erreur est survenue");
       }
     },
-    [currentUser, hasFavorited, listingId, loginModel]
+    [currentUser, hasFavorited, listingId, loginModal, isExperience, router]
   );
 
   return {

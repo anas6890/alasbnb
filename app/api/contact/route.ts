@@ -14,66 +14,58 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { listingId, hostId, content } = body;
+    const { listingId, experienceId, hostId, guestId, content } = body;
 
-    if (!listingId || !hostId || !content) {
+    if ((!listingId && !experienceId) || !content) {
       return NextResponse.json({ error: "Données manquantes" }, { status: 400 });
     }
 
-    // Récupérer le listing avec le snapshot
-    const listing = await prisma.listing.findUnique({
-      where: { id: listingId },
-      include: { user: true }
+    // Determine roles
+    const targetHostId = hostId || currentUser.id;
+    const targetGuestId = guestId || currentUser.id;
+
+    // 1. Find or create conversation
+    let conversation = await prisma.conversation.findFirst({
+        where: {
+            guestId: targetGuestId,
+            hostId: targetHostId,
+            ...(listingId ? { listingId } : { experienceId })
+        }
     });
 
-    if (!listing) {
-      return NextResponse.json({ error: "Logement introuvable" }, { status: 404 });
+    if (!conversation) {
+        conversation = await prisma.conversation.create({
+            data: {
+                guestId: targetGuestId,
+                hostId: targetHostId,
+                ...(listingId ? { listingId } : { experienceId })
+            }
+        });
     }
 
-    // Créer une réservation "PENDING" (Inquiry) sans dates
-    const reservation = await prisma.reservation.create({
-      data: {
-        userId: currentUser.id,
-        listingId: listingId,
-        type: "LISTING",
-        status: "PENDING",
-        totalPrice: 0,
-        currency: "EUR",
-        adults: 1,
-        // Snapshots
-        listingSnapshot: {
-          listingId: listing.id,
-          title: listing.title,
-          type: listing.type,
-          city: listing.location.city,
-          country: listing.location.country,
-          image: listing.images[0],
-          lat: listing.location.lat,
-          lng: listing.location.lng,
-        },
-        hostSnapshot: {
-          hostId: listing.user.id,
-          firstname: listing.user.firstname,
-          lastname: listing.user.lastname,
-          image: listing.user.image,
-        }
-      }
-    });
-
-    // Créer le message lié
+    // 2. Create the message
     const message = await prisma.message.create({
       data: {
         content,
         senderId: currentUser.id,
-        receiverId: hostId,
-        reservationId: reservation.id,
+        receiverId: currentUser.id === targetHostId ? targetGuestId : targetHostId,
+        conversationId: conversation.id,
+      },
+      include: {
+          sender: true,
       }
+    });
+    
+    // 3. Update conversation timestamp
+    await prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { updatedAt: new Date() }
     });
 
     // Optionnel: Déclencher Pusher pour l'hôte si connecté
-    await pusherServer.trigger(reservation.id, "messages:new", message);
+    await pusherServer.trigger(`conversation-${conversation.id}`, "messages:new", message);
 
-    return NextResponse.json(reservation);
+    return NextResponse.json(conversation);
 
   } catch (error) {
     console.error("CONTACT_API_ERROR", error);

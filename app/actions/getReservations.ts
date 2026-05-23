@@ -46,12 +46,16 @@ export default async function getReservation(params: IParams) {
     const safeReservations = reservations.map((reservation) => ({
       ...reservation,
       createdAt: reservation.createdAt.toISOString(),
+      updatedAt: reservation.updatedAt.toISOString(),
       checkIn: reservation.checkIn?.toISOString() || null,
       checkOut: reservation.checkOut?.toISOString() || null,
+      cancelledAt: reservation.cancelledAt?.toISOString() || null,
       listing: reservation.listing
         ? {
             ...reservation.listing,
             createdAt: reservation.listing.createdAt.toISOString(),
+            updatedAt: reservation.listing.updatedAt.toISOString(),
+            deletedAt: reservation.listing.deletedAt?.toISOString() || null,
           }
         : null,
       session: reservation.session
@@ -69,6 +73,7 @@ export default async function getReservation(params: IParams) {
             ...reservation.user,
             createdAt: reservation.user.createdAt.toISOString(),
             updatedAt: reservation.user.updatedAt.toISOString(),
+            deletedAt: reservation.user.deletedAt?.toISOString() || null,
             emailVerified: reservation.user.emailVerified?.toISOString() || null,
           }
         : null,

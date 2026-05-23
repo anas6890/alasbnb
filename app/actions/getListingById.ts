@@ -23,13 +23,15 @@ export default async function getListingById(params: IParams) {
 
     return {
       ...listing,
-      createdAt: listing.createdAt.toString(),
+      createdAt: listing.createdAt.toISOString(),
+      updatedAt: listing.updatedAt.toISOString(),
+      deletedAt: listing.deletedAt?.toISOString() || null,
       user: {
         ...listing.user,
         createdAt: listing.user.createdAt.toISOString(),
         updatedAt: listing.user.updatedAt.toISOString(),
         emailVerified: listing.user.emailVerified?.toISOString() || null,
-        deletedAt: listing.user.deletedAt,
+        deletedAt: listing.user.deletedAt?.toISOString() || null,
       },
     };
   } catch (error: any) {

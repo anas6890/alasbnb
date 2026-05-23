@@ -3,18 +3,24 @@
 import { SafeUser, safeListing } from "@/types";
 import Container from "@/components/Container";
 import Image from "next/image";
-import { TbCheck, TbShieldCheck, TbStarFilled } from "react-icons/tb";
+import { TbShieldCheck } from "react-icons/tb";
 import ListingCard from "@/components/listing/ListingCard";
+import ExperienceCard from "@/components/experience/ExperienceCard";
+import { useState } from "react";
 
 interface UserClientProps {
   user: SafeUser & {
     listings: safeListing[];
+    experiences?: any[];
   };
   currentUser?: SafeUser | null;
 }
 
 export default function UserClient({ user, currentUser }: UserClientProps) {
   const joinedDate = new Date(user.createdAt).getFullYear();
+  const [activeTab, setActiveTab] = useState<"listings" | "experiences">("listings");
+
+  const experiences = user.experiences || [];
 
   return (
     <Container>
@@ -55,7 +61,7 @@ export default function UserClient({ user, currentUser }: UserClientProps) {
             </div>
           </div>
 
-          {/* Right Panel - Bio & Listings */}
+          {/* Right Panel - Bio & Hosted Content */}
           <div className="md:col-span-8 flex flex-col gap-10">
             
             {/* Bio Section */}
@@ -74,11 +80,29 @@ export default function UserClient({ user, currentUser }: UserClientProps) {
               </div>
             </div>
 
-            {/* Listings Section */}
-            {user.listings.length > 0 && (
-              <div className="mt-4">
-                <h2 className="text-2xl font-bold text-neutral-900 mb-6">Les logements de {user.firstname}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Hosted Content Section with Tabs */}
+            <div className="mt-4">
+              <div className="flex gap-8 mb-8 border-b border-neutral-200">
+                  {user.listings.length > 0 && (
+                    <button
+                        className={`pb-4 px-2 text-xl font-bold transition border-b-4 ${activeTab === "listings" ? "border-neutral-900 text-neutral-900" : "border-transparent text-neutral-400 hover:text-neutral-600"}`}
+                        onClick={() => setActiveTab("listings")}
+                    >
+                        Logements ({user.listings.length})
+                    </button>
+                  )}
+                  {experiences.length > 0 && (
+                    <button
+                        className={`pb-4 px-2 text-xl font-bold transition border-b-4 ${activeTab === "experiences" ? "border-neutral-900 text-neutral-900" : "border-transparent text-neutral-400 hover:text-neutral-600"}`}
+                        onClick={() => setActiveTab("experiences")}
+                    >
+                        Expériences ({experiences.length})
+                    </button>
+                  )}
+              </div>
+
+              {activeTab === "listings" && user.listings.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {user.listings.map((listing) => (
                     <ListingCard
                       key={listing.id}
@@ -87,8 +111,20 @@ export default function UserClient({ user, currentUser }: UserClientProps) {
                     />
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+
+              {activeTab === "experiences" && experiences.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {experiences.map((exp) => (
+                    <ExperienceCard
+                      key={exp.id}
+                      data={exp}
+                      currentUser={currentUser}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
 
           </div>
         </div>

@@ -9,6 +9,8 @@ type Props = {
   price: number;
   dateRange: Range;
   totalPrice: number;
+  formattedPrice?: string;
+  formattedTotalPrice?: string;
   onChangeDate: (value: Range) => void;
   onSubmit: () => void;
   disabled?: boolean;
@@ -20,6 +22,8 @@ function ListingReservation({
   price,
   dateRange,
   totalPrice,
+  formattedPrice,
+  formattedTotalPrice,
   onChangeDate,
   onSubmit,
   disabled,
@@ -45,7 +49,7 @@ function ListingReservation({
     <div className="bg-white rounded-[32px] border border-neutral-100 shadow-[0_20px_60px_rgba(0,0,0,0.06)] overflow-hidden sticky top-32 z-10 p-1">
       <div className="flex flex-col gap-6 p-7 pb-4">
         <div className="flex flex-row items-baseline gap-1.5">
-          <span className="text-3xl font-black text-neutral-900">€{price}</span>
+          <span className="text-3xl font-black text-neutral-900">{formattedPrice || `€${price}`}</span>
           <span className="font-medium text-neutral-500 text-sm tracking-wide">/ nuit</span>
         </div>
         
@@ -83,7 +87,7 @@ function ListingReservation({
 
       <div className="px-7 py-6 flex flex-row items-center justify-between font-black text-xl text-neutral-900 border-t border-neutral-100/80">
         <p>Total</p>
-        <p>€{totalPrice}</p>
+        <p>{formattedTotalPrice || `€${totalPrice}`}</p>
       </div>
     </div>
   );

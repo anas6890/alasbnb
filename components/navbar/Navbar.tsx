@@ -30,7 +30,8 @@ function Navbar({ currentUser }: Props) {
   const { language } = useLanguage();
   const t = translations[language] || translations.fr;
   const pathname = usePathname();
-  const mode = pathname === "/experiences" ? "experiences" : "logements";
+  const isExperiencePage = pathname === "/experiences" || pathname?.startsWith("/experiences/");
+  const mode = isExperiencePage ? "experiences" : "logements";
 
   const [isScrolled, setIsScrolled] = useState(false);
   const isListingDetail = pathname?.startsWith("/listings/");

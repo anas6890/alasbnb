@@ -12,7 +12,7 @@ import { useCallback, useState } from "react";
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
 import { AiOutlineMenu } from "react-icons/ai";
-import { FiUser, FiBriefcase, FiHeart, FiList, FiHome, FiPlusCircle, FiLogOut, FiLogIn, FiUserPlus, FiRepeat, FiCalendar } from "react-icons/fi";
+import { FiUser, FiBriefcase, FiHeart, FiList, FiHome, FiPlusCircle, FiLogOut, FiLogIn, FiUserPlus, FiRepeat, FiCalendar, FiMessageCircle } from "react-icons/fi";
 import Avatar from "../Avatar";
 import MenuItem from "./MenuItem";
 
@@ -119,6 +119,11 @@ function UserMenu({ currentUser }: Props) {
                       label="Réservations reçues"
                       icon={FiCalendar}
                     />
+                    <MenuItem
+                      onClick={() => navigateTo("/messages")}
+                      label="Messages"
+                      icon={FiMessageCircle}
+                    />
                   </>
                 ) : (
                   <>
@@ -142,6 +147,11 @@ function UserMenu({ currentUser }: Props) {
                       onClick={() => navigateTo(isExperienceMode ? "/favorites?type=EXPERIENCE" : "/favorites?type=LISTING")}
                       label={t.wishlist}
                       icon={FiHeart}
+                    />
+                    <MenuItem
+                      onClick={() => navigateTo("/messages")}
+                      label="Messages"
+                      icon={FiMessageCircle}
                     />
                   </>
                 )}

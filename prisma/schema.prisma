@@ -140,14 +140,16 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Soft delete — l'historique transactionnel est préservé
 
-  accounts      Account[]
-  listings      Listing[]
-  experiences   Experience[]
-  reservations  Reservation[]
-  reviews       Review[]
-  sentMessages  Message[]      @relation("SentMessages")
-  recvMessages  Message[]      @relation("ReceivedMessages")
-  notifications Notification[]
+  accounts           Account[]
+  listings           Listing[]
+  experiences        Experience[]
+  reservations       Reservation[]
+  reviews            Review[]
+  sentMessages       Message[]      @relation("SentMessages")
+  recvMessages       Message[]      @relation("ReceivedMessages")
+  guestConversations Conversation[] @relation("GuestConversations")
+  hostConversations  Conversation[] @relation("HostConversations")
+  notifications      Notification[]
 }
 
 // ── 2. ACCOUNT (OAuth) ────────────────────────────────────────────────
@@ -238,6 +240,7 @@ model Listing {
   reservations   Reservation[]
   availabilities ListingAvailability[]
   reviews        Review[]
+  conversations  Conversation[]
 
   // Index pour la recherche par ville (filtres homepage)
   @@index([hostId])
@@ -294,9 +297,10 @@ model Experience {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Soft delete
 
-  user     User                @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  sessions ExperienceSession[]
-  reviews  Review[]
+  user          User                @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  sessions      ExperienceSession[]
+  reviews       Review[]
+  conversations Conversation[]
 
   @@index([hostId])
   @@index([status])
@@ -393,7 +397,6 @@ model Reservation {
   user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   listing  Listing?           @relation(fields: [listingId], references: [id], onDelete: SetNull)
   session  ExperienceSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
-  messages Message[]
   reviews  Review[]
 
   // ── Index ──────────────────────────────────────────────────────
@@ -459,29 +462,52 @@ model Review {
 
 // ── 9. MESSAGE ────────────────────────────────────────────────────────
 //
-// Séparé car paginé et requêté par thread (senderId + receiverId).
-// Index composite (senderId, receiverId, createdAt) pour charger
+// Séparé car paginé et requêté par thread (conversationId).
+// Index composite (conversationId, createdAt) pour charger
 // un thread paginé en une seule requête sans scan complet.
 //
 model Message {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  senderId      String    @db.ObjectId
-  receiverId    String    @db.ObjectId
-  reservationId String    @db.ObjectId // toujours lié à une réservation dans ce contexte
-  content       String
-  isRead        Boolean   @default(false)
-  readAt        DateTime?
-  createdAt     DateTime  @default(now())
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  senderId       String    @db.ObjectId
+  receiverId     String    @db.ObjectId
+  conversationId String    @db.ObjectId
+  content        String
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
 
-  sender      User        @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver    User        @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
-  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User         @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   // Index pour charger un thread paginé efficacement
-  @@index([senderId, receiverId, createdAt(sort: Desc)])
-  @@index([receiverId, senderId, createdAt(sort: Desc)])
+  @@index([conversationId, createdAt(sort: Desc)])
   // Index pour marquer tous les messages non lus d'un utilisateur
   @@index([receiverId, isRead])
+}
+
+// ── 11. CONVERSATION ──────────────────────────────────────────────────
+//
+// Gère les fils de discussion indépendamment des réservations, permettant 
+// le messaging pré-réservation sans créer de "fausse" réservation.
+//
+model Conversation {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  guestId      String    @db.ObjectId
+  hostId       String    @db.ObjectId
+  listingId    String?   @db.ObjectId
+  experienceId String?   @db.ObjectId
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  guest      User        @relation("GuestConversations", fields: [guestId], references: [id], onDelete: Cascade)
+  host       User        @relation("HostConversations", fields: [hostId], references: [id], onDelete: Cascade)
+  listing    Listing?    @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  experience Experience? @relation(fields: [experienceId], references: [id], onDelete: SetNull)
+  messages   Message[]
+
+  @@index([guestId, updatedAt(sort: Desc)])
+  @@index([hostId, updatedAt(sort: Desc)])
 }
 
 // ── 10. NOTIFICATION ──────────────────────────────────────────────────

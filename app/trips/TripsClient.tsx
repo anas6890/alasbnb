@@ -1,7 +1,6 @@
 "use client";
 
 import Container from "@/components/Container";
-import Heading from "@/components/Heading";
 import ListingCard from "@/components/listing/ListingCard";
 import ReviewInput from "@/components/listing/ReviewInput";
 import { SafeReservation, SafeUser } from "@/types";
@@ -19,35 +18,35 @@ type Props = {
   reservations: SafeReservation[];
   currentUser?: SafeUser | null;
   isSuccess?: boolean;
-  viewType?: "LISTING" | "EXPERIENCE";
 };
 
-function TripsClient({ reservations, currentUser, isSuccess, viewType = "LISTING" }: Props) {
+function TripsClient({ reservations, currentUser, isSuccess }: Props) {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState("");
   const [showBanner, setShowBanner] = useState(isSuccess);
   const [reviewingId, setReviewingId] = useState("");
+  const [viewType, setViewType] = useState<"LISTING" | "EXPERIENCE">("LISTING");
 
   const getIsPast = (r: any) => {
-    if (r.status === "PENDING" && !r.checkIn) return false; // Inquiries stay in upcoming
+    // Si la réservation est explicitement marquée comme terminée, elle va dans l'historique
+    if (r.status === "COMPLETED") return true;
+
+    // Si elle est en attente ou confirmée, elle reste dans "À venir / En cours" 
+    // même si la date de début est passée (car le séjour n'est pas encore "fini" administrativement)
+    if (r.status === "PENDING" || r.status === "CONFIRMED") return false;
+
+    // Pour les autres cas (ex: r.status est undefined ou autre), on vérifie la date
     if (r.type === "EXPERIENCE" && r.session) {
       return new Date(r.session.dateTime) < new Date();
     }
     return r.checkOut && new Date(r.checkOut) < new Date();
   };
 
-  const filteredReservations = reservations.filter((r) => r.type === viewType);
+  const filteredReservations = reservations.filter((r) => r.type === viewType && r.status !== "CANCELLED");
   const upcomingTrips = filteredReservations.filter((r) => !getIsPast(r));
   const pastTrips = filteredReservations.filter((r) => getIsPast(r));
 
-  if (filteredReservations.length === 0) {
-    return (
-      <EmptyState
-        title={`Aucune réservation (${viewType === "EXPERIENCE" ? "Expériences" : "Logements"})`}
-        subtitle="Il semble que vous n'ayez réservé aucun voyage de ce type."
-      />
-    );
-  }
+  const [isLoading, setIsLoading] = useState(false);
 
   const onCancel = useCallback(
     (id: string) => {
@@ -56,11 +55,11 @@ function TripsClient({ reservations, currentUser, isSuccess, viewType = "LISTING
       axios
         .delete(`/api/reservations/${id}`)
         .then(() => {
-          toast.info("Reservation cancelled");
+          toast.info("Réservation annulée");
           router.refresh();
         })
         .catch((error) => {
-          toast.error(error?.response?.data?.error);
+          toast.error(error?.response?.data?.error || "Une erreur est survenue");
         })
         .finally(() => {
           setDeletingId("");
@@ -68,6 +67,25 @@ function TripsClient({ reservations, currentUser, isSuccess, viewType = "LISTING
     },
     [router]
   );
+
+  const onContact = useCallback(async (id: string, type: string, hostId: string) => {
+    setIsLoading(true);
+    try {
+        const response = await axios.post("/api/contact", {
+            listingId: type === "LISTING" ? id : null,
+            experienceId: type === "EXPERIENCE" ? id : null,
+            hostId: hostId,
+            content: "Bonjour ! Je vous contacte concernant ma réservation."
+        });
+
+        const conversationId = response.data.id;
+        router.push(`/messages?selected=${conversationId}`);
+    } catch (error) {
+        toast.error("Impossible d'ouvrir la messagerie");
+    } finally {
+        setIsLoading(false);
+    }
+  }, [router]);
 
   return (
     <Container>
@@ -88,7 +106,7 @@ function TripsClient({ reservations, currentUser, isSuccess, viewType = "LISTING
                 <div className="flex flex-col gap-1 pr-8">
                   <h3 className="text-lg font-bold text-teal-900">Réservation confirmée !</h3>
                   <p className="text-teal-800/80 font-medium text-sm">
-                    Votre paiement a bien été reçu et votre voyage est confirmé. Préparez vos valises, l'aventure vous attend !
+                    Votre voyage est confirmé. Préparez vos valises, l'aventure vous attend !
                   </p>
                 </div>
                 <button 
@@ -102,172 +120,155 @@ function TripsClient({ reservations, currentUser, isSuccess, viewType = "LISTING
           )}
         </AnimatePresence>
 
-        <div className="flex flex-col gap-2 mb-10">
+        <div className="flex flex-col gap-2 mb-8">
           <h1 className="text-4xl font-black text-neutral-900 tracking-tight">
-            {viewType === "EXPERIENCE" ? "Mes Expériences" : "Mes Réservations"}
+            Mes Réservations
           </h1>
-          <p className="text-neutral-500 font-medium">Gérez vos aventures à venir et gardez une trace de vos souvenirs.</p>
+          <p className="text-neutral-500 font-medium">Suivez vos voyages en cours et retrouvez vos souvenirs passés.</p>
         </div>
 
-        {/* Voyages à venir */}
-        {upcomingTrips.length > 0 && (
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-neutral-800 mb-6 flex items-center gap-2">
-              <TbMapSearch className="text-brand-500" />
-              À venir
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {upcomingTrips.map((reservation) => {
-                const isExperience = reservation.type === "EXPERIENCE";
-                const itemData = isExperience ? reservation.session?.experience : reservation.listing;
+        {/* Tabs for Stays / Experiences */}
+        <div className="flex gap-4 mb-10 border-b border-neutral-200">
+            <button
+                className={`pb-4 px-6 text-lg font-bold transition border-b-4 ${viewType === "LISTING" ? "border-neutral-900 text-neutral-900" : "border-transparent text-neutral-400 hover:text-neutral-600"}`}
+                onClick={() => setViewType("LISTING")}
+            >
+                Logements
+            </button>
+            <button
+                className={`pb-4 px-6 text-lg font-bold transition border-b-4 ${viewType === "EXPERIENCE" ? "border-neutral-900 text-neutral-900" : "border-transparent text-neutral-400 hover:text-neutral-600"}`}
+                onClick={() => setViewType("EXPERIENCE")}
+            >
+                Expériences
+            </button>
+        </div>
 
-                const renderPolicy = (policy?: string) => {
-                  switch (policy) {
-                    case "MODERATE":
-                      return "Remboursement complet (jusqu'à 5 jours avant).";
-                    case "STRICT":
-                      return "Remboursement de 50% (jusqu'à 7 jours avant).";
-                    case "NON_REFUNDABLE":
-                      return "Non remboursable.";
-                    default:
-                      return "Annulation gratuite.";
-                  }
-                };
-
-                return (
-                  <ListingCard
-                    key={reservation.id}
-                    data={itemData as any}
-                    reservation={reservation}
-                    disabled={deletingId === reservation.id}
-                    currentUser={currentUser}
-                    isExperience={isExperience}
-                  >
-                    {reservation.status === "PENDING" && !reservation.checkIn ? (
-                      <div className="flex flex-col gap-2 mt-3 z-10 relative">
-                        <div className="text-[11px] text-neutral-500 bg-teal-50 p-2.5 rounded-xl border border-teal-100 flex items-center justify-between">
-                          <span className="font-semibold text-teal-700">Demande d'informations</span>
+        {filteredReservations.length === 0 ? (
+          <div className="py-20">
+            <EmptyState
+                title={viewType === "LISTING" ? "Aucun logement réservé pour l'instant" : "Aucune expérience réservée pour l'instant"}
+                subtitle={viewType === "LISTING" ? "N'hésitez pas à explorer nos logements uniques pour votre prochain voyage !" : "N'hésitez pas à réserver, ça sera fun !"}
+            />
+          </div>
+        ) : (
+            <>
+                {/* 1. Réservations en cours / À venir */}
+                <div className="mb-20">
+                    <h2 className="text-2xl font-black text-neutral-900 mb-8 flex items-center gap-3">
+                        <div className="p-2 bg-neutral-900 rounded-lg">
+                            <TbMapSearch className="text-white" size={24} />
                         </div>
-                        <div className="flex flex-row gap-2 w-full mt-1">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/messages/${reservation.id}`);
-                            }}
-                            className="flex-1 bg-white border border-neutral-200 text-neutral-800 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 hover:border-neutral-800 transition-all text-sm shadow-sm"
-                          >
-                            <TbMessageCircle size={18} /> Voir la discussion
-                          </button>
-                        </div>
-                      </div>
+                        En cours et à venir
+                    </h2>
+                    
+                    {upcomingTrips.length === 0 ? (
+                        <p className="text-neutral-500 font-medium bg-neutral-50 p-8 rounded-2xl border border-dashed border-neutral-200 text-center">
+                            Vous n'avez pas de voyage prévu prochainement.
+                        </p>
                     ) : (
-                    <div className="flex flex-col gap-2 mt-3 z-10 relative">
-                      <div className="text-[11px] text-neutral-500 bg-neutral-50 p-2.5 rounded-xl border border-neutral-100 flex items-center justify-between">
-                        <span className="font-semibold text-neutral-700">Politique d'annulation</span>
-                        <span className="truncate max-w-[150px]" title={renderPolicy(reservation.cancellationPolicy)}>
-                          {renderPolicy(reservation.cancellationPolicy)}
-                        </span>
-                      </div>
-                      
-                      <div className="flex flex-row gap-2 w-full mt-1">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/reservations/${reservation.id}/contact`);
-                          }}
-                          className="flex-1 bg-white border border-neutral-200 text-neutral-800 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 hover:border-neutral-800 transition-all text-sm shadow-sm"
-                        >
-                          <TbMessageCircle size={18} /> Contacter
-                        </button>
-                        
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!deletingId) onCancel(reservation.id);
-                          }}
-                          disabled={deletingId === reservation.id}
-                          className="flex-[0.5] bg-white border border-rose-200 text-rose-600 font-semibold py-2.5 rounded-xl flex items-center justify-center hover:bg-rose-50 hover:border-rose-300 active:scale-95 disabled:opacity-50 transition-all text-sm shadow-sm"
-                        >
-                          {deletingId === reservation.id ? "..." : "Annuler"}
-                        </button>
-                      </div>
-                    </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                        {upcomingTrips.map((reservation) => {
+                            const isExperience = reservation.type === "EXPERIENCE";
+                            const itemData = isExperience ? reservation.session?.experience : reservation.listing;
+
+                            return (
+                            <ListingCard
+                                key={reservation.id}
+                                data={itemData as any}
+                                reservation={reservation}
+                                disabled={deletingId === reservation.id}
+                                currentUser={currentUser}
+                                isExperience={isExperience}
+                            >
+                                <div className="flex flex-col gap-3 mt-4">
+                                    <div className="flex items-center gap-2 w-full">
+                                        <button
+                                            disabled={isLoading}
+                                            onClick={() => onContact(itemData?.id || "", reservation.type, (itemData as any)?.hostId || (itemData as any)?.user?.id)}
+                                            className="flex-1 bg-neutral-900 text-white rounded-xl py-3 font-bold text-sm text-center hover:bg-black transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                                        >
+                                            <TbMessageCircle size={20} />
+                                            Contacter l'hôte
+                                        </button>
+                                        <button
+                                            className="p-3 bg-white text-rose-500 border-2 border-rose-100 rounded-xl hover:bg-rose-50 hover:border-rose-200 transition-all disabled:opacity-50"
+                                            onClick={() => onCancel(reservation.id)}
+                                            disabled={deletingId === reservation.id}
+                                            title="Annuler la réservation"
+                                        >
+                                            <FiX size={20} />
+                                        </button>
+                                    </div>
+                                    <div className="text-[11px] text-center font-bold text-neutral-400 uppercase tracking-widest">
+                                        Réservation {reservation.status.toLowerCase()}
+                                    </div>
+                                </div>
+                            </ListingCard>
+                            );
+                        })}
+                        </div>
                     )}
-                  </ListingCard>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                </div>
 
-        {/* Voyages passés */}
-        {pastTrips.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold text-neutral-800 mb-6 flex items-center gap-2 pt-6 border-t border-neutral-100">
-              <TbClock className="text-neutral-400" />
-              Passés
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 opacity-90 hover:opacity-100 transition-opacity">
-              {pastTrips.map((reservation) => {
-                const isReviewing = reviewingId === reservation.id;
-                const isExperience = reservation.type === "EXPERIENCE";
-                const itemData = isExperience ? reservation.session?.experience : reservation.listing;
+                {/* 2. Historique des voyages */}
+                <div className="pt-12 border-t-2 border-neutral-100">
+                    <h2 className="text-2xl font-black text-neutral-900 mb-8 flex items-center gap-3">
+                        <div className="p-2 bg-neutral-100 rounded-lg text-neutral-600">
+                            <TbClock size={24} />
+                        </div>
+                        Historique (Voyages terminés)
+                    </h2>
+                    
+                    {pastTrips.length === 0 ? (
+                        <p className="text-neutral-500 font-medium bg-neutral-50 p-8 rounded-2xl border border-dashed border-neutral-200 text-center">
+                            Votre historique est vide pour le moment.
+                        </p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                        {pastTrips.map((reservation) => {
+                            const isExperience = reservation.type === "EXPERIENCE";
+                            const itemData = isExperience ? reservation.session?.experience : reservation.listing;
+                            const isReviewing = reviewingId === reservation.id;
 
-                return (
-                  <ListingCard
-                    key={reservation.id}
-                    data={itemData as any}
-                    reservation={reservation}
-                    disabled={deletingId === reservation.id}
-                    currentUser={currentUser}
-                    isExperience={isExperience}
-                  >
-                    <div className="flex flex-col gap-2 mt-3 z-10 relative">
-                      <div className="flex flex-row gap-2 w-full mt-1">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/reservations/${reservation.id}/contact`);
-                          }}
-                          className="flex-[0.5] bg-white border border-neutral-200 text-neutral-700 font-bold py-2.5 rounded-xl flex items-center justify-center hover:bg-neutral-50 transition-all text-sm"
-                        >
-                          <TbMessageCircle size={18} />
-                        </button>
-
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setReviewingId(isReviewing ? "" : reservation.id);
-                          }}
-                          className={`flex-1 font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all text-sm shadow-sm border ${
-                            isReviewing 
-                              ? 'bg-neutral-800 text-white border-neutral-800' 
-                              : 'bg-white text-neutral-800 border-neutral-200 hover:border-neutral-800'
-                          }`}
-                        >
-                          <FiStar className={isReviewing ? "text-[#f59e0b] fill-[#f59e0b]" : ""} size={16} /> 
-                          {isReviewing ? "Fermer l'avis" : "Évaluer mon séjour"}
-                        </button>
-                      </div>
-
-                      <AnimatePresence>
-                        {isReviewing && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="w-full overflow-hidden"
-                          >
-                            <ReviewInput reservationId={reservation.id} />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </ListingCard>
-                );
-              })}
-            </div>
-          </div>
+                            return (
+                            <div key={reservation.id} className="flex flex-col gap-4">
+                                <div className="relative group">
+                                    <div className="absolute inset-0 bg-white/10 z-10 pointer-events-none rounded-2xl transition group-hover:bg-transparent" />
+                                    <ListingCard
+                                        data={itemData as any}
+                                        reservation={reservation}
+                                        currentUser={currentUser}
+                                        isExperience={isExperience}
+                                    />
+                                </div>
+                                
+                                <div className="z-20">
+                                    {isReviewing ? (
+                                        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+                                            <div className="w-full max-w-2xl animate-in zoom-in-95 duration-200">
+                                                <ReviewInput 
+                                                    reservationId={reservation.id}
+                                                    onCancel={() => setReviewingId("")} 
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => setReviewingId(reservation.id)}
+                                            className="w-full bg-white text-neutral-900 border-2 border-neutral-900 rounded-xl py-3 font-bold text-sm hover:bg-neutral-900 hover:text-white transition-all flex items-center justify-center gap-2 shadow-sm group"
+                                        >
+                                            <FiStar className="text-amber-500 group-hover:fill-amber-500" size={18} />
+                                            Laisser un avis
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            );
+                        })}
+                        </div>
+                    )}
+                </div>
+            </>
         )}
       </div>
     </Container>

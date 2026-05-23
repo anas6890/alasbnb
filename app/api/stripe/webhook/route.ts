@@ -32,10 +32,18 @@ export async function POST(req: Request) {
       return new NextResponse("Reservation ID is required", { status: 400 });
     }
 
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: reservationId },
+      include: { listing: true, session: true }
+    });
+
+    if (!reservation) {
+      return new NextResponse("Reservation not found", { status: 404 });
+    }
+
+    // 1. Update reservation status
     await prisma.reservation.update({
-      where: {
-        id: reservationId,
-      },
+      where: { id: reservationId },
       data: {
         status: "CONFIRMED",
         payment: {
@@ -49,6 +57,47 @@ export async function POST(req: Request) {
         }
       },
     });
+
+    // 2. Business Logic based on type
+    if (reservation.type === "EXPERIENCE" && reservation.sessionId) {
+      // Decrement spots only after payment confirmation
+      await prisma.experienceSession.update({
+        where: { id: reservation.sessionId },
+        data: {
+          spotsLeft: {
+            decrement: reservation.adults + (reservation.children || 0)
+          }
+        }
+      });
+    } else if (reservation.type === "LISTING" && reservation.listingId && reservation.checkIn && reservation.checkOut) {
+      // Block dates in ListingAvailability
+      const startDate = new Date(reservation.checkIn);
+      const endDate = new Date(reservation.checkOut);
+      
+      const datesToBlock = [];
+      let currentDate = new Date(startDate);
+      while (currentDate < endDate) {
+        datesToBlock.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      for (const date of datesToBlock) {
+        await prisma.listingAvailability.upsert({
+          where: {
+            listingId_date: {
+              listingId: reservation.listingId,
+              date: date
+            }
+          },
+          update: { isAvailable: false },
+          create: {
+            listingId: reservation.listingId,
+            date: date,
+            isAvailable: false
+          }
+        });
+      }
+    }
   }
 
   return new NextResponse(null, { status: 200 });
