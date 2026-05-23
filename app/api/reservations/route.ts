@@ -62,7 +62,8 @@ export async function POST(request: Request) {
         totalPrice,
         pricePerPerson: experience.pricePerPerson,
         adults: guests,
-        status: "PENDING",
+        status: "CONFIRMED",
+        cancellationPolicy: experience.cancellationPolicy,
         experienceSnapshot: {
           experienceId: experience.id,
           title: experience.title,
@@ -116,7 +117,8 @@ export async function POST(request: Request) {
       children: children || 0,
       infants: infants || 0,
       pets: pets || 0,
-      status: "PENDING",
+      status: "CONFIRMED",
+      cancellationPolicy: listing.cancellationPolicy,
       listingSnapshot: {
         listingId: listing.id,
         title: listing.title,
@@ -135,6 +137,29 @@ export async function POST(request: Request) {
       }
     }
   });
+
+  // Block calendar dates for the reservation
+  for (let d = new Date(checkIn); d < checkOut; d.setDate(d.getDate() + 1)) {
+    const dateToUpdate = new Date(d);
+    dateToUpdate.setUTCHours(0, 0, 0, 0);
+
+    await prisma.listingAvailability.upsert({
+      where: {
+        listingId_date: {
+          listingId: listingId,
+          date: dateToUpdate,
+        },
+      },
+      update: {
+        isAvailable: false,
+      },
+      create: {
+        listingId: listingId,
+        date: dateToUpdate,
+        isAvailable: false,
+      },
+    });
+  }
 
   return NextResponse.json(reservation);
 }

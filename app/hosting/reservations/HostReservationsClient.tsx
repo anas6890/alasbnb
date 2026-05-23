@@ -36,12 +36,12 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
     return reservations.filter(r => r.status === activeFilter);
   }, [reservations, activeFilter]);
 
-  const updateStatus = useCallback((id: string, status: string) => {
+  const onCancel = useCallback((id: string) => {
     setProcessingId(id);
 
-    axios.patch(`/api/reservations/${id}`, { status })
+    axios.post(`/api/reservations/${id}/cancel`, { reason: 'Host cancelled' })
       .then(() => {
-        toast.success(status === 'CONFIRMED' ? t.host_reservations_toast_confirmed : t.host_reservations_toast_rejected);
+        toast.success(t.host_reservations_toast_rejected || "Réservation annulée");
         router.refresh();
       })
       .catch(() => {
@@ -50,7 +50,7 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
       .finally(() => {
         setProcessingId("");
       });
-  }, [router]);
+  }, [router, t]);
 
   const onContact = useCallback(async (guestId: string, listingId?: string | null, experienceId?: string | null) => {
     setProcessingId("contact-" + guestId);
@@ -70,23 +70,64 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
     }
   }, [router, currentUser?.id]);
 
-  const bookedDates = useMemo(() => {
-    const dates: Date[] = [];
+  const COLORS = [
+    "#FF385C", // Airbnb red
+    "#00A699", // Teal
+    "#FFB400", // Yellow
+    "#8B5CF6", // Violet
+    "#3B82F6", // Blue
+    "#F97316", // Orange
+    "#10B981", // Emerald
+    "#EC4899"  // Pink
+  ];
+
+  const listingColors = useMemo(() => {
+    const map = new Map<string, { title: string; color: string; dates: Date[] }>();
+    let colorIndex = 0;
+    
     reservations.forEach((res) => {
-        if (res.status === "CONFIRMED") {
-            if (res.type === "LISTING" && res.checkIn && res.checkOut) {
-                let current = new Date(res.checkIn);
-                while (current < new Date(res.checkOut)) {
-                    dates.push(new Date(current));
-                    current.setDate(current.getDate() + 1);
-                }
-            } else if (res.type === "EXPERIENCE" && res.session?.dateTime) {
-                dates.push(new Date(res.session.dateTime));
+      if (res.status === "CONFIRMED") {
+        const id = res.type === "LISTING" ? res.listingId : res.sessionId;
+        const title = res.type === "LISTING" ? res.listing?.title : res.session?.experience?.title;
+        
+        if (id && title) {
+          if (!map.has(id)) {
+            map.set(id, { title, color: COLORS[colorIndex % COLORS.length], dates: [] });
+            colorIndex++;
+          }
+          
+          const entry = map.get(id)!;
+          
+          if (res.type === "LISTING" && res.checkIn && res.checkOut) {
+            let current = new Date(res.checkIn);
+            while (current < new Date(res.checkOut)) {
+              entry.dates.push(new Date(current));
+              current.setDate(current.getDate() + 1);
             }
+          } else if (res.type === "EXPERIENCE" && res.session?.dateTime) {
+            entry.dates.push(new Date(res.session.dateTime));
+          }
         }
+      }
     });
-    return dates;
+    
+    return Array.from(map.values());
   }, [reservations]);
+
+  const { modifiers, modifiersStyles, allBookedDates } = useMemo(() => {
+    const mods: Record<string, Date[]> = {};
+    const styles: Record<string, any> = {};
+    const allDates: Date[] = [];
+    
+    listingColors.forEach((lc, i) => {
+      const key = `booked_${i}`;
+      mods[key] = lc.dates;
+      styles[key] = { color: "white", backgroundColor: lc.color, fontWeight: "900", borderRadius: "12px" };
+      allDates.push(...lc.dates);
+    });
+    
+    return { modifiers: mods, modifiersStyles: styles, allBookedDates: allDates };
+  }, [listingColors]);
 
   return (
     <div className="flex flex-col gap-8 pb-20">
@@ -117,13 +158,13 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
       {viewMode === "list" ? (
         <>
             <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
-                {["ALL", "PENDING", "CONFIRMED"].map((filter) => (
+                {["ALL", "CONFIRMED", "CANCELLED"].map((filter) => (
                     <button
                         key={filter}
                         onClick={() => setActiveFilter(filter as any)}
                         className={`px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest border-2 transition-all ${activeFilter === filter ? 'bg-neutral-900 border-neutral-900 text-white' : 'bg-white border-neutral-100 text-neutral-400 hover:border-neutral-200'}`}
                     >
-                        {filter === 'ALL' ? t.host_reservations_filter_all : filter === 'PENDING' ? t.host_reservations_filter_pending : t.host_reservations_filter_confirmed}
+                        {filter === 'ALL' ? t.host_reservations_filter_all : filter === 'CONFIRMED' ? t.host_reservations_filter_confirmed : "Annulée"}
                     </button>
                 ))}
             </div>
@@ -205,24 +246,15 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
                                             </button>
 
                                             <div className="flex items-center gap-3">
-                                                {reservation.status === 'PENDING' && (
-                                                    <>
-                                                        <button
-                                                            disabled={processingId === reservation.id}
-                                                            onClick={() => updateStatus(reservation.id, 'CANCELLED')}
-                                                            className="p-3 text-rose-500 border-2 border-rose-50 rounded-2xl hover:bg-rose-50 hover:border-rose-100 transition shadow-sm active:scale-90"
-                                                        >
-                                                            <FiX size={20} />
-                                                        </button>
-                                                        <button
-                                                            disabled={processingId === reservation.id}
-                                                            onClick={() => updateStatus(reservation.id, 'CONFIRMED')}
-                                                            className="flex items-center gap-2 px-8 py-3.5 bg-neutral-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-black transition shadow-lg shadow-neutral-200 active:scale-95"
-                                                        >
-                                                            <FiCheck size={20} />
-                                                            {t.host_reservations_accept}
-                                                        </button>
-                                                    </>
+                                                {reservation.status === 'CONFIRMED' && (
+                                                    <button
+                                                        disabled={processingId === reservation.id}
+                                                        onClick={() => onCancel(reservation.id)}
+                                                        className="flex items-center gap-2 px-6 py-3 text-rose-500 border-2 border-rose-50 rounded-2xl hover:bg-rose-50 hover:border-rose-100 transition shadow-sm active:scale-95"
+                                                    >
+                                                        <FiX size={20} />
+                                                        <span className="font-black text-sm uppercase tracking-widest">{t.host_reservations_cancel || "Annuler"}</span>
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
@@ -238,11 +270,22 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
         <div className="bg-white p-10 md:p-16 rounded-[40px] border border-neutral-100 shadow-sm flex flex-col lg:flex-row gap-16 animate-in fade-in zoom-in-95 duration-500">
             <div className="flex-none flex flex-col items-center">
                 <div className="p-4 bg-neutral-50 rounded-[32px] border border-neutral-100 shadow-inner">
-                    <DayPicker mode="multiple" selected={bookedDates} locale={locale as any} modifiers={{ booked: bookedDates }} modifiersStyles={{ booked: { color: "white", backgroundColor: "#FF385C", fontWeight: "900", borderRadius: "12px" } }} />
+                    <DayPicker mode="multiple" selected={allBookedDates} locale={locale as any} modifiers={modifiers} modifiersStyles={modifiersStyles} />
                 </div>
-                <div className="mt-8 flex items-center gap-3 bg-rose-50 px-6 py-2.5 rounded-full border border-rose-100">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#FF385C] shadow-[0_0_10px_rgba(255,56,92,0.5)] animate-pulse" />
-                    <span className="text-xs font-black text-rose-600 uppercase tracking-widest italic">{t.host_reservations_occupied_dates}</span>
+                <div className="mt-8 flex flex-col gap-3 w-full max-w-[280px]">
+                    {listingColors.length === 0 ? (
+                        <div className="flex items-center gap-3 bg-neutral-50 px-4 py-2.5 rounded-xl border border-neutral-100 opacity-50">
+                            <div className="w-3 h-3 rounded-full bg-neutral-300" />
+                            <span className="text-xs font-black text-neutral-400 uppercase tracking-widest italic">{t.host_reservations_occupied_dates}</span>
+                        </div>
+                    ) : (
+                        listingColors.map((lc, i) => (
+                            <div key={i} className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-neutral-100 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: lc.color }} />
+                                <span className="text-xs font-black text-neutral-600 uppercase tracking-widest italic truncate">{lc.title}</span>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
 

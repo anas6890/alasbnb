@@ -33,7 +33,7 @@ const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
     { name: t.dashboard, href: "/hosting", icon: FiLayout },
     { name: t.my_listings, href: "/hosting/listings", icon: FiList },
     { name: t.reservations, href: "/hosting/reservations", icon: FiCalendar },
-    { name: t.messages, href: "/messages", icon: FiMessageSquare },
+    { name: t.messages, href: "/hosting/messages", icon: FiMessageSquare },
   ];
 
   return (

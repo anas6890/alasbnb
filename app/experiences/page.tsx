@@ -5,6 +5,7 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 import Container from "@/components/Container";
 import ExperienceCard from "@/components/experience/ExperienceCard";
 import { cookies } from "next/headers";
+import ExperienceCarousel from "@/components/experience/ExperienceCarousel";
 import { translations } from "@/lib/translations";
 
 interface ExperiencesProps {
@@ -24,6 +25,15 @@ export default async function ExperiencesPage(props: { searchParams: Promise<any
   const cookieStore = await cookies();
   const language = cookieStore.get("language")?.value || "en";
   const t = translations[language as keyof typeof translations] || translations.en;
+  
+  // Define a mapping or just use t[groupName] if it exists in translations
+  const getCategoryLabel = (category: string) => {
+    // If the category matches a translation key, use it
+    if (t[category.toLowerCase()]) {
+      return t[category.toLowerCase()];
+    }
+    return category;
+  };
 
   const searchParams = await props.searchParams;
   const experiences = await getExperiences(searchParams);
@@ -56,14 +66,28 @@ export default async function ExperiencesPage(props: { searchParams: Promise<any
       </div>
 
       <Container>
-        <div className="pb-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
-          {experiences.map((experience: any) => (
-            <ExperienceCard
-              key={experience.id}
-              data={experience}
-              currentUser={currentUser}
-            />
-          ))}
+        <div className="pb-16 flex flex-col gap-8">
+          {Object.entries(
+            experiences.reduce((acc: any, exp: any) => {
+              const groupKey = exp.category || exp.location?.city || "Ailleurs";
+              if (!acc[groupKey]) acc[groupKey] = [];
+              acc[groupKey].push(exp);
+              return acc;
+            }, {})
+          ).map(([groupName, groupExperiences]: [string, any]) => {
+            const title =
+              groupName === "Ailleurs"
+                ? t.elsewhere
+                : `Expériences : ${getCategoryLabel(groupName)}`;
+            return (
+              <ExperienceCarousel
+                key={groupName}
+                title={title}
+                experiences={groupExperiences as any}
+                currentUser={currentUser}
+              />
+            );
+          })}
         </div>
       </Container>
     </ClientOnly>

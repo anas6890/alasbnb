@@ -185,16 +185,17 @@ function ListingCard({
               {reservationDate || availabilityDate || t.dates_flexible}
             </div>
 
-            <div className="flex flex-row items-center mt-1 text-[15px] text-neutral-500">
-              <span className="font-semibold text-neutral-800">{formattedPrice}</span>
-              <span className="ml-1">
-                {reservation ? t.total : `${t.for_one} ${isExperience ? t.person : t.night}`}
-              </span>
-              <span className="mx-1.5"></span>
-              <span className="flex items-center gap-1">
-                <span className="text-[12px] mt-0.5">˜…</span>
+            <div className="flex flex-row items-center justify-between mt-1 text-[15px] text-neutral-500">
+              <div className="flex flex-row items-center gap-1">
+                <span className="font-semibold text-neutral-800">{formattedPrice}</span>
+                <span className="whitespace-nowrap">
+                  {reservation ? t.total : `${t.for_one} ${isExperience ? t.person : t.night}`}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-[14px]">★</span>
                 <span>{data.avgRating > 0 ? data.avgRating.toFixed(2) : t.new}</span>
-              </span>
+              </div>
             </div>
           </div>
           

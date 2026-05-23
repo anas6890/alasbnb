@@ -4,7 +4,7 @@ export const translations: any = {
     logements: "Logements",
     experiences: "Expériences",
     host: "Devenir hôte",
-    search: "Rechercher une destination",
+    search: "Rechercher",
     anywhere: "N'importe où",
     anyweek: "N'importe quelle semaine",
     addguests: "Ajouter des voyageurs",
@@ -252,7 +252,7 @@ export const translations: any = {
     host_reservations_view_calendar: "Calendrier",
     host_reservations_filter_all: "Toutes",
     host_reservations_filter_pending: "En attente",
-    host_reservations_filter_confirmed: "Confirmées",
+    host_reservations_filter_confirmed: "Réservées",
     host_reservations_none_found: "Aucune réservation trouvée",
     host_reservations_toast_confirmed: "Réservation confirmée",
     host_reservations_toast_rejected: "Réservation refusée",
@@ -279,7 +279,7 @@ export const translations: any = {
     
     // Statuses
     status_pending: "En attente",
-    status_confirmed: "Confirmée",
+    status_confirmed: "Réservée",
     status_cancelled: "Annulée",
     status_completed: "Terminée",
     dates_flexible: "Dates flexibles",

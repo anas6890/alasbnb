@@ -57,7 +57,7 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
       setDeletingId(id);
 
       axios
-        .delete(`/api/reservations/${id}`)
+        .post(`/api/reservations/${id}/cancel`, { reason: 'Guest cancelled' })
         .then(() => {
            const lang = useLanguage.getState().language || "en";
            const t = translations[lang as keyof typeof translations] || translations.en;
