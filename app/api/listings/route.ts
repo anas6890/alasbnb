@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     partiesAllowed,
     checkInTime,
     checkOutTime,
+    cancellationPolicy,
   } = body;
 
   const availabilities = [];
@@ -73,6 +74,7 @@ export async function POST(request: Request) {
       partiesAllowed: Boolean(partiesAllowed),
       checkInTime: checkInTime ? parseInt(checkInTime, 10) : 14,
       checkOutTime: checkOutTime ? parseInt(checkOutTime, 10) : 11,
+      cancellationPolicy: cancellationPolicy || "FLEXIBLE",
       hostId: currentUser.id,
       availabilities: {
         create: availabilities,

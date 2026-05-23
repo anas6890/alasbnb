@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     address,
     price,
     duration,
+    cancellationPolicy,
   } = body;
 
   const experience = await prisma.experience.create({
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
       pricePerPerson: parseInt(price, 10),
       maxGroupSize: parseInt(guestCount, 10),
       status: "PUBLISHED",
+      cancellationPolicy: cancellationPolicy || "FLEXIBLE",
       location: {
         set: {
           address: address || location.label,

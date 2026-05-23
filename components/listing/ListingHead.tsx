@@ -6,6 +6,8 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { TbGrid3X3, TbHeart, TbHeartFilled } from "react-icons/tb";
 import useFavorite from "@/hook/useFavorite";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 type Props = {
   title: string;
@@ -34,6 +36,9 @@ function ListingHead({
     listingId: id,
     currentUser,
   });
+
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   const openLightbox = (index: number) => {
     setCurrentIndex(index);
@@ -126,7 +131,7 @@ function ListingHead({
             className="absolute bottom-6 right-6 flex items-center gap-2.5 bg-white/95 backdrop-blur-md hover:bg-white text-neutral-900 px-5 py-2.5 rounded-full text-sm font-bold shadow-[0_4px_15px_rgba(0,0,0,0.1)] transition-all hover:scale-105 border border-white/50 z-10 select-none"
           >
             <TbGrid3X3 size={18} />
-            <span>Afficher toutes les photos</span>
+            <span>{t.show_all_photos}</span>
           </button>
         </div>
       );
@@ -156,7 +161,7 @@ function ListingHead({
             className="absolute bottom-6 right-6 flex items-center gap-2 bg-white/95 hover:bg-white text-neutral-800 px-4 py-2 rounded-xl text-xs font-semibold shadow-md transition hover:scale-102 border border-neutral-200 z-10"
           >
             <TbGrid3X3 size={16} />
-            <span>Afficher les {photoList.length} photos</span>
+            <span>{t.show_x_photos.replace("les", "les " + photoList.length).replace("les photos", "les " + photoList.length + " photos")}</span>
           </button>
         </div>
       );
@@ -191,7 +196,7 @@ function ListingHead({
               className="flex items-center gap-2 hover:bg-neutral-50 px-4 py-2 rounded-xl transition-all active:scale-95 border border-transparent hover:border-neutral-200"
             >
               {hasFavorited ? <TbHeartFilled size={20} className="text-rose-500" /> : <TbHeart size={20} />}
-              <span className="font-bold underline decoration-1 underline-offset-2">{hasFavorited ? "Enregistré" : "Enregistrer"}</span>
+              <span className="font-bold underline decoration-1 underline-offset-2">{hasFavorited ? t.saved : t.save_btn}</span>
             </button>
           </div>
         </div>

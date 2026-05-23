@@ -75,8 +75,8 @@ function Modal({
               showModal ? "translate-y-0" : "translate-y-full"
             } ${showModal ? "opacity-100" : "opacity-0"}`}
           >
-            <div className="translate h-full lg:h-auto md:h-auto border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
-              <div className="flex items-center p-6 rounded-t justify-center relative border-b-[1px]">
+            <div className="translate h-full lg:h-auto md:h-auto border border-rose-100/50 rounded-3xl shadow-[0_20px_60px_-15px_rgba(244,63,94,0.15)] relative flex flex-col w-full bg-white outline-none focus:outline-none overflow-hidden">
+              <div className="flex items-center p-6 rounded-t justify-center relative border-b border-rose-50/50">
                 {secondaryAction && (
                   <button
                     className="p-1 border-0 hover:opacity-70 transition absolute left-4 top-3 text-neutral-800"

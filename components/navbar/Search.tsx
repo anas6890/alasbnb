@@ -91,15 +91,15 @@ function Search({ mode = "logements", compact = false }: Props) {
   }
 
   return (
-    <div className="border border-neutral-200/80 w-full md:w-[820px] rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] bg-white/95 backdrop-blur-md transition-all duration-500">
-      <div className="flex flex-row items-center h-[54px]">
+    <div className="border border-neutral-200 w-full md:w-[820px] rounded-full shadow-sm hover:shadow-md bg-white transition-shadow duration-300">
+      <div className="flex flex-row items-center h-[66px]">
 
         {/* Destination */}
         <div
           onClick={() => searchModal.onOpen(STEP_LOCATION)}
-          className="flex flex-col justify-center flex-[1.2] h-full px-8 xl:px-10 rounded-l-full hover:bg-neutral-100 transition-colors duration-200 cursor-pointer"
+          className="flex flex-col justify-center flex-[1.2] h-full px-8 xl:px-10 rounded-full hover:bg-neutral-100 transition-colors duration-200 cursor-pointer"
         >
-          <p className="text-xs font-bold text-neutral-800 mb-0.5">{isFr ? "Destination" : "Where"}</p>
+          <p className="text-[12px] font-extrabold text-neutral-800 mb-0.5 tracking-wide">{isFr ? "Destination" : "Where"}</p>
           <p className={`text-sm truncate ${locationValue ? "text-neutral-900 font-semibold" : "text-neutral-500 font-normal"}`}>
             {destinationLabel}
           </p>
@@ -110,9 +110,9 @@ function Search({ mode = "logements", compact = false }: Props) {
         {/* Dates */}
         <div
           onClick={() => searchModal.onOpen(STEP_DATE)}
-          className="hidden sm:flex flex-col justify-center flex-1 h-full px-6 xl:px-8 hover:bg-neutral-100 transition-colors duration-200 cursor-pointer"
+          className="hidden sm:flex flex-col justify-center flex-1 h-full px-6 xl:px-8 rounded-full hover:bg-neutral-100 transition-colors duration-200 cursor-pointer"
         >
-          <p className="text-xs font-bold text-neutral-800 mb-0.5">{isFr ? "Dates" : "When"}</p>
+          <p className="text-[12px] font-extrabold text-neutral-800 mb-0.5 tracking-wide">{isFr ? "Dates" : "When"}</p>
           <p className={`text-sm ${(startDate && endDate) ? "text-neutral-900 font-semibold" : "text-neutral-500 font-normal"}`}>
             {durationLabel}
           </p>
@@ -124,9 +124,9 @@ function Search({ mode = "logements", compact = false }: Props) {
         <div className="flex flex-row items-center flex-[1.1] h-full pr-2">
           <div
             onClick={() => searchModal.onOpen(STEP_GUESTS)}
-            className="hidden sm:flex flex-col justify-center flex-1 h-full pl-6 xl:pl-8 pr-4 hover:bg-neutral-100 rounded-r-full transition-colors duration-200 cursor-pointer"
+            className="hidden sm:flex flex-col justify-center flex-1 h-full pl-6 xl:pl-8 pr-4 hover:bg-neutral-100 rounded-full transition-colors duration-200 cursor-pointer"
           >
-            <p className="text-xs font-bold text-neutral-800 mb-0.5">{isFr ? "Voyageurs" : "Who"}</p>
+            <p className="text-[12px] font-extrabold text-neutral-800 mb-0.5 tracking-wide">{isFr ? "Voyageurs" : "Who"}</p>
             <p className={`text-sm truncate ${guestCount ? "text-neutral-900 font-semibold" : "text-neutral-500 font-normal"}`}>
               {guestLabel}
             </p>
@@ -134,10 +134,10 @@ function Search({ mode = "logements", compact = false }: Props) {
 
           <div
             onClick={() => searchModal.onOpen(STEP_LOCATION)}
-            className="h-[40px] px-5 bg-gradient-to-r from-brand-500 to-emerald-500 rounded-full text-white flex items-center justify-center gap-2 hover:from-brand-600 hover:to-emerald-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 cursor-pointer ml-auto"
+            className="h-[48px] px-6 bg-[#FF385C] rounded-full text-white flex items-center justify-center gap-2 hover:bg-[#D70466] transition-all duration-300 shadow-md active:scale-95 cursor-pointer ml-auto"
           >
-            <BiSearch size={20} />
-            <span className="font-semibold text-sm hidden lg:block">{t.search}</span>
+            <BiSearch size={20} strokeWidth={1} />
+            <span className="font-bold text-[15px] hidden lg:block">{t.search}</span>
           </div>
         </div>
 

@@ -15,6 +15,7 @@ import { TbMessageCircle, TbCheck, TbMapSearch, TbClock } from "react-icons/tb";
 import { FiX, FiStar } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import EmptyState from "@/components/EmptyState";
+import CancelReservationModal from "@/components/models/CancelReservationModal";
 
 type Props = {
   reservations: SafeReservation[];
@@ -29,6 +30,7 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
   const [deletingId, setDeletingId] = useState("");
   const [showBanner, setShowBanner] = useState(isSuccess);
   const [reviewingId, setReviewingId] = useState("");
+  const [cancellingReservation, setCancellingReservation] = useState<SafeReservation | null>(null);
   const [viewType, setViewType] = useState<"LISTING" | "EXPERIENCE">("LISTING");
 
   const getIsPast = (r: any) => {
@@ -46,35 +48,35 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
     return r.checkOut && new Date(r.checkOut) < new Date();
   };
 
-  const filteredReservations = reservations.filter((r) => r.type === viewType && r.status !== "CANCELLED");
+  const filteredReservations = reservations.filter((r) => r.type === viewType && r.status !== "CANCELLED" && r.status !== "PENDING");
   const upcomingTrips = filteredReservations.filter((r) => !getIsPast(r));
   const pastTrips = filteredReservations.filter((r) => getIsPast(r));
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const onCancel = useCallback(
-    (id: string) => {
-      setDeletingId(id);
+  const confirmCancel = useCallback(() => {
+    if (!cancellingReservation) return;
+    
+    setDeletingId(cancellingReservation.id);
 
-      axios
-        .post(`/api/reservations/${id}/cancel`, { reason: 'Guest cancelled' })
-        .then(() => {
-           const lang = useLanguage.getState().language || "en";
-           const t = translations[lang as keyof typeof translations] || translations.en;
-           toast.info(t.reservation_cancelled);
-          router.refresh();
-        })
-        .catch((error) => {
-          const lang = useLanguage.getState().language || "en";
-          const t = translations[lang as keyof typeof translations] || translations.en;
-          toast.error(error?.response?.data?.error || t.error_occurred);
-        })
-        .finally(() => {
-          setDeletingId("");
-        });
-    },
-    [router]
-  );
+    axios
+      .post(`/api/reservations/${cancellingReservation.id}/cancel`, { reason: 'Guest cancelled' })
+      .then(() => {
+        const lang = useLanguage.getState().language || "en";
+        const t = translations[lang as keyof typeof translations] || translations.en;
+        toast.info(t.reservation_cancelled);
+        setCancellingReservation(null);
+        router.refresh();
+      })
+      .catch((error) => {
+        const lang = useLanguage.getState().language || "en";
+        const t = translations[lang as keyof typeof translations] || translations.en;
+        toast.error(error?.response?.data?.error || t.error_occurred);
+      })
+      .finally(() => {
+        setDeletingId("");
+      });
+  }, [router, cancellingReservation]);
 
   const onContact = useCallback(async (id: string, type: string, hostId: string) => {
     setIsLoading(true);
@@ -97,6 +99,13 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
 
   return (
     <Container>
+      <CancelReservationModal
+        isOpen={!!cancellingReservation}
+        reservation={cancellingReservation}
+        onClose={() => setCancellingReservation(null)}
+        onConfirm={confirmCancel}
+        isLoading={deletingId === cancellingReservation?.id}
+      />
       <div className="pt-4 pb-20 max-w-6xl mx-auto">
         
         <AnimatePresence>
@@ -192,7 +201,11 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                                     <div className="flex items-center gap-2 w-full">
                                         <button
                                             disabled={isLoading}
-                                            onClick={() => onContact(itemData?.id || "", reservation.type, (itemData as any)?.hostId || (itemData as any)?.user?.id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                onContact(itemData?.id || "", reservation.type, (itemData as any)?.hostId || (itemData as any)?.user?.id);
+                                            }}
                                             className="flex-1 bg-neutral-900 text-white rounded-xl py-3 font-bold text-sm text-center hover:bg-black transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
                                         >
                                             <TbMessageCircle size={20} />
@@ -200,7 +213,11 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                                         </button>
                                         <button
                                             className="p-3 bg-white text-rose-500 border-2 border-rose-100 rounded-xl hover:bg-rose-50 hover:border-rose-200 transition-all disabled:opacity-50"
-                                            onClick={() => onCancel(reservation.id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                setCancellingReservation(reservation);
+                                            }}
                                             disabled={deletingId === reservation.id}
                                             title={t.cancel}
                                         >
@@ -262,7 +279,11 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                                         </div>
                                     ) : (
                                         <button
-                                            onClick={() => setReviewingId(reservation.id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                setReviewingId(reservation.id);
+                                            }}
                                             className="w-full bg-white text-neutral-900 border-2 border-neutral-900 rounded-xl py-3 font-bold text-sm hover:bg-neutral-900 hover:text-white transition-all flex items-center justify-center gap-2 shadow-sm group"
                                         >
                                             <FiStar className="text-amber-500 group-hover:fill-amber-500" size={18} />

@@ -7,12 +7,23 @@ interface CurrencyStore {
   setCurrency: (currency: Currency) => void;
 }
 
+const getCurrency = (): Currency => {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("currency");
+    if (stored) return stored as Currency;
+    const match = document.cookie.match(new RegExp('(^| )currency=([^;]+)'));
+    if (match) return match[2] as Currency;
+  }
+  return "EUR";
+};
+
 const useCurrency = create<CurrencyStore>((set) => ({
-  currency: (typeof window !== "undefined" ? localStorage.getItem("currency") as Currency : "EUR") || "EUR",
+  currency: getCurrency(),
   setCurrency: (currency: Currency) => {
     localStorage.setItem("currency", currency);
+    document.cookie = `currency=${currency}; path=/; max-age=31536000`; // 1 year
     set({ currency });
-    // Optionnel : recharger ou simplement laisser Zustand mettre à jour les composants
+    window.location.reload(); 
   },
 }));
 

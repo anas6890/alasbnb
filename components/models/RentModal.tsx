@@ -5,6 +5,8 @@ import axios from "axios";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { translations } from "@/lib/translations";
+import useLanguage from "@/hook/useLanguage";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -21,16 +23,16 @@ import { TbPool, TbWifi, TbCar, TbToolsKitchen2, TbPaw } from "react-icons/tb";
 import { MdOutlineSecurity, MdOutlineFireExtinguisher, MdOutlineSensors, MdTv, MdOutlineLocalLaundryService } from "react-icons/md";
 
 const AMENITIES_LIST = [
-  { label: "Cuisine", icon: TbToolsKitchen2 },
-  { label: "Wifi", icon: TbWifi },
-  { label: "Stationnement gratuit sur place", icon: TbCar },
-  { label: "Piscine", icon: TbPool },
-  { label: "Animaux acceptés", icon: TbPaw },
-  { label: "Télévision", icon: MdTv },
-  { label: "Lave-linge", icon: MdOutlineLocalLaundryService },
-  { label: "Détecteur de monoxyde de carbone", icon: MdOutlineSensors },
-  { label: "Détecteur de fumée", icon: MdOutlineFireExtinguisher },
-  { label: "Caméras de surveillance extérieures présentes sur place", icon: MdOutlineSecurity }
+  { label: "Cuisine", translationKey: "amenity_kitchen", icon: TbToolsKitchen2 },
+  { label: "Wifi", translationKey: "amenity_wifi", icon: TbWifi },
+  { label: "Stationnement gratuit sur place", translationKey: "amenity_parking", icon: TbCar },
+  { label: "Piscine", translationKey: "amenity_pool", icon: TbPool },
+  { label: "Animaux acceptés", translationKey: "amenity_pets", icon: TbPaw },
+  { label: "Télévision", translationKey: "amenity_tv", icon: MdTv },
+  { label: "Lave-linge", translationKey: "amenity_washer", icon: MdOutlineLocalLaundryService },
+  { label: "Détecteur de monoxyde de carbone", translationKey: "amenity_co", icon: MdOutlineSensors },
+  { label: "Détecteur de fumée", translationKey: "amenity_smoke", icon: MdOutlineFireExtinguisher },
+  { label: "Caméras de surveillance extérieures présentes sur place", translationKey: "amenity_cameras", icon: MdOutlineSecurity }
 ];
 
 type Props = {};
@@ -51,6 +53,8 @@ function RentModal({ }: Props) {
   const rentModel = useRentModal();
   const [step, setStep] = useState(STEPS.CATEGORY);
   const [isLoading, setIsLoading] = useState(false);
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   const {
     register,
@@ -136,14 +140,14 @@ function RentModal({ }: Props) {
     axios
       .post("/api/listings", data)
       .then(() => {
-        toast.success("Listing Created!");
+        toast.success(t.listing_success || "Listing Created!");
         router.refresh();
         reset();
         setStep(STEPS.CATEGORY);
         rentModel.onClose();
       })
       .catch(() => {
-        toast.error("Something Went Wrong");
+        toast.error(t.error_occurred || "Something Went Wrong");
       })
       .finally(() => {
         setIsLoading(false);
@@ -152,25 +156,25 @@ function RentModal({ }: Props) {
 
   const actionLabel = useMemo(() => {
     if (step === STEPS.PRICE) {
-      return "Create";
+      return t.publish || "Create";
     }
 
-    return "Next";
-  }, [step]);
+    return t.next || "Next";
+  }, [step, t]);
 
   const secondActionLabel = useMemo(() => {
     if (step === STEPS.CATEGORY) {
       return undefined;
     }
 
-    return "Back";
-  }, [step]);
+    return t.back || "Back";
+  }, [step, t]);
 
   let bodyContent = (
     <div className="flex flex-col gap-8">
       <Heading
-        title="Which of these best describes your place?"
-        subtitle="Pick a category"
+        title={t.category_listing_title || "Which of these best describes your place?"}
+        subtitle={t.category_subtitle || "Pick a category"}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto scrollbar-thin scrollbar-thumb-[#FF5A5F]">
         {categories.map((item, index) => (
@@ -191,15 +195,15 @@ function RentModal({ }: Props) {
     bodyContent = (
       <div className="flex flex-col gap-4">
         <Heading
-          title="Where is your place located?"
-          subtitle="Help guests find you!"
+          title={t.location_listing_title || "Where is your place located?"}
+          subtitle={t.location_rent_subtitle || "Help guests find you!"}
         />
         <CitySelect
           value={location}
           onChange={(value) => {
             setCustomValue("location", value);
             if (value) {
-              const cityName = value.label.split(" - ")[0];
+              const cityName = value.cityName || value.label.split(",")[0];
               setCustomValue("city", cityName);
             } else {
               setCustomValue("city", "");
@@ -208,7 +212,7 @@ function RentModal({ }: Props) {
         />
         <Input
           id="address"
-          label="Address"
+          label={t.address_precise || "Address"}
           disabled={isLoading}
           register={register}
           errors={errors}
@@ -223,33 +227,33 @@ function RentModal({ }: Props) {
     bodyContent = (
       <div className="flex flex-col gap-6">
         <Heading
-          title="Share some basics about your place"
-          subtitle="What amenities do you have?"
+          title={t.details_listing_title || "Share some basics about your place"}
+          subtitle={t.details_listing_subtitle || "What amenities do you have?"}
         />
         <Counter
-          title="Guests"
-          subtitle="How many guests do you allow?"
+          title={t.guest_capacity || "Guests"}
+          subtitle={t.guest_capacity_subtitle || "How many guests do you allow?"}
           value={guestCount}
           onChange={(value) => setCustomValue("guestCount", value)}
         />
         <hr className="border-neutral-100" />
         <Counter
-          title="Bedrooms"
-          subtitle="How many bedrooms do you have?"
+          title={t.bedrooms || "Bedrooms"}
+          subtitle={t.bedrooms_subtitle || "How many bedrooms do you have?"}
           value={roomCount}
           onChange={(value) => setCustomValue("roomCount", value)}
         />
         <hr className="border-neutral-100" />
         <Counter
-          title="Beds"
-          subtitle="How many beds do you have?"
+          title={t.beds || "Beds"}
+          subtitle={t.beds_subtitle || "How many beds do you have?"}
           value={bedCount}
           onChange={(value) => setCustomValue("bedCount", value)}
         />
         <hr className="border-neutral-100" />
         <Counter
-          title="Bathrooms"
-          subtitle="How many bathrooms do you have?"
+          title={t.bathrooms_count || "Bathrooms"}
+          subtitle={t.bathrooms_subtitle || "How many bathrooms do you have?"}
           value={bathroomCount}
           onChange={(value) => setCustomValue("bathroomCount", value)}
         />
@@ -261,8 +265,8 @@ function RentModal({ }: Props) {
     bodyContent = (
       <div className="flex flex-col gap-6">
         <Heading
-          title="What amenities does your place offer?"
-          subtitle="Select all that apply."
+          title={t.amenities_title || "What amenities does your place offer?"}
+          subtitle={t.amenities_subtitle || "Select all that apply."}
         />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[40vh] overflow-y-auto p-1">
           {AMENITIES_LIST.map((item) => {
@@ -278,7 +282,7 @@ function RentModal({ }: Props) {
               >
                 <Icon size={26} className={isSelected ? "text-teal-600" : "text-neutral-500"} />
                 <div className={`text-xs font-semibold ${isSelected ? "text-teal-900" : "text-neutral-700"}`}>
-                  {item.label}
+                  {t[item.translationKey] || item.label}
                 </div>
               </div>
             );
@@ -292,8 +296,8 @@ function RentModal({ }: Props) {
     bodyContent = (
       <div className="flex flex-col gap-8">
         <Heading
-          title="Add photos of your place"
-          subtitle="Show guests what your place looks like! You can upload up to 10 photos."
+          title={t.images_listing_title || "Add photos of your place"}
+          subtitle={t.images_subtitle || "Show guests what your place looks like!"}
         />
         <ImageUpload
           onChange={(value) => {
@@ -310,12 +314,12 @@ function RentModal({ }: Props) {
     bodyContent = (
       <div className="flex flex-col gap-8">
         <Heading
-          title="How would you describe your place?"
-          subtitle="Short and sweet works best!"
+          title={t.desc_title || "How would you describe your place?"}
+          subtitle={t.desc_subtitle || "Short and sweet works best!"}
         />
         <Input
           id="title"
-          label="Title"
+          label={t.title_label || "Title"}
           disabled={isLoading}
           register={register}
           errors={errors}
@@ -324,7 +328,7 @@ function RentModal({ }: Props) {
         <hr />
         <Input
           id="description"
-          label="Description"
+          label={t.description_label || "Description"}
           disabled={isLoading}
           register={register}
           errors={errors}
@@ -338,8 +342,8 @@ function RentModal({ }: Props) {
     bodyContent = (
       <div className="flex flex-col gap-6">
         <Heading
-          title="When is your place available?"
-          subtitle="Select the range of dates when guests can start booking your place."
+          title={t.availability_title || "When is your place available?"}
+          subtitle={t.availability_subtitle || "Select the range of dates when guests can start booking your place."}
         />
         <div className="flex items-center justify-center p-4 border border-neutral-100 rounded-2xl bg-neutral-50/30">
           <Calendar
@@ -355,12 +359,12 @@ function RentModal({ }: Props) {
     bodyContent = (
       <div className="flex flex-col gap-8">
         <Heading
-          title="Now, set your price"
-          subtitle="How much do you charge per night?"
+          title={t.price_title || "Now, set your price"}
+          subtitle={t.price_listing_subtitle || "How much do you charge per night?"}
         />
         <Input
           id="price"
-          label="Price"
+          label={t.price_label || "Price"}
           formatPrice
           type="number"
           disabled={isLoading}
@@ -376,7 +380,7 @@ function RentModal({ }: Props) {
     <Modal
       disabled={isLoading}
       isOpen={rentModel.isOpen}
-      title="Airbnb your home!"
+      title={t.rent_title || "Airbnb your home!"}
       actionLabel={actionLabel}
       onSubmit={handleSubmit(onSubmit)}
       secondaryActionLabel={secondActionLabel}

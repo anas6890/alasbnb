@@ -13,6 +13,8 @@ import { signIn } from "next-auth/react";
 import Button from "../Button";
 import Heading from "../Heading";
 import Input from "../inputs/Input";
+import { translations } from "@/lib/translations";
+import useLanguage from "@/hook/useLanguage";
 import Modal from "./Modal";
 
 type Props = {};
@@ -21,6 +23,8 @@ function RegisterModal({ }: Props) {
   const registerModel = useRegisterModal();
   const loginModel = useLoginModel();
   const [isLoading, setIsLoading] = useState(false);
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   const {
     register,
@@ -42,12 +46,12 @@ function RegisterModal({ }: Props) {
     axios
       .post("/api/register", data)
       .then(() => {
-        toast.success("Register Successfully");
+        toast.success(t.register_success || "Register Successfully");
         loginModel.onOpen();
         registerModel.onClose();
       })
       .catch((err: any) => {
-        toast.error("Something Went Wrong");
+        toast.error(t.error_occurred || "Something Went Wrong");
       })
       .finally(() => {
         setIsLoading(false);
@@ -68,13 +72,13 @@ function RegisterModal({ }: Props) {
   const bodyContent = (
     <div className="flex flex-col gap-4">
       <Heading
-        title="Welcome to Airbnb-Clone"
-        subtitle="Create an Account!"
+        title={t.welcome_airbnb}
+        subtitle={t.create_account}
         center
       />
       <Input
         id="email"
-        label="Email Address"
+        label={t.email}
         disabled={isLoading}
         register={register}
         errors={errors}
@@ -82,7 +86,7 @@ function RegisterModal({ }: Props) {
       />
       <Input
         id="firstname"
-        label="First Name"
+        label={t.firstname}
         disabled={isLoading}
         register={register}
         errors={errors}
@@ -90,7 +94,7 @@ function RegisterModal({ }: Props) {
       />
       <Input
         id="lastname"
-        label="Last Name"
+        label={t.lastname}
         disabled={isLoading}
         register={register}
         errors={errors}
@@ -98,7 +102,7 @@ function RegisterModal({ }: Props) {
       />
       <Input
         id="birthdate"
-        label="Birthdate"
+        label={t.birthdate}
         type="date"
         disabled={isLoading}
         register={register}
@@ -107,7 +111,7 @@ function RegisterModal({ }: Props) {
       />
       <Input
         id="password"
-        label="Password"
+        label={t.password}
         disabled={isLoading}
         register={register}
         errors={errors}
@@ -121,14 +125,14 @@ function RegisterModal({ }: Props) {
       <hr />
       <Button
         outline
-        label="Continue with Google"
+        label={t.continue_google}
         icon={FcGoogle}
         disabled={isLoading}
         onClick={() => socialAction("google")}
       />
       <Button
         outline
-        label="Continue with Facebook"
+        label={t.continue_facebook}
         icon={AiFillFacebook}
         disabled={isLoading}
         onClick={() => socialAction("facebook")}
@@ -136,12 +140,12 @@ function RegisterModal({ }: Props) {
       />
       <div className="text-neutral-500 text-center mt-4 font-light">
         <div>
-          Already have an account?{" "}
+          {t.already_account}{" "}
           <span
             onClick={toggle}
             className="text-neutral-800 cursor-pointer hover:underline"
           >
-            Log in
+            {t.login}
           </span>
         </div>
       </div>
@@ -152,8 +156,8 @@ function RegisterModal({ }: Props) {
     <Modal
       disabled={isLoading}
       isOpen={registerModel.isOpen}
-      title="Register"
-      actionLabel="Continue"
+      title={t.signup}
+      actionLabel={t.submit}
       onClose={registerModel.onClose}
       onSubmit={handleSubmit(onSubmit)}
       body={bodyContent}

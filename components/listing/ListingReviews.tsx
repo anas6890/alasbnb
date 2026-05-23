@@ -2,26 +2,39 @@
 
 import Image from "next/image";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS, es, de } from "date-fns/locale";
 import React, { useState } from "react";
 import { TbMessageCircle, TbSpray, TbCheck, TbKey, TbMessage, TbMap, TbTag, TbChevronRight } from "react-icons/tb";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 interface ListingReviewsProps {
   reviews: any[];
   listing: any;
 }
 
+const getLocale = (lang: string) => {
+  if (lang === "en") return enUS;
+  if (lang === "es") return es;
+  if (lang === "de") return de;
+  return fr;
+};
+
 const ListingReviews: React.FC<ListingReviewsProps> = ({ reviews, listing }) => {
   const [expandedReviews, setExpandedReviews] = useState<Record<string, boolean>>({});
+  
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
+  const dateLocale = getLocale(language);
 
   if (reviews.length === 0) {
     return (
       <div className="py-8">
         <div className="flex flex-col items-center justify-center py-12 px-4 bg-neutral-50 rounded-2xl border border-neutral-100 border-dashed">
           <TbMessageCircle size={48} className="text-neutral-300 mb-4" />
-          <h3 className="text-lg font-bold text-neutral-800 mb-1">Aucun commentaire pour l'instant</h3>
+          <h3 className="text-lg font-bold text-neutral-800 mb-1">{t.no_reviews_yet}</h3>
           <p className="text-neutral-500 font-light text-center max-w-sm text-sm">
-            Cette annonce est nouvelle ou n'a pas encore reçu d'avis. Soyez le premier à partager votre expérience !
+            {t.no_reviews_desc}
           </p>
         </div>
       </div>
@@ -34,12 +47,12 @@ const ListingReviews: React.FC<ListingReviewsProps> = ({ reviews, listing }) => 
 
   // Dynamic values from database
   const categories = [
-    { label: "Propreté", score: (listing.avgRatingCleanliness || 5).toFixed(1).replace('.', ','), icon: TbSpray },
-    { label: "Précision", score: (listing.avgRatingAccuracy || 5).toFixed(1).replace('.', ','), icon: TbCheck },
-    { label: "Arrivée", score: (listing.avgRatingCheckin || 5).toFixed(1).replace('.', ','), icon: TbKey },
-    { label: "Communication", score: (listing.avgRatingCommunication || 5).toFixed(1).replace('.', ','), icon: TbMessage },
-    { label: "Emplacement", score: (listing.avgRatingLocation || 5).toFixed(1).replace('.', ','), icon: TbMap },
-    { label: "Qualité-prix", score: (listing.avgRatingValue || 5).toFixed(1).replace('.', ','), icon: TbTag },
+    { label: t.cleanliness, score: (listing.avgRatingCleanliness || 5).toFixed(1).replace('.', ','), icon: TbSpray },
+    { label: t.accuracy, score: (listing.avgRatingAccuracy || 5).toFixed(1).replace('.', ','), icon: TbCheck },
+    { label: t.checkin, score: (listing.avgRatingCheckin || 5).toFixed(1).replace('.', ','), icon: TbKey },
+    { label: t.communication, score: (listing.avgRatingCommunication || 5).toFixed(1).replace('.', ','), icon: TbMessage },
+    { label: t.location, score: (listing.avgRatingLocation || 5).toFixed(1).replace('.', ','), icon: TbMap },
+    { label: t.value, score: (listing.avgRatingValue || 5).toFixed(1).replace('.', ','), icon: TbTag },
   ];
 
   return (
@@ -50,8 +63,8 @@ const ListingReviews: React.FC<ListingReviewsProps> = ({ reviews, listing }) => 
           <span>
             {reviews.length > 0 
               ? (reviews.reduce((acc, r) => acc + (r.avgRating || 0), 0) / reviews.length).toFixed(2).replace('.', ',') 
-              : "Nouveau"}
-            {reviews.length > 0 && ` · ${reviews.length} avis`}
+              : t.new}
+            {reviews.length > 0 && ` · ${reviews.length} ${t.reviews_count}`}
           </span>
         </h2>
       </div>
@@ -74,7 +87,8 @@ const ListingReviews: React.FC<ListingReviewsProps> = ({ reviews, listing }) => 
         {reviews.slice(0, 6).map((review: any) => {
           const authorDate = review.author?.createdAt ? new Date(review.author.createdAt) : new Date();
           const activeYears = Math.max(1, new Date().getFullYear() - authorDate.getFullYear());
-          const authorDuration = `${activeYears} an${activeYears > 1 ? "s" : ""} sur Alasbnb`;
+          const yearString = activeYears > 1 ? t.years_plural : t.year_singular;
+          const authorDuration = `${activeYears} ${yearString} ${t.years_on_alasbnb}`;
           const isExpanded = expandedReviews[review.id];
           const isLong = review.comment?.length > 150;
 
@@ -111,7 +125,7 @@ const ListingReviews: React.FC<ListingReviewsProps> = ({ reviews, listing }) => 
                   <span className="text-neutral-200">{"★".repeat(5 - Math.round(review.avgRating || 5))}</span>
                 </div>
                 <span className="text-neutral-300">•</span>
-                <span className="text-neutral-500">{review.createdAt ? format(new Date(review.createdAt), "MMMM yyyy", { locale: fr }) : "août 2025"}</span>
+                <span className="text-neutral-500">{review.createdAt ? format(new Date(review.createdAt), "MMMM yyyy", { locale: dateLocale }) : "Août 2025"}</span>
               </div>
 
               <div className="flex flex-col items-start gap-1">
@@ -124,7 +138,7 @@ const ListingReviews: React.FC<ListingReviewsProps> = ({ reviews, listing }) => 
                     onClick={() => toggleReview(review.id)}
                     className="text-[14px] font-bold underline text-neutral-900 hover:text-black transition mt-1"
                   >
-                    {isExpanded ? "Réduire" : "Lire la suite"}
+                    {isExpanded ? t.read_less : t.read_more}
                   </button>
                 )}
               </div>
@@ -136,7 +150,7 @@ const ListingReviews: React.FC<ListingReviewsProps> = ({ reviews, listing }) => 
       {reviews.length > 6 && (
         <div className="mt-12">
           <button className="border-2 border-neutral-900 hover:bg-neutral-900 hover:text-white transition-all text-neutral-900 font-black px-8 py-3 rounded-xl text-[14px] uppercase tracking-widest">
-            Afficher les {reviews.length} commentaires
+            {t.show_all_x_reviews} {reviews.length} {t.reviews_count}
           </button>
         </div>
       )}

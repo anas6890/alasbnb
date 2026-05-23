@@ -8,6 +8,7 @@ export type CitySelectValue = {
   label: string;
   latlng: number[];
   value: string;
+  cityName?: string;
 };
 
 interface Props {
@@ -28,13 +29,12 @@ const CitySelect: React.FC<Props> = ({ value, onChange, countryValue }) => {
       return response.data.map((item: any) => {
         const address = item.address;
         const city = address?.city || address?.town || address?.village || address?.municipality || item.name;
-        const country = address?.country || "";
         
         return {
-          label: country ? `${city} - ${country}` : city,
+          label: item.display_name,
           value: item.place_id,
           latlng: [parseFloat(item.lat), parseFloat(item.lon)],
-          region: country,
+          cityName: city,
         };
       });
     } catch (error) {
@@ -45,16 +45,34 @@ const CitySelect: React.FC<Props> = ({ value, onChange, countryValue }) => {
 
   return (
     <AsyncSelect
-      placeholder="Rechercher une ville..."
+      placeholder="Rechercher une destination..."
       cacheOptions
       loadOptions={loadOptions}
       value={value}
       onChange={(val: any) => onChange(val as CitySelectValue)}
+      formatOptionLabel={(option: any) => {
+        const parts = option.label.split(',');
+        const main = parts[0];
+        const sub = parts.slice(1).join(',');
+        return (
+          <div className="flex flex-col gap-0.5">
+            <div className="font-bold text-neutral-800 text-[15px]">{main}</div>
+            {sub && <div className="text-xs text-neutral-500 font-medium">{sub.trim()}</div>}
+          </div>
+        );
+      }}
       classNames={{
-        control: () => "p-3 border-2",
+        control: () => "p-3 border-2 rounded-xl",
         input: () => "text-lg",
         option: () => "text-lg",
       }}
+      theme={(theme: any) => ({
+        ...theme,
+        colors: {
+          ...theme.colors,
+          primary: "black",
+        },
+      })}
     />
   );
 };

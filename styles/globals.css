@@ -3,21 +3,22 @@
 
 @theme {
   --color-brand-50: #f0fdfa;
-  --color-brand-500: #0d9488;
-  --color-brand-600: #0f766e;
-  --color-brand-700: #115e59;
+  --color-brand-500: #e11d48; /* Switch to rose-600 to match Airbnb */
+  --color-brand-600: #be123c;
+  --color-brand-700: #9f1239;
   
-  --font-sans: "Inter", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans: var(--font-nunito), "Inter", system-ui, sans-serif;
   
   --shadow-card: 0 4px 24px -4px rgba(0, 0, 0, 0.04), 0 2px 8px -2px rgba(0, 0, 0, 0.02);
   --shadow-card-hover: 0 20px 40px -8px rgba(0, 0, 0, 0.1), 0 10px 20px -4px rgba(0, 0, 0, 0.06);
+  --shadow-floating: 0 8px 28px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08);
 }
 
 /* ── Brand variables ─────────────────────────────────────────── */
 :root {
-  --brand-primary: #0d9488;
-  --brand-hover: #0f766e;
-  --brand-deep: #115e59;
+  --brand-primary: #e11d48;
+  --brand-hover: #be123c;
+  --brand-deep: #9f1239;
   --brand-navy: #171717;
   --brand-darkest: #0a0a0a;
   --radius-card: 20px;
@@ -28,8 +29,8 @@ html, body, :root { height: 100%; }
 
 body {
   font-family: var(--font-sans);
-  background-color: #fafafa;
-  color: #171717;
+  background-color: #ffffff;
+  color: #222222;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -101,4 +102,38 @@ body {
     background-color: #FF5A5F;
     border-radius: 10px;
   }
+}
+
+/* Custom Leaflet Map Popup Styling */
+.custom-map-popup .leaflet-popup-content-wrapper {
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.custom-map-popup .leaflet-popup-content {
+  margin: 13px;
+  width: 280px !important;
+}
+
+.custom-map-popup .leaflet-popup-close-button {
+  top: 10px !important;
+  right: 10px !important;
+  background-color: white !important;
+  border-radius: 50% !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: black !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+  z-index: 50;
+  transition: all 0.2s;
+}
+
+.custom-map-popup .leaflet-popup-close-button:hover {
+  background-color: #f3f4f6 !important;
+  transform: scale(1.05);
 }

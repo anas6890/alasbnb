@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
 import { TbCheck, TbUserExclamation, TbCameraPlus, TbShieldCheck, TbEdit } from "react-icons/tb";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 interface ProfileClientProps {
   currentUser: SafeUser;
@@ -22,6 +24,8 @@ export default function ProfileClient({ currentUser }: ProfileClientProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [profileImage, setProfileImage] = useState(currentUser?.image || "/images/placeholder.jpg");
+  const lang = useLanguage((s) => s.language) || "en";
+  const t = translations[lang as keyof typeof translations] || translations.en;
 
   const {
     register,
@@ -57,11 +61,11 @@ export default function ProfileClient({ currentUser }: ProfileClientProps) {
 
     axios.put("/api/profile", data)
       .then(() => {
-        toast.success("Profil mis à jour avec succès !");
+        toast.success(t.profile_success || "Profil mis à jour avec succès !");
         router.refresh();
       })
       .catch(() => {
-        toast.error("Un problème est survenu.");
+        toast.error(t.profile_error || "Un problème est survenu.");
       })
       .finally(() => {
         setIsLoading(false);
@@ -107,7 +111,7 @@ export default function ProfileClient({ currentUser }: ProfileClientProps) {
                       className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer text-white"
                     >
                       <TbCameraPlus size={36} className="mb-2" />
-                      <span className="text-sm font-semibold tracking-wide">Modifier</span>
+                      <span className="text-sm font-semibold tracking-wide">{t.profile_edit_photo || "Modifier"}</span>
                     </div>
                   )}
                 </CldUploadWidget>
@@ -127,37 +131,37 @@ export default function ProfileClient({ currentUser }: ProfileClientProps) {
                 <TbEdit size={28} />
               </div>
               <div>
-                <h3 className="text-3xl font-black text-neutral-900 tracking-tight">Vos Informations</h3>
-                <p className="text-neutral-500 font-medium mt-1">Mettez à jour vos données personnelles</p>
+                <h3 className="text-3xl font-black text-neutral-900 tracking-tight">{t.profile_info_title || "Vos Informations"}</h3>
+                <p className="text-neutral-500 font-medium mt-1">{t.profile_info_subtitle || "Mettez à jour vos données personnelles"}</p>
               </div>
             </div>
 
             <div className="flex flex-col gap-8 w-full max-w-2xl">
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input id="firstname" label="Prénom" disabled={isLoading} register={register} errors={errors} required />
-                <Input id="lastname" label="Nom" disabled={isLoading} register={register} errors={errors} required />
+                <Input id="firstname" label={t.profile_firstname || "Prénom"} disabled={isLoading} register={register} errors={errors} required />
+                <Input id="lastname" label={t.profile_lastname || "Nom"} disabled={isLoading} register={register} errors={errors} required />
               </div>
 
               <div className="w-full">
-                <Input id="phone" label="Téléphone (Optionnel)" disabled={isLoading} register={register} errors={errors} />
+                <Input id="phone" label={t.profile_phone || "Téléphone (Optionnel)"} disabled={isLoading} register={register} errors={errors} />
               </div>
 
               <div className="flex flex-col gap-3">
-                <label className="text-neutral-900 font-bold text-sm tracking-wide ml-1">À propos de vous</label>
+                <label className="text-neutral-900 font-bold text-sm tracking-wide ml-1">{t.profile_about_label || "À propos de vous"}</label>
                 <textarea
                   id="bio"
                   disabled={isLoading}
                   {...register("bio")}
-                  placeholder="Décrivez-vous en quelques mots, vos passions, ce que vous aimez en voyage..."
+                  placeholder={t.profile_about_placeholder || "Décrivez-vous en quelques mots, vos passions, ce que vous aimez en voyage..."}
                   rows={4}
                   className="w-full p-5 font-medium text-neutral-800 bg-neutral-50 border-2 rounded-[20px] outline-none transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed border-neutral-100 focus:border-neutral-900 focus:bg-white resize-none hover:bg-neutral-100/50"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                <Input id="preferredLang" label="Langue (ex: fr, en)" disabled={isLoading} register={register} errors={errors} />
-                <Input id="currency" label="Devise (ex: EUR, USD)" disabled={isLoading} register={register} errors={errors} />
+                <Input id="preferredLang" label={t.profile_lang || "Langue (ex: fr, en)"} disabled={isLoading} register={register} errors={errors} />
+                <Input id="currency" label={t.profile_currency || "Devise (ex: EUR, USD)"} disabled={isLoading} register={register} errors={errors} />
               </div>
 
               <div className="pt-8 mt-4 flex justify-end border-t border-neutral-100">
@@ -169,7 +173,7 @@ export default function ProfileClient({ currentUser }: ProfileClientProps) {
                   >
                     <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-out"></span>
                     <TbCheck size={22} className="relative z-10" />
-                    <span className="relative z-10">Enregistrer les modifications</span>
+                    <span className="relative z-10">{t.profile_save || "Enregistrer les modifications"}</span>
                   </button>
                 </div>
               </div>

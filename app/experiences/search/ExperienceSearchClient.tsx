@@ -5,6 +5,8 @@ import { IExperiencesParams } from "@/app/actions/getExperiences";
 import Container from "@/components/Container";
 import ExperienceCard from "@/components/experience/ExperienceCard";
 import { BiFilter } from "react-icons/bi";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 const MapExperiences = dynamic(() => import("@/components/MapExperiences"), { ssr: false });
 
@@ -19,10 +21,15 @@ export default function ExperienceSearchClient({
   currentUser,
   searchParams,
 }: ExperienceSearchClientProps) {
+  const lang = useLanguage((s) => s.language) || "en";
+  const t = translations[lang as keyof typeof translations] || translations.en;
+
   const locationLabel = searchParams.locationValue
     ? searchParams.locationValue.split(" - ")[0]
-    : "Toutes les destinations";
-  const resultsLabel = experiences.length === 1 ? "1 experience" : `${experiences.length} experiences`;
+    : t.all_destinations || "Toutes les destinations";
+  const resultsLabel = experiences.length === 1 
+    ? `1 ${t.experiences.toLowerCase().replace(/s$/, '') || "experience"}` 
+    : `${experiences.length} ${t.experiences.toLowerCase() || "experiences"}`;
 
   return (
     <Container>
@@ -30,11 +37,11 @@ export default function ExperienceSearchClient({
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-semibold text-neutral-900">{locationLabel} : {resultsLabel}</h1>
-            <p className="text-sm text-neutral-500">Classement des resultats</p>
+            <p className="text-sm text-neutral-500">{t.available_ranking || "Classement des resultats"}</p>
           </div>
           <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-200 text-sm font-semibold text-neutral-800 hover:shadow-md transition">
             <BiFilter size={18} />
-            Filtres
+            {t.more_filters || "Filtres"}
           </button>
         </div>
 

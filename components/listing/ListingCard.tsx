@@ -155,62 +155,55 @@ function ListingCard({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -8 }}
-        transition={{
-          duration: 0.4,
-          ease: [0.22, 1, 0.36, 1],
-        }}
-        className="cursor-pointer group h-full"
+        className="cursor-pointer group h-full flex flex-col gap-3"
       >
-        <div className="flex flex-col gap-2 w-full transition-all duration-500 h-full">
-          <div className="aspect-[20/19] w-full relative overflow-hidden rounded-[16px]">
-            <Image
-              fill
-              className="object-cover h-full w-full group-hover:scale-110 transition-transform duration-700 ease-out"
-              src={data.images?.[0] || ""}
-              alt="listing"
-            />
-            {renderStatusBadge()}
-            <div className="absolute top-4 right-4">
-              <HeartButton listingId={data.id} currentUser={currentUser} />
-            </div>
+        <div className="aspect-[20/19] w-full relative overflow-hidden rounded-[16px] transition-all duration-300">
+          <Image
+            fill
+            className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-500 ease-out"
+            src={data.images?.[0] || ""}
+            alt="listing"
+          />
+          {renderStatusBadge()}
+          <div className="absolute top-3 right-3">
+            <HeartButton listingId={data.id} currentUser={currentUser} />
           </div>
-          
-          <div className="flex flex-col gap-0.5 mt-2">
-            <div className="text-[15px] text-neutral-800 font-normal truncate">
+        </div>
+        
+        <div className="flex flex-col gap-0.5">
+          <div className="flex flex-row items-start justify-between">
+            <div className="text-[15px] text-neutral-900 font-semibold truncate pr-4">
               <span className="capitalize">{type === 'EXPERIENCE' ? t.experiences : (type === 'LISTING' ? t.logements : type)}</span> {city && `- ${city}`}
             </div>
-            
-            <div className="text-[15px] text-neutral-500 font-normal truncate">
-              {reservationDate || availabilityDate || t.dates_flexible}
-            </div>
-
-            <div className="flex flex-row items-center justify-between mt-1 text-[15px] text-neutral-500">
-              <div className="flex flex-row items-center gap-1">
-                <span className="font-semibold text-neutral-800">{formattedPrice}</span>
-                <span className="whitespace-nowrap">
-                  {reservation ? t.total : `${t.for_one} ${isExperience ? t.person : t.night}`}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-[14px]">★</span>
-                <span>{data.avgRating > 0 ? data.avgRating.toFixed(2) : t.new}</span>
-              </div>
+            <div className="flex items-center gap-1 shrink-0 text-[15px] font-light">
+              <span className="text-[14px]">★</span>
+              <span>{data.avgRating > 0 ? data.avgRating.toFixed(2) : t.new}</span>
             </div>
           </div>
           
-          {onAction && actionLabel && (
-            <div className="px-2 mt-auto">
-              <Button
-                disabled={disabled}
-                small
-                label={actionLabel}
-                onClick={handleCancel}
-              />
-            </div>
-          )}
-          {children}
+          <div className="text-[15px] text-neutral-500 font-normal truncate">
+            {reservationDate || availabilityDate || t.dates_flexible}
+          </div>
+
+          <div className="flex flex-row items-center mt-1 text-[15px] text-neutral-900">
+            <span className="font-semibold">{formattedPrice}</span>
+            <span className="font-normal ml-1 text-neutral-900">
+              {reservation ? t.total : `${t.for_one} ${isExperience ? t.person : t.night}`}
+            </span>
+          </div>
         </div>
+        
+        {onAction && actionLabel && (
+          <div className="mt-2">
+            <Button
+              disabled={disabled}
+              small
+              label={actionLabel}
+              onClick={handleCancel}
+            />
+          </div>
+        )}
+        {children}
       </motion.div>
     </div>
   );

@@ -9,6 +9,8 @@ import dynamic from "next/dynamic";
 import { categories, experienceCategories } from "@/components/navbar/Categories";
 
 import useLanguage from "@/hook/useLanguage";
+import useCurrency from "@/hook/useCurrency";
+import { usePrice } from "@/hook/usePrice";
 import { translations } from "@/lib/translations";
 import Calendar from "@/components/inputs/Calendar";
 import Heading from "@/components/Heading";
@@ -55,6 +57,8 @@ const CreateListingPage = () => {
   const [step, setStep] = useState(STEPS.TYPE);
   const [isLoading, setIsLoading] = useState(false);
   const { language } = useLanguage();
+  const { currency } = useCurrency();
+  const { symbol } = usePrice(0); // Using usePrice to get symbol for current currency
   // Prefer English fallback to avoid accidentally showing French when a key is missing
   const t = translations[language] || translations.en;
 
@@ -87,6 +91,7 @@ const CreateListingPage = () => {
       partiesAllowed: false,
       checkInTime: 15,
       checkOutTime: 11,
+      cancellationPolicy: "FLEXIBLE",
       dateRange: {
         startDate: new Date(),
         endDate: new Date(),
@@ -116,6 +121,7 @@ const CreateListingPage = () => {
   const partiesAllowed = watch("partiesAllowed");
   const checkInTime = watch("checkInTime");
   const checkOutTime = watch("checkOutTime");
+  const cancellationPolicy = watch("cancellationPolicy");
   const dateRange = watch("dateRange");
 
   const Map = useMemo(
@@ -422,10 +428,6 @@ const CreateListingPage = () => {
   }
 
   if (step === STEPS.CONDITIONS) {
-    if (creationType === "EXPERIENCE") {
-      onNext();
-      return null;
-    }
     bodyContent = (
       <div className="flex flex-col gap-10 max-w-[800px] mx-auto py-10">
         <Heading
@@ -434,73 +436,93 @@ const CreateListingPage = () => {
         />
         
         <div className="flex flex-col gap-8">
+          {creationType === "LISTING" && (
+            <>
+              <div className="flex flex-col gap-4">
+                <h3 className="font-bold text-xl text-neutral-900">{t.house_rules}</h3>
+                
+                <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-lg">{t.pets}</span>
+                    <span className="text-neutral-500">{t.pets_desc}</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked={petsAllowed} onChange={(e) => setCustomValue("petsAllowed", e.target.checked)} className="sr-only peer" />
+                    <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-lg">{t.smoking}</span>
+                    <span className="text-neutral-500">{t.smoking_desc}</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked={smokingAllowed} onChange={(e) => setCustomValue("smokingAllowed", e.target.checked)} className="sr-only peer" />
+                    <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-lg">{t.parties}</span>
+                    <span className="text-neutral-500">{t.parties_desc}</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked={partiesAllowed} onChange={(e) => setCustomValue("partiesAllowed", e.target.checked)} className="sr-only peer" />
+                    <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                  </label>
+                </div>
+              </div>
+
+              <hr className="border-neutral-200" />
+
+              <div className="flex flex-col gap-4">
+                <h3 className="font-bold text-xl text-neutral-900">{t.schedule}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="font-semibold">{t.checkin_from}</label>
+                    <select 
+                      value={checkInTime} 
+                      onChange={(e) => setCustomValue("checkInTime", parseInt(e.target.value))}
+                      className="p-4 border border-neutral-200 rounded-xl focus:border-black outline-none bg-white font-medium"
+                    >
+                      {[12,13,14,15,16,17,18,19,20].map(hour => (
+                        <option key={hour} value={hour}>{hour}:00</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="font-semibold">{t.checkout_before}</label>
+                    <select 
+                      value={checkOutTime} 
+                      onChange={(e) => setCustomValue("checkOutTime", parseInt(e.target.value))}
+                      className="p-4 border border-neutral-200 rounded-xl focus:border-black outline-none bg-white font-medium"
+                    >
+                      {[9,10,11,12,13].map(hour => (
+                        <option key={hour} value={hour}>{hour}:00</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <hr className="border-neutral-200" />
+            </>
+          )}
+
           <div className="flex flex-col gap-4">
-            <h3 className="font-bold text-xl text-neutral-900">{t.house_rules}</h3>
-            
-            <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
-              <div className="flex flex-col">
-                <span className="font-semibold text-lg">{t.pets}</span>
-                <span className="text-neutral-500">{t.pets_desc}</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked={petsAllowed} onChange={(e) => setCustomValue("petsAllowed", e.target.checked)} className="sr-only peer" />
-                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
-              <div className="flex flex-col">
-                <span className="font-semibold text-lg">{t.smoking}</span>
-                <span className="text-neutral-500">{t.smoking_desc}</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked={smokingAllowed} onChange={(e) => setCustomValue("smokingAllowed", e.target.checked)} className="sr-only peer" />
-                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-2xl hover:border-black transition">
-              <div className="flex flex-col">
-                <span className="font-semibold text-lg">{t.parties}</span>
-                <span className="text-neutral-500">{t.parties_desc}</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked={partiesAllowed} onChange={(e) => setCustomValue("partiesAllowed", e.target.checked)} className="sr-only peer" />
-                <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-              </label>
-            </div>
-          </div>
-
-          <hr className="border-neutral-200" />
-
-          <div className="flex flex-col gap-4">
-            <h3 className="font-bold text-xl text-neutral-900">{t.schedule}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-semibold">{t.checkin_from}</label>
-                <select 
-                  value={checkInTime} 
-                  onChange={(e) => setCustomValue("checkInTime", parseInt(e.target.value))}
-                  className="p-4 border border-neutral-200 rounded-xl focus:border-black outline-none bg-white font-medium"
-                >
-                  {[12,13,14,15,16,17,18,19,20].map(hour => (
-                    <option key={hour} value={hour}>{hour}:00</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-semibold">{t.checkout_before}</label>
-                <select 
-                  value={checkOutTime} 
-                  onChange={(e) => setCustomValue("checkOutTime", parseInt(e.target.value))}
-                  className="p-4 border border-neutral-200 rounded-xl focus:border-black outline-none bg-white font-medium"
-                >
-                  {[9,10,11,12,13].map(hour => (
-                    <option key={hour} value={hour}>{hour}:00</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <h3 className="font-bold text-xl text-neutral-900">{t.cancellation_policy_title || "Politique d'annulation"}</h3>
+            <select
+                value={cancellationPolicy}
+                onChange={(e) => setCustomValue("cancellationPolicy", e.target.value)}
+                className="p-4 border border-neutral-200 rounded-xl focus:border-black outline-none bg-white font-medium"
+            >
+                <option value="FLEXIBLE">{t.policy_flexible}</option>
+                <option value="MODERATE">{t.policy_moderate}</option>
+                <option value="STRICT">{t.policy_strict}</option>
+                <option value="NON_REFUNDABLE">{t.policy_non_refundable}</option>
+            </select>
           </div>
 
         </div>
@@ -540,7 +562,7 @@ const CreateListingPage = () => {
           {/* Price Input Section */}
           <div className="flex flex-col items-center justify-center py-16 bg-white rounded-[32px] border-2 border-neutral-200 shadow-sm transition">
             <div className="flex items-center justify-center bg-neutral-50 p-6 rounded-3xl border border-neutral-200">
-               <span className="text-[64px] font-bold text-neutral-900">€</span>
+               <span className="text-[64px] font-bold text-neutral-900">{symbol}</span>
                <input
                  id="price"
                  type="number"

@@ -91,7 +91,7 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
     let dates: Date[] = [];
 
     reservations.forEach((reservation) => {
-      if (reservation.checkIn && reservation.checkOut) {
+      if ((reservation.status === "CONFIRMED" || reservation.status === "COMPLETED") && reservation.checkIn && reservation.checkOut) {
         const range = eachDayOfInterval({
           start: new Date(reservation.checkIn),
           end: new Date(reservation.checkOut),

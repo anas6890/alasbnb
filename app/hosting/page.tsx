@@ -8,10 +8,13 @@ import { FiHome, FiDollarSign, FiStar, FiActivity } from "react-icons/fi";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import { translations } from "@/lib/translations";
+import { formatPriceServer } from "@/hook/usePrice";
+import { Currency } from "@/hook/useCurrency";
 
 export default async function HostingPage() {
   const cookieStore = await cookies();
   const language = cookieStore.get("language")?.value || "en";
+  const currency = (cookieStore.get("currency")?.value || "EUR") as Currency;
   const t = translations[language as keyof typeof translations] || translations.en;
 
   const currentUser = await getCurrentUser();
@@ -28,7 +31,7 @@ export default async function HostingPage() {
   const allHostItems = [...listings, ...experiences];
 
   const stats = [
-    { label: t.host_dashboard_total_earnings, value: `€${totalEarnings}`, icon: FiDollarSign, color: "text-green-600", bg: "bg-green-100" },
+    { label: t.host_dashboard_total_earnings, value: formatPriceServer(totalEarnings, currency), icon: FiDollarSign, color: "text-green-600", bg: "bg-green-100" },
     { label: t.host_dashboard_active_listings, value: activeListings, icon: FiHome, color: "text-blue-600", bg: "bg-blue-100" },
     { label: t.host_dashboard_active_experiences, value: activeExperiences, icon: FiActivity, color: "text-teal-600", bg: "bg-teal-100" },
   ];
@@ -44,22 +47,22 @@ export default async function HostingPage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="col-span-1 md:col-span-2 bg-neutral-900 text-white p-8 md:p-10 rounded-[36px] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] relative overflow-hidden group">
-            <div className="absolute -right-20 -top-20 w-80 h-80 bg-brand-500 rounded-full blur-[80px] opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+          <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-rose-500 via-rose-500 to-orange-500 text-white p-8 md:p-10 rounded-[36px] shadow-[0_20px_40px_-15px_rgba(244,63,94,0.4)] relative overflow-hidden group">
+            <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/20 rounded-full blur-[80px] opacity-40 group-hover:opacity-60 transition-opacity duration-700"></div>
             <div className="flex flex-col justify-between h-full relative z-10 gap-8">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md border border-white/10">
+                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md border border-white/20">
                   <FiDollarSign size={24} className="text-white" />
                 </div>
-                <p className="text-xs text-neutral-300 font-black uppercase tracking-[0.2em]">{t.host_dashboard_total_earnings}</p>
+                <p className="text-xs text-white/80 font-black uppercase tracking-[0.2em]">{t.host_dashboard_total_earnings}</p>
               </div>
               <div>
-                <p className="text-5xl md:text-7xl font-black tracking-tighter">€{totalEarnings}</p>
+                <p className="text-5xl md:text-7xl font-black tracking-tighter">{formatPriceServer(totalEarnings, currency)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-8 md:p-10 rounded-[36px] border border-neutral-100 shadow-sm hover:shadow-xl transition-all duration-500 group flex flex-col justify-between gap-8">
+          <div className="bg-white p-8 md:p-10 rounded-[36px] border border-neutral-100 shadow-sm hover:shadow-[0_15px_30px_-10px_rgba(244,63,94,0.15)] hover:-translate-y-1 transition-all duration-500 group flex flex-col justify-between gap-8">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300 border border-blue-100">
                 <FiHome size={24} />
@@ -69,7 +72,7 @@ export default async function HostingPage() {
             <p className="text-5xl md:text-6xl font-black text-neutral-900 tracking-tighter">{activeListings}</p>
           </div>
 
-          <div className="bg-white p-8 md:p-10 rounded-[36px] border border-neutral-100 shadow-sm hover:shadow-xl transition-all duration-500 group flex flex-col justify-between gap-8">
+          <div className="bg-white p-8 md:p-10 rounded-[36px] border border-neutral-100 shadow-sm hover:shadow-[0_15px_30px_-10px_rgba(244,63,94,0.15)] hover:-translate-y-1 transition-all duration-500 group flex flex-col justify-between gap-8">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300 border border-teal-100">
                 <FiActivity size={24} />
@@ -100,7 +103,7 @@ export default async function HostingPage() {
                   const title = res.type === 'EXPERIENCE' ? res.experienceSnapshot?.title : res.listingSnapshot?.title;
 
                   return (
-                    <div key={res.id} className="flex items-center justify-between p-4 rounded-[24px] bg-neutral-50 border-2 border-transparent hover:border-neutral-900 hover:bg-white transition-all duration-300 group">
+                    <div key={res.id} className="flex items-center justify-between p-4 rounded-[24px] bg-neutral-50 border-2 border-transparent hover:border-rose-100 hover:bg-white hover:shadow-[0_10px_20px_-5px_rgba(244,63,94,0.1)] hover:-translate-y-1 transition-all duration-300 group">
                       <div className="flex items-center gap-4">
                         <div className="w-16 h-16 bg-neutral-200 rounded-[18px] overflow-hidden relative shadow-sm group-hover:scale-105 transition-transform duration-300">
                            {imageUrl && <Image src={imageUrl} alt="preview" fill className="object-cover" />}
@@ -118,7 +121,7 @@ export default async function HostingPage() {
                         </div>
                       </div>
                       <div className="text-right flex flex-col items-end gap-1">
-                        <p className="font-black text-lg text-neutral-900 tracking-tighter">€{res.totalPrice}</p>
+                        <p className="font-black text-lg text-neutral-900 tracking-tighter">{formatPriceServer(res.totalPrice, currency)}</p>
                         <div className="flex items-center gap-1">
                           <div className={`w-2 h-2 rounded-full ${res.status === 'CONFIRMED' ? 'bg-teal-500' : 'bg-amber-500'}`}></div>
                           <span className="text-[10px] font-bold uppercase text-neutral-500">
@@ -152,7 +155,7 @@ export default async function HostingPage() {
                     .sort((a, b) => b.avgRating - a.avgRating)
                     .slice(0, 5)
                     .map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-4 rounded-[24px] bg-neutral-50 border-2 border-transparent hover:border-neutral-900 hover:bg-white transition-all duration-300 group">
+                  <div key={item.id} className="flex items-center justify-between p-4 rounded-[24px] bg-neutral-50 border-2 border-transparent hover:border-rose-100 hover:bg-white hover:shadow-[0_10px_20px_-5px_rgba(244,63,94,0.1)] hover:-translate-y-1 transition-all duration-300 group">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-neutral-200 rounded-[18px] overflow-hidden relative shadow-sm group-hover:scale-105 transition-transform duration-300">
                          {item.images?.[0] && <Image src={item.images[0]} alt="preview" fill className="object-cover" />}
@@ -164,9 +167,9 @@ export default async function HostingPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-neutral-100 group-hover:bg-neutral-900 group-hover:border-neutral-900 transition-colors">
-                      <FiStar size={14} className="fill-amber-500 text-amber-500" />
-                      <span className="font-black text-sm text-neutral-900 group-hover:text-white tracking-tighter">{(item.avgRating || 0).toFixed(1)}</span>
+                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-neutral-100 group-hover:bg-gradient-to-r group-hover:from-rose-500 group-hover:to-orange-500 group-hover:border-transparent transition-all">
+                      <FiStar size={14} className="fill-amber-500 text-amber-500 group-hover:fill-white group-hover:text-white transition-colors" />
+                      <span className="font-black text-sm text-neutral-900 group-hover:text-white tracking-tighter transition-colors">{(item.avgRating || 0).toFixed(1)}</span>
                     </div>
                   </div>
                 ))}

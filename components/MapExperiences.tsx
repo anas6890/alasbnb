@@ -44,8 +44,8 @@ export default function MapExperiences({ experiences, className }: Props) {
       className={className || "h-[70vh] rounded-2xl w-full border border-neutral-100 shadow-sm z-0"}
     >
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
       {markers.map((marker) => {
         const customIcon = L.divIcon({

@@ -76,10 +76,10 @@ function Navbar({ currentUser }: Props) {
   }, [currentUser, loginModel, router, mode]);
 
   return (
-    <div className="fixed top-0 left-0 w-full glass z-50 transition-all duration-300">
+    <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-rose-100/90 via-white/95 to-orange-100/90 backdrop-blur-md z-50 transition-all duration-300 border-b border-rose-200/50 shadow-[0_4px_20px_rgba(244,63,94,0.05)]">
       <div className={`transition-all duration-500 ${isCompact ? "py-1.5" : "py-1.5"}`}>
         <Container>
-          <div className="flex flex-row items-center justify-between gap-3 md:gap-0 relative h-[64px]">
+          <div className={`flex flex-row items-center justify-between gap-3 md:gap-0 relative transition-all duration-300 ${isCompact ? "h-16" : "h-20"}`}>
             <div className="flex-none">
               <Logo />
             </div>
@@ -149,7 +149,7 @@ function Navbar({ currentUser }: Props) {
             <div className="flex flex-row items-center gap-4 flex-none">
               <div
                 onClick={onRent}
-                className="hidden md:block text-[13px] font-bold py-3 px-5 rounded-full hover:bg-neutral-100 transition-all duration-300 cursor-pointer text-neutral-800"
+                className="hidden md:block text-[13px] font-bold py-3 px-5 rounded-full bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer"
               >
                 {mode === "experiences" ? t.host_experience : t.host_listing}
               </div>

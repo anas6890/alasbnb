@@ -69,6 +69,7 @@ export default async function getListings(params: IListingsParams) {
       query.NOT = {
         reservations: {
           some: {
+            status: { notIn: ["PENDING", "CANCELLED"] },
             OR: [
               {
                 checkOut: { gte: startDate },
@@ -129,6 +130,14 @@ export default async function getListings(params: IListingsParams) {
           date: availability.date.toISOString(),
         })),
       };
+    });
+
+    // Sort by avgRating (descending), then by createdAt (newest first)
+    safeListings.sort((a, b) => {
+      if (b.avgRating !== a.avgRating) {
+        return b.avgRating - a.avgRating;
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
     return safeListings;

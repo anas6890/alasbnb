@@ -5,6 +5,8 @@ import { IListingsParams } from "@/app/actions/getListings";
 import Container from "@/components/Container";
 import ListingCard from "@/components/listing/ListingCard";
 import { BiFilter } from "react-icons/bi";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 const MapListings = dynamic(() => import("@/components/MapListings"), { ssr: false });
 
@@ -19,10 +21,15 @@ export default function SearchClient({
   currentUser,
   searchParams,
 }: SearchClientProps) {
+  const lang = useLanguage((s) => s.language) || "en";
+  const t = translations[lang as keyof typeof translations] || translations.en;
+
   const locationLabel = searchParams.locationValue
     ? searchParams.locationValue.split(" - ")[0]
-    : "Toutes les destinations";
-  const resultsLabel = listings.length === 1 ? "1 logement" : `${listings.length} logements`;
+    : t.all_destinations || "Toutes les destinations";
+  const resultsLabel = listings.length === 1 
+    ? `1 ${t.logement_single || "logement"}` 
+    : `${listings.length} ${t.logements_plural || "logements"}`;
 
   return (
     <Container>
@@ -33,12 +40,12 @@ export default function SearchClient({
               {locationLabel}
             </h1>
             <p className="text-base text-neutral-500 font-medium">
-              {resultsLabel} disponibles · Classement par pertinence
+              {resultsLabel} {t.available_ranking || "disponibles · Classement par pertinence"}
             </p>
           </div>
           <button className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border border-neutral-300 text-sm font-bold text-neutral-800 hover:border-neutral-900 hover:shadow-md transition-all bg-white">
             <BiFilter size={20} />
-            Plus de filtres
+            {t.more_filters || "Plus de filtres"}
           </button>
         </div>
 

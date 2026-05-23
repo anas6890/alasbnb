@@ -9,7 +9,7 @@ interface IParams {
 
 export async function POST(
   request: Request,
-  { params }: { params: IParams }
+  { params }: { params: Promise<IParams> }
 ) {
   const currentUser = await getCurrentUser();
 
@@ -17,7 +17,8 @@ export async function POST(
     return NextResponse.error();
   }
 
-  const { reservationId } = params;
+  const resolvedParams = await params;
+  const { reservationId } = resolvedParams;
 
   if (!reservationId || typeof reservationId !== "string") {
     return new NextResponse("Invalid ID", { status: 400 });

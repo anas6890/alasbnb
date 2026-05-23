@@ -21,6 +21,8 @@ import Counter from "../inputs/Counter";
 import { BiTimeFive, BiGroup, BiCommentDetail, BiWorld, BiCheckCircle, BiMessageDetail, BiUserCircle } from "react-icons/bi";
 import dynamic from "next/dynamic";
 import { usePrice } from "@/hook/usePrice";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 const Map = dynamic(() => import("../Map"), {
   ssr: false,
@@ -41,6 +43,9 @@ type Props = {
 function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
   const router = useRouter();
   const loginModal = useLoginModal();
+
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isContactLoading, setIsContactLoading] = useState(false);
@@ -169,14 +174,14 @@ function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
                     </Link>
                     <div className="flex flex-col">
                         <h1 className="text-xl font-bold text-neutral-800">
-                            Proposé par {experience.user?.firstname}
+                            {t.hosted_by || "Proposé par"} {experience.user?.firstname}
                         </h1>
                         <div className="flex items-center gap-2 text-neutral-500 text-sm">
                             <span>{experience.category}</span>
                             <span>·</span>
                             <span className="flex items-center gap-1">
                                 <span className="text-amber-500">★</span>
-                                {dynamicStats.totalReviews > 0 ? dynamicStats.avgRating.toFixed(1) : "Nouveau"}
+                                {dynamicStats.totalReviews > 0 ? dynamicStats.avgRating.toFixed(1) : t.new || "Nouveau"}
                                 {dynamicStats.totalReviews > 0 && ` (${dynamicStats.totalReviews})`}
                             </span>
                         </div>
@@ -188,14 +193,14 @@ function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
                         onClick={onContactHost}
                         disabled={isContactLoading}
                         className="p-3 border-2 border-neutral-200 rounded-xl hover:border-neutral-800 hover:bg-neutral-50 transition shadow-sm group"
-                        title="Contacter l'hôte"
+                        title={t.contact_host || "Contacter l'hôte"}
                     >
                         <BiMessageDetail size={24} className="text-neutral-600 group-hover:text-neutral-800" />
                     </button>
                     <Link 
                         href={`/users/${experience.hostId}`}
                         className="p-3 border-2 border-neutral-200 rounded-xl hover:border-neutral-800 hover:bg-neutral-50 transition shadow-sm group"
-                        title="Voir le profil"
+                        title={t.click_to_view_profile || "Voir le profil"}
                     >
                         <BiUserCircle size={24} className="text-neutral-600 group-hover:text-neutral-800" />
                     </Link>
@@ -207,25 +212,25 @@ function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
                 <div className="flex items-center gap-3 p-4 bg-neutral-50 rounded-2xl border border-neutral-100 transition hover:bg-white hover:shadow-sm">
                   <BiTimeFive size={28} className="text-neutral-800" />
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Durée</span>
-                    <span className="text-[15px] font-bold text-neutral-800">{experience.durationMinutes} min</span>
+                    <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">{t.duration_label || "Durée"}</span>
+                    <span className="text-[15px] font-bold text-neutral-800">{experience.durationMinutes} {t.duration_min || "min"}</span>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-3 p-4 bg-neutral-50 rounded-2xl border border-neutral-100 transition hover:bg-white hover:shadow-sm">
                   <BiGroup size={28} className="text-neutral-800" />
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Groupe</span>
-                    <span className="text-[15px] font-bold text-neutral-800">Jusqu&apos;à {experience.maxGroupSize} pers.</span>
+                    <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">{t.group_label || "Groupe"}</span>
+                    <span className="text-[15px] font-bold text-neutral-800">{t.up_to || "Jusqu'à"} {experience.maxGroupSize} {t.pers_short || "pers."}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 p-4 bg-neutral-50 rounded-2xl border border-neutral-100 col-span-2 transition hover:bg-white hover:shadow-sm">
                   <BiWorld size={28} className="text-neutral-800" />
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Langues</span>
+                    <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">{t.languages_label || "Langues"}</span>
                     <span className="text-[15px] font-bold text-neutral-800">
-                      {experience.languages?.join(", ") || "Français"}
+                      {experience.languages?.join(", ") || t.french_default || "Français"}
                     </span>
                   </div>
                 </div>
@@ -233,7 +238,7 @@ function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
 
               {/* Description Section */}
               <div className="flex flex-col gap-4 py-4">
-                <h2 className="text-2xl font-black text-neutral-900 tracking-tight italic">Ce que vous allez faire</h2>
+                <h2 className="text-2xl font-black text-neutral-900 tracking-tight italic">{t.what_you_will_do || "Ce que vous allez faire"}</h2>
                 <p className="text-neutral-600 text-[16px] leading-relaxed font-medium">
                   {experience.description}
                 </p>
@@ -242,7 +247,7 @@ function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
               {/* What is included */}
               {experience.included && experience.included.length > 0 && (
                 <div className="flex flex-col gap-5 py-6 border-y border-neutral-100">
-                  <h2 className="text-2xl font-black text-neutral-900 tracking-tight italic">Ce qui est inclus</h2>
+                  <h2 className="text-2xl font-black text-neutral-900 tracking-tight italic">{t.what_is_included || "Ce qui est inclus"}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {experience.included.map((item: string, idx: number) => (
                       <div key={idx} className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl border border-neutral-100">
@@ -258,7 +263,7 @@ function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
 
               {/* Map where we'll be */}
               <div className="flex flex-col gap-6 py-6">
-                <h2 className="text-2xl font-black text-neutral-900 tracking-tight italic">Le lieu de l&apos;activité</h2>
+                <h2 className="text-2xl font-black text-neutral-900 tracking-tight italic">{t.activity_location || "Le lieu de l'activité"}</h2>
                 <div className="rounded-2xl overflow-hidden border-2 border-neutral-100 shadow-sm h-[300px]">
                     <Map center={coordinates} />
                 </div>
@@ -277,7 +282,7 @@ function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
                 <div className="p-8 pb-4">
                     <div className="flex flex-row items-baseline gap-1.5 mb-6">
                         <span className="text-3xl font-black text-neutral-900">{pricePerPersonFormatted}</span>
-                        <span className="font-bold text-neutral-400 text-sm tracking-wide uppercase">/ personne</span>
+                        <span className="font-bold text-neutral-400 text-sm tracking-wide uppercase">/ {t.person || "personne"}</span>
                     </div>
                     
                     <div className="bg-neutral-50 rounded-2xl border border-neutral-100 overflow-hidden mb-6">
@@ -289,8 +294,8 @@ function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
 
                     <div className="mb-8">
                         <Counter
-                            title="Participants"
-                            subtitle={`Maximum ${experience.maxGroupSize} personnes`}
+                            title={t.participants_label || "Participants"}
+                            subtitle={`${t.max_persons || "Maximum"} ${experience.maxGroupSize} ${t.person || "personnes"}`}
                             value={guests}
                             onChange={(val) => {
                             if (val >= 1 && val <= experience.maxGroupSize) {
@@ -305,16 +310,16 @@ function ExperienceClient({ experience, currentUser, reviews = [] }: Props) {
                         onClick={onCreateReservation}
                         className="w-full py-4 bg-neutral-900 hover:bg-black text-white font-black rounded-2xl transition-all shadow-lg active:scale-95 disabled:opacity-50 text-lg uppercase tracking-wider"
                     >
-                        Réserver ma place
+                        {t.reserve_spot || "Réserver ma place"}
                     </button>
                     
                     <p className="text-center text-[12px] font-bold text-neutral-400 mt-4 uppercase tracking-widest">
-                        Aucun montant ne sera prélevé pour le moment
+                        {t.no_charge_yet || "Aucun montant ne sera prélevé pour le moment"}
                     </p>
                 </div>
 
                 <div className="bg-neutral-50 p-8 border-t border-neutral-100 flex flex-row items-center justify-between">
-                  <span className="font-black text-neutral-900 text-xl italic underline decoration-amber-500 decoration-4 underline-offset-4">Total</span>
+                  <span className="font-black text-neutral-900 text-xl italic underline decoration-amber-500 decoration-4 underline-offset-4">{t.total || "Total"}</span>
                   <span className="font-black text-neutral-900 text-2xl tracking-tighter">{totalPriceFormatted}</span>
                 </div>
               </div>

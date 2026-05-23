@@ -5,6 +5,9 @@ import { IoBedOutline } from "react-icons/io5";
 import Image from "next/image";
 import React from "react";
 
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
+
 type Props = {
   bedrooms: number;
 };
@@ -17,13 +20,15 @@ const BEDROOM_IMAGES = [
 
 function Sleep({ bedrooms = 1 }: Props) {
   const roomCount = Math.max(1, bedrooms);
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-xl font-semibold text-neutral-800">Où vous dormirez</p>
+      <p className="text-xl font-semibold text-neutral-800">{t.where_you_will_sleep}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
         {Array.from({ length: Math.min(3, roomCount) }).map((_, index) => {
-          const bedType = index === 0 ? "2 lits simples" : index === 1 ? "1 lit king size" : "1 lit double";
+          const bedType = index === 0 ? `2 ${t.single_beds}` : index === 1 ? `1 ${t.king_bed}` : `1 ${t.double_bed}`;
           const imageUrl = BEDROOM_IMAGES[index % BEDROOM_IMAGES.length];
           return (
             <motion.div
@@ -37,13 +42,13 @@ function Sleep({ bedrooms = 1 }: Props) {
               <div className="relative h-40 w-full overflow-hidden bg-neutral-100">
                 <Image
                   src={imageUrl}
-                  alt={`Chambre ${index + 1}`}
+                  alt={`${t.bedroom} ${index + 1}`}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="p-4 flex flex-col gap-1">
-                <div className="text-[15px] font-semibold text-neutral-800">Chambre {index + 1}</div>
+                <div className="text-[15px] font-semibold text-neutral-800">{t.bedroom} {index + 1}</div>
                 <div className="text-xs text-neutral-500 font-light flex items-center gap-1.5 mt-0.5">
                   <IoBedOutline size={14} className="text-neutral-600" />
                   <span>{bedType}</span>

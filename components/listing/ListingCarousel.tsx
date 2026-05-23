@@ -5,13 +5,18 @@ import { useRef, useState, useEffect } from "react";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import ListingCard from "./ListingCard";
 
+import { useRouter } from "next/navigation";
+import { FiArrowRight } from "react-icons/fi";
+
 interface ListingCarouselProps {
   title: string;
+  searchQuery?: string;
   listings: safeListing[];
   currentUser?: SafeUser | null;
 }
 
-const ListingCarousel: React.FC<ListingCarouselProps> = ({ title, listings, currentUser }) => {
+const ListingCarousel: React.FC<ListingCarouselProps> = ({ title, searchQuery, listings, currentUser }) => {
+  const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -41,7 +46,17 @@ const ListingCarousel: React.FC<ListingCarouselProps> = ({ title, listings, curr
   return (
     <div className="relative group">
       <div className="flex flex-row items-center justify-between mb-3 px-2">
-        <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
+        <div 
+          onClick={() => searchQuery && router.push(`/?locationValue=${encodeURIComponent(searchQuery)}`)}
+          className={`flex flex-row items-center gap-3 w-max ${searchQuery ? 'cursor-pointer group' : ''}`}
+        >
+          <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
+          {searchQuery && (
+             <div className="p-1.5 rounded-full bg-neutral-100 group-hover:bg-neutral-200 transition text-neutral-900 mt-1">
+                <FiArrowRight size={18} />
+             </div>
+          )}
+        </div>
         <div className="flex flex-row items-center gap-2">
           {/* Pagination dots or additional UI could go here */}
         </div>

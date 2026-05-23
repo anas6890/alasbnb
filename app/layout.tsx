@@ -2,6 +2,12 @@ import "../styles/globals.css";
 import getCurrentUser from "./actions/getCurrentUser";
 import NextAuthProvider from "./providers/NextAuthProvider";
 import ClientLayout from "./providers/ClientLayout";
+import { Nunito } from "next/font/google";
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  variable: "--font-nunito",
+});
 
 export const metadata = {
   title: "AlasBnB",
@@ -18,7 +24,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className="font-sans antialiased text-neutral-800">
+      <body className={`${nunito.className} antialiased text-neutral-800 bg-white selection:bg-rose-500/30`}>
         <NextAuthProvider>
           <ClientLayout currentUser={currentUser}>
             {children}

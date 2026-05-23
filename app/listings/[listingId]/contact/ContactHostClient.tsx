@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Container from "@/components/Container";
+import { usePrice } from "@/hook/usePrice";
 
 interface ContactHostClientProps {
   listing: any;
@@ -112,7 +113,7 @@ const ContactHostClient: React.FC<ContactHostClientProps> = ({
               <div className="flex gap-4 items-start">
                 <div className="flex-1 flex flex-col gap-1">
                   <div className="font-bold text-xl">
-                    {listing.pricePerNight} € <span className="text-sm font-normal text-neutral-500">par nuit</span>
+                    <PriceDisplay price={listing.pricePerNight} /> <span className="text-sm font-normal text-neutral-500">par nuit</span>
                   </div>
                   <div className="text-sm font-medium text-neutral-800 line-clamp-2">
                     {listing.title}
@@ -138,5 +139,10 @@ const ContactHostClient: React.FC<ContactHostClientProps> = ({
     </Container>
   );
 }
+
+const PriceDisplay = ({ price }: { price: number }) => {
+  const { formattedPrice } = usePrice(price);
+  return <>{formattedPrice}</>;
+};
 
 export default ContactHostClient;

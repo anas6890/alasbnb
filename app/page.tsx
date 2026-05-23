@@ -2,6 +2,7 @@ import ClientOnly from "@/components/ClientOnly";
 import Container from "@/components/Container";
 import EmptyState from "@/components/EmptyState";
 import ListingCarousel from "@/components/listing/ListingCarousel";
+import SearchResultsClient from "@/components/listing/SearchResultsClient";
 import getCurrentUser from "./actions/getCurrentUser";
 import getListings, { IListingsParams } from "./actions/getListings";
 import { safeListing } from "@/types";
@@ -33,43 +34,75 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
 
   // Group listings by city
   const groupedListings: Record<string, safeListing[]> = {};
+  const cityToLocationValue: Record<string, string> = {};
+
   listing.forEach((list) => {
     const city = list.location?.city || t.elsewhere;
     if (!groupedListings[city]) {
       groupedListings[city] = [];
     }
     groupedListings[city].push(list);
+    if (list.location?.country && !cityToLocationValue[city]) {
+      cityToLocationValue[city] = `${city} - ${list.location.country}`;
+    }
   });
 
-  const cityKeys = Object.keys(groupedListings).sort();
+  // Sort cities by popularity (number of listings)
+  const cityKeys = Object.keys(groupedListings).sort((a, b) => {
+    return groupedListings[b].length - groupedListings[a].length;
+  });
+
+  // Limit to top 8 most popular cities on the homepage if no search is active
+  const isSearchActive = Object.values(searchParams).some(val => val !== undefined && val !== "");
+  const displayCityKeys = isSearchActive ? cityKeys : cityKeys.slice(0, 8);
+
+  if (isSearchActive) {
+    return (
+      <ClientOnly>
+        <SearchResultsClient
+          listings={listing}
+          currentUser={currentUser}
+          locationValue={searchParams.locationValue}
+        />
+      </ClientOnly>
+    );
+  }
 
   return (
     <ClientOnly>
-      <div className="relative w-full h-[25vh] min-h-[220px] max-h-[300px] overflow-hidden bg-neutral-900 mb-12">
-        {/* Luxury Hero Background */}
+      <div className="relative w-full h-[65vh] min-h-[550px] max-h-[800px] overflow-hidden rounded-b-[3rem] mb-16 shadow-[0_20px_60px_-15px_rgba(236,72,153,0.5)]">
+        {/* Tropical Vibrant Background */}
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-70"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=2070&auto=format&fit=crop')" }}
+          className="absolute inset-0 bg-cover bg-center opacity-90 hover:scale-110 transition-transform duration-[3000ms] ease-in-out"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=2070&auto=format&fit=crop')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent opacity-80" />
+        {/* Colorful Gradient Overlay (Pink, Purple, Orange) */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/70 via-purple-500/50 to-orange-400/70 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-transparent to-transparent opacity-80" />
         
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pt-4">
-          <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-2xl mb-2 max-w-4xl">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 mt-10">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-white to-pink-200 tracking-tight drop-shadow-2xl mb-6 max-w-5xl">
             {t.home_hero_title}
           </h1>
-          <p className="text-sm md:text-lg text-neutral-200 font-light max-w-2xl drop-shadow-md">
+          <p className="text-xl md:text-2xl lg:text-3xl text-white font-medium max-w-3xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             {t.home_hero_subtitle}
           </p>
+          <div className="mt-12">
+            <button className="px-10 py-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white rounded-full font-bold text-xl shadow-xl shadow-rose-500/40 hover:shadow-rose-500/60 hover:scale-105 hover:-translate-y-1 active:scale-95 transition-all duration-300">
+              Explorer
+            </button>
+          </div>
         </div>
       </div>
 
       <Container>
         <div className="pb-16 overflow-x-hidden flex flex-col gap-8">
-          {cityKeys.map((city) => (
+          {displayCityKeys.map((city) => (
             <ListingCarousel
               key={city}
               title={`${t.home_explore}${city}`}
-              listings={groupedListings[city]}
+              searchQuery={cityToLocationValue[city] || city}
+              listings={groupedListings[city].slice(0, 20)}
               currentUser={currentUser}
             />
           ))}

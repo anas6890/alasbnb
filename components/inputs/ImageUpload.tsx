@@ -4,6 +4,8 @@ import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import React, { useCallback, useRef } from "react";
 import { TbPhotoPlus, TbTrash } from "react-icons/tb";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 declare global {
   var cloudinary: any;
@@ -17,6 +19,8 @@ type Props = {
 const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "cptcecyi";
 
 function ImageUpload({ onChange, value = [] }: Props) {
+  const lang = useLanguage((s) => s.language) || "en";
+  const t = translations[lang as keyof typeof translations] || translations.en;
   // Ensure value is always an array
   const imageList = Array.isArray(value) ? value : value ? [value] : [];
 
@@ -64,7 +68,7 @@ function ImageUpload({ onChange, value = [] }: Props) {
               />
               {index === 0 && (
                 <div className="absolute top-2 left-2 bg-teal-500 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded shadow-sm">
-                  Couverture
+                  {t.image_upload_cover || "Couverture"}
                 </div>
               )}
               <button
@@ -90,7 +94,7 @@ function ImageUpload({ onChange, value = [] }: Props) {
                 className="flex flex-col items-center justify-center border-2 border-dashed border-neutral-300 hover:border-teal-500 hover:bg-neutral-100/50 transition cursor-pointer rounded-xl aspect-video text-neutral-500 gap-2 h-full min-h-[90px]"
               >
                 <TbPhotoPlus size={24} />
-                <span className="text-xs font-medium">Ajouter des photos</span>
+                <span className="text-xs font-medium">{t.image_upload_add || "Ajouter des photos"}</span>
               </div>
             )}
           </CldUploadWidget>
@@ -113,8 +117,8 @@ function ImageUpload({ onChange, value = [] }: Props) {
                 <TbPhotoPlus size={36} />
               </div>
               <div className="flex flex-col items-center gap-1">
-                <div className="font-semibold text-base">Cliquez pour importer des photos</div>
-                <div className="text-xs text-neutral-400">Glissez-déposez jusqu&apos;à 10 photos de votre logement</div>
+                <div className="font-semibold text-base">{t.image_upload_click || "Cliquez pour importer des photos"}</div>
+                <div className="text-xs text-neutral-400">{t.image_upload_drag || "Glissez-déposez jusqu'à 10 photos de votre logement"}</div>
               </div>
             </div>
           )}

@@ -10,6 +10,8 @@ import ListingCategory from "./ListingCategory";
 import Sleep from "../Sleep";
 import Offers from "../Offers";
 import Link from "next/link";
+import useLanguage from "@/hook/useLanguage";
+import { translations } from "@/lib/translations";
 
 const Map = dynamic(() => import("../Map"), {
   ssr: false,
@@ -60,52 +62,66 @@ function ListingInfo({
   listingId,
 }: Props) {
   const coordinates = lat && lng ? [lat, lng] : undefined;
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   return (
     <div className="col-span-4 flex flex-col gap-8">
       {/* Header Info */}
       <div className="flex flex-col gap-2">
         <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">
-          Logement entier : {category?.label?.toLowerCase() || "logement"}
+          {t.listing_entire} {category?.label?.toLowerCase() || "logement"}
         </h2>
         <div className="flex flex-row items-center gap-1.5 font-normal text-neutral-600 text-[15px]">
-          <div>{maxGuests} voyageurs</div>
+          <div>{maxGuests} {t.travelers_label}</div>
           <div>·</div>
-          <div>{bedrooms} chambres</div>
+          <div>{bedrooms} {t.bedrooms_label}</div>
           <div>·</div>
-          <div>{beds || bedrooms || 1} lits</div>
+          <div>{beds || bedrooms || 1} {t.beds_label}</div>
           <div>·</div>
-          <div>{bathrooms} salles de bain</div>
+          <div>{bathrooms} {t.bathrooms_label}</div>
         </div>
       </div>
       <hr className="border-neutral-200" />
 
+      {/* Category Info */}
+      {category && (
+        <ListingCategory
+          icon={category.icon}
+          label={t[category.label] || category.label}
+          description={t[`desc_${category.label}`] || category.description}
+        />
+      )}
+
       {/* Guest Favorite / Coup de cœur voyageurs banner */}
       {avgRating >= 4.5 && (
-        <div className="border border-neutral-200 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center bg-white shadow-sm gap-4">
-          <div className="flex flex-row items-center gap-4">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2 font-bold text-base text-neutral-800">
-                <FiAward size={22} className="text-brand-600" />
-                <span>Coup de cœur voyageurs</span>
+        <>
+          <hr className="border-neutral-200" />
+          <div className="border border-neutral-200 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center bg-white shadow-sm gap-4">
+            <div className="flex flex-row items-center gap-4">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 font-bold text-base text-neutral-800">
+                  <FiAward size={22} className="text-brand-600" />
+                  <span>{t.guest_favorite}</span>
+                </div>
+                <p className="text-xs text-neutral-500 font-light mt-1 max-w-[280px]">
+                  {t.guest_favorite_desc}
+                </p>
               </div>
-              <p className="text-xs text-neutral-500 font-light mt-1 max-w-[280px]">
-                Un des logements préférés des voyageurs sur Airbnb
-              </p>
+            </div>
+            <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+              <div className="flex flex-col items-center">
+                <div className="text-xl font-bold text-neutral-800">{avgRating.toFixed(1)}</div>
+                <div className="text-[10px] text-[#f59e0b] tracking-tighter">★★★★★</div>
+              </div>
+              <div className="h-8 w-[1px] bg-neutral-200 hidden md:block" />
+              <div className="flex flex-col items-center">
+                <div className="text-xl font-bold text-neutral-800">{totalReviews}</div>
+                <div className="text-xs text-neutral-500 font-light underline">{t.comments_label}</div>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-            <div className="flex flex-col items-center">
-              <div className="text-xl font-bold text-neutral-800">{avgRating.toFixed(1)}</div>
-              <div className="text-[10px] text-[#f59e0b] tracking-tighter">★★★★★</div>
-            </div>
-            <div className="h-8 w-[1px] bg-neutral-200 hidden md:block" />
-            <div className="flex flex-col items-center">
-              <div className="text-xl font-bold text-neutral-800">{totalReviews}</div>
-              <div className="text-xs text-neutral-500 font-light underline">Commentaires</div>
-            </div>
-          </div>
-        </div>
+        </>
       )}
 
       {/* Host Experience & Unique Selling Points */}
@@ -126,10 +142,10 @@ function ListingInfo({
             </div>
             <div className="flex flex-col">
               <div className="font-bold text-neutral-900 text-lg group-hover:underline decoration-2 underline-offset-2">
-                Hôte : {user?.firstname}
+                {t.host_label} {user?.firstname}
               </div>
               <div className="text-[15px] text-neutral-500 font-normal">
-                Cliquez pour voir le profil et les autres annonces
+                {t.click_to_view_profile}
               </div>
             </div>
           </div>
@@ -139,7 +155,7 @@ function ListingInfo({
             href={`/listings/${listingId}/contact`}
             className="px-6 py-3 border border-neutral-900 rounded-xl font-semibold text-neutral-900 hover:bg-neutral-100 transition-colors inline-block"
           >
-            Contacter l'hôte
+            {t.contact_host}
           </Link>
         </div>
 
@@ -148,9 +164,9 @@ function ListingInfo({
           <div className="flex flex-row items-start gap-4">
             <FiAward size={28} className="text-neutral-700 mt-1" />
             <div className="flex flex-col gap-0.5">
-              <div className="font-semibold text-neutral-800 text-[15px]">Très bien noté par les voyageurs</div>
+              <div className="font-semibold text-neutral-800 text-[15px]">{t.highly_rated}</div>
               <div className="text-sm text-neutral-500 font-light">
-                100 % des voyageurs ont attribué 5 étoiles à ce logement.
+                {t.highly_rated_desc}
               </div>
             </div>
           </div>
@@ -160,9 +176,9 @@ function ListingInfo({
           <div className="flex flex-row items-start gap-4">
             <TbPool size={28} className="text-neutral-700 mt-1" />
             <div className="flex flex-col gap-0.5">
-              <div className="font-semibold text-neutral-800 text-[15px]">Offrez-vous un plongeon</div>
+              <div className="font-semibold text-neutral-800 text-[15px]">{t.take_a_dip}</div>
               <div className="text-sm text-neutral-500 font-light">
-                C&apos;est l&apos;un des rares logements de la région disposant d&apos;une piscine.
+                {t.take_a_dip_desc}
               </div>
             </div>
           </div>
@@ -171,16 +187,14 @@ function ListingInfo({
         <div className="flex flex-row items-start gap-4">
           <FiKey size={28} className="text-neutral-700 mt-1" />
           <div className="flex flex-col gap-0.5">
-            <div className="font-semibold text-neutral-800 text-[15px]">Procédure d&apos;arrivée exceptionnelle</div>
+            <div className="font-semibold text-neutral-800 text-[15px]">{t.great_checkin}</div>
             <div className="text-sm text-neutral-500 font-light">
-              Les voyageurs récents ont attribué 5 étoiles à la procédure d&apos;arrivée.
+              {t.great_checkin_desc}
             </div>
           </div>
         </div>
       </div>
       <hr />
-
-
 
       {/* Description */}
       <div className="flex flex-col gap-2">
@@ -200,7 +214,7 @@ function ListingInfo({
 
       {/* Map location */}
       <div className="flex flex-col gap-1">
-        <p className="text-xl font-semibold text-neutral-800">Où se situe le logement</p>
+        <p className="text-xl font-semibold text-neutral-800">{t.where_it_is}</p>
         <p className="text-sm font-light text-neutral-500">
           {location?.city ? `${location.city}, ` : ""}{location?.country || locationValue}
         </p>

@@ -8,6 +8,7 @@ import { FiPlus, FiMoreHorizontal, FiEdit2, FiTrash2, FiEye, FiCheckCircle, FiCl
 import axios from "axios";
 import { toast } from "react-toastify";
 import useLanguage from "@/hook/useLanguage";
+import { usePrice } from "@/hook/usePrice";
 import { translations } from "@/lib/translations";
 
 interface HostListingsClientProps {
@@ -152,7 +153,7 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
 
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-neutral-50">
                     <div className="flex items-center gap-1 text-sm font-black text-neutral-900 tracking-tighter">
-                        €{activeTab === 'listings' ? item.pricePerNight : item.pricePerPerson}
+                        <PriceDisplay price={activeTab === 'listings' ? item.pricePerNight : item.pricePerPerson} />
                         <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-tight ml-1">
                             / {activeTab === 'listings' ? t.host_listings_per_night : t.host_listings_per_person}
                         </span>
@@ -189,6 +190,11 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
       )}
     </div>
   );
+};
+
+const PriceDisplay = ({ price }: { price: number }) => {
+  const { formattedPrice } = usePrice(price);
+  return <>{formattedPrice}</>;
 };
 
 export default HostListingsClient;

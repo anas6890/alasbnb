@@ -10,9 +10,11 @@ import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
+import { usePrice } from "@/hook/usePrice";
 import { FiCheck, FiX, FiMessageSquare, FiCalendar, FiClock, FiCheckCircle } from "react-icons/fi";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import CancelReservationModal from "@/components/models/CancelReservationModal";
 
 interface HostReservationsClientProps {
   reservations: SafeReservation[];
@@ -28,20 +30,24 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
   const locale = language === "fr" ? fr : enUS;
   const router = useRouter();
   const [processingId, setProcessingId] = useState("");
+  const [cancellingReservation, setCancellingReservation] = useState<SafeReservation | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
   const [activeFilter, setActiveFilter] = useState<"ALL" | "PENDING" | "CONFIRMED">("ALL");
 
   const filteredReservations = useMemo(() => {
-    if (activeFilter === "ALL") return reservations;
-    return reservations.filter(r => r.status === activeFilter);
+    const validReservations = reservations.filter(r => r.status !== "PENDING");
+    if (activeFilter === "ALL") return validReservations;
+    return validReservations.filter(r => r.status === activeFilter);
   }, [reservations, activeFilter]);
 
-  const onCancel = useCallback((id: string) => {
-    setProcessingId(id);
+  const confirmCancel = useCallback(() => {
+    if (!cancellingReservation) return;
+    setProcessingId(cancellingReservation.id);
 
-    axios.post(`/api/reservations/${id}/cancel`, { reason: 'Host cancelled' })
+    axios.post(`/api/reservations/${cancellingReservation.id}/cancel`, { reason: 'Host cancelled' })
       .then(() => {
         toast.success(t.host_reservations_toast_rejected || "Réservation annulée");
+        setCancellingReservation(null);
         router.refresh();
       })
       .catch(() => {
@@ -50,7 +56,7 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
       .finally(() => {
         setProcessingId("");
       });
-  }, [router, t]);
+  }, [router, t, cancellingReservation]);
 
   const onContact = useCallback(async (guestId: string, listingId?: string | null, experienceId?: string | null) => {
     setProcessingId("contact-" + guestId);
@@ -131,6 +137,14 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
 
   return (
     <div className="flex flex-col gap-8 pb-20">
+      <CancelReservationModal
+        isOpen={!!cancellingReservation}
+        reservation={cancellingReservation}
+        onClose={() => setCancellingReservation(null)}
+        onConfirm={confirmCancel}
+        isLoading={processingId === cancellingReservation?.id}
+        isHost={true}
+      />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-3xl font-black text-neutral-900 tracking-tight mb-2 italic underline decoration-brand-500 decoration-4 underline-offset-4">{t.host_reservations_title}</h1>
@@ -209,7 +223,9 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
                                                     <h3 className="text-2xl font-black text-neutral-900 line-clamp-1">{title}</h3>
                                                 </div>
                                                 <div className="bg-neutral-50 px-4 py-2 rounded-2xl border border-neutral-100">
-                                                    <span className="text-xl font-black text-neutral-900 tracking-tighter">€{reservation.totalPrice}</span>
+                                                    <span className="text-xl font-black text-neutral-900 tracking-tighter">
+                                                        <PriceDisplay price={reservation.totalPrice} />
+                                                    </span>
                                                 </div>
                                             </div>
                                             
@@ -249,7 +265,7 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
                                                 {reservation.status === 'CONFIRMED' && (
                                                     <button
                                                         disabled={processingId === reservation.id}
-                                                        onClick={() => onCancel(reservation.id)}
+                                                        onClick={() => setCancellingReservation(reservation)}
                                                         className="flex items-center gap-2 px-6 py-3 text-rose-500 border-2 border-rose-50 rounded-2xl hover:bg-rose-50 hover:border-rose-100 transition shadow-sm active:scale-95"
                                                     >
                                                         <FiX size={20} />
@@ -323,7 +339,7 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end gap-1">
-                                        <span className="font-black text-lg text-neutral-900 tracking-tighter">€{res.totalPrice}</span>
+                                        <span className="font-black text-lg text-neutral-900 tracking-tighter"><PriceDisplay price={res.totalPrice} /></span>
                                         <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-neutral-100 shadow-sm">
                                             <div className="w-4 h-4 rounded-full relative overflow-hidden flex-none">
                                                 <Image src={res.user?.image || "/images/placeholder.jpg"} fill alt="u" className="object-cover" />
@@ -340,6 +356,11 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
       )}
     </div>
   );
+};
+
+const PriceDisplay = ({ price }: { price: number }) => {
+  const { formattedPrice } = usePrice(price);
+  return <>{formattedPrice}</>;
 };
 
 export default HostReservationsClient;

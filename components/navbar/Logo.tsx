@@ -10,14 +10,14 @@ function Logo({}: Props) {
   const router = useRouter();
 
   return (
-    <div onClick={() => router.push("/")}>
-      <Image
+    <div 
+      onClick={() => router.push("/")} 
+      className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer md:ml-8 lg:ml-12"
+    >
+      <img
         alt="AlasBnB"
-        className="cursor-pointer object-contain"
-        height={58}
-        width={160}
-        src="/assets/logo.png"
-        priority
+        style={{ height: '45px', width: 'auto', objectFit: 'contain' }}
+        src="/assets/logo_transparent.png"
       />
     </div>
   );

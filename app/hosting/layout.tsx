@@ -56,7 +56,7 @@ const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
           <div className="flex items-center gap-4">
             <Link
               href="/hosting/create"
-              className="hidden md:flex items-center gap-2 bg-neutral-900 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-black transition shadow-sm"
+              className="hidden md:flex items-center gap-2 bg-gradient-to-r from-rose-500 to-orange-500 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-[0_8px_20px_rgba(244,63,94,0.25)] hover:shadow-[0_12px_25px_rgba(244,63,94,0.35)] hover:-translate-y-[1px] transition-all duration-300"
             >
               <FiPlus size={18} />
               {t.create}
@@ -77,10 +77,10 @@ const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
                   key={item.name}
                   href={item.href}
                   className={`
-                    flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[15px] font-bold transition-all duration-200
+                    flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[15px] font-bold transition-all duration-300
                     ${isActive 
-                      ? "bg-neutral-900 text-white shadow-md shadow-neutral-200" 
-                      : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"}
+                      ? "bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-[0_8px_20px_rgba(244,63,94,0.3)] hover:-translate-y-[1px]" 
+                      : "text-neutral-500 hover:bg-neutral-50 hover:text-rose-500"}
                   `}
                 >
                   <item.icon size={20} />
@@ -114,7 +114,7 @@ const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex flex-col items-center gap-1 transition ${isActive ? "text-neutral-900" : "text-neutral-400"}`}
+              className={`flex flex-col items-center gap-1 transition ${isActive ? "text-rose-500 scale-105" : "text-neutral-400"}`}
             >
               <item.icon size={22} />
               <span className="text-[10px] font-bold uppercase tracking-tighter">{item.name.split(' ')[0]}</span>

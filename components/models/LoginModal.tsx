@@ -13,6 +13,8 @@ import { toast } from "react-toastify";
 import Button from "../Button";
 import Heading from "../Heading";
 import Input from "../inputs/Input";
+import { translations } from "@/lib/translations";
+import useLanguage from "@/hook/useLanguage";
 import Modal from "./Modal";
 
 type Props = {};
@@ -22,6 +24,8 @@ function LoginModal({ }: Props) {
   const registerModel = useRegisterModal();
   const loginModel = useLoginModel();
   const [isLoading, setIsLoading] = useState(false);
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
 
   const {
     register,
@@ -44,7 +48,7 @@ function LoginModal({ }: Props) {
       setIsLoading(false);
 
       if (callback?.ok) {
-        toast.success("Login Successfully");
+        toast.success(t.login_success || "Login Successfully");
         router.refresh();
         loginModel.onClose();
       } else if (callback?.error) {
@@ -66,10 +70,10 @@ function LoginModal({ }: Props) {
 
   const bodyContent = (
     <div className="flex flex-col gap-4">
-      <Heading title="Welcome Back" subtitle="Login to your Account!" center />
+      <Heading title={t.welcome_back} subtitle={t.login_subtitle} center />
       <Input
         id="email"
-        label="Email Address"
+        label={t.email}
         disabled={isLoading}
         register={register}
         errors={errors}
@@ -77,7 +81,7 @@ function LoginModal({ }: Props) {
       />
       <Input
         id="password"
-        label="Password"
+        label={t.password}
         disabled={isLoading}
         register={register}
         errors={errors}
@@ -91,14 +95,14 @@ function LoginModal({ }: Props) {
       <hr />
       <Button
         outline
-        label="Continue with Google"
+        label={t.continue_google}
         icon={FcGoogle}
         disabled={isLoading}
         onClick={() => socialAction("google")}
       />
       <Button
         outline
-        label="Continue with Facebook"
+        label={t.continue_facebook}
         icon={AiFillFacebook}
         disabled={isLoading}
         onClick={() => socialAction("facebook")}
@@ -106,12 +110,12 @@ function LoginModal({ }: Props) {
       />
       <div className="text-neutral-500 text-center mt-4 font-light">
         <div>
-          {`Didn't have an Account?`}{" "}
+          {t.no_account}{" "}
           <span
             onClick={toggle}
             className="text-neutral-800 cursor-pointer hover:underline"
           >
-            Create an Account
+            {t.create_account}
           </span>
         </div>
       </div>
@@ -121,8 +125,8 @@ function LoginModal({ }: Props) {
     <Modal
       disabled={isLoading}
       isOpen={loginModel.isOpen}
-      title="Login"
-      actionLabel="Continue"
+      title={t.login}
+      actionLabel={t.submit}
       onClose={loginModel.onClose}
       onSubmit={handleSubmit(onSubmit)}
       body={bodyContent}
