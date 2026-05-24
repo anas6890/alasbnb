@@ -164,7 +164,7 @@ function Navbar({ currentUser }: Props) {
           </div>
           
           {/* Big Search Bar Area (Hidden when scrolled) */}
-          <div className={`flex items-center justify-center transition-all duration-500 origin-top overflow-hidden flex-col ${showBigSearch ? "h-[54px] opacity-100 mt-2 mb-1 scale-y-100" : "h-0 opacity-0 my-0 scale-y-0"}`}>
+          <div className={`flex items-center justify-center transition-all duration-500 origin-top overflow-hidden flex-col ${showBigSearch ? "h-[72px] opacity-100 mt-2 mb-2 scale-y-100" : "h-0 opacity-0 my-0 scale-y-0"}`}>
             <Search mode={mode} />
           </div>
 

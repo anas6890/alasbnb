@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
+import { useEffect } from "react";
 import { 
   FiLayout, 
   FiList, 
@@ -35,6 +36,11 @@ const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
     { name: t.reservations, href: "/hosting/reservations", icon: FiCalendar },
     { name: t.messages, href: "/hosting/messages", icon: FiMessageSquare },
   ];
+
+  useEffect(() => {
+    // Globally ensure scrolling is enabled when navigating across host pages
+    document.body.style.overflow = "unset";
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-[#F7F7F7]">

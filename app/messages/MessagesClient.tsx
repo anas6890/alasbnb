@@ -8,7 +8,7 @@ import { SafeConversation, SafeMessage, SafeUser } from "@/types";
 import Avatar from "@/components/Avatar";
 import { pusherClient } from "@/lib/pusher";
 import { useSearchParams } from "next/navigation";
-import { IoChevronBack } from "react-icons/io5";
+import { IoChevronBack, IoSend, IoChatbubbleOutline } from "react-icons/io5";
 
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
@@ -34,7 +34,6 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
   const [conversations, setConversations] = useState(initialConversations);
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
   
-  // Filter conversations based on role
   const filteredConversations = useMemo(() => {
     return conversations.filter(conv => 
         activeTab === "guest" ? conv.guestId === currentUser.id : conv.hostId === currentUser.id
@@ -43,7 +42,6 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
 
   const [selectedConversation, setSelectedConversation] = useState<SafeConversation | null>(null);
 
-  // Auto-switch tab and open chat if selectedId exists
   useEffect(() => {
     if (selectedId) {
         const found = initialConversations.find(c => c.id === selectedId);
@@ -59,7 +57,6 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load messages when conversation is selected
   useEffect(() => {
     if (selectedConversation) {
       setIsLoading(true);
@@ -70,7 +67,6 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
     }
   }, [selectedConversation?.id]);
 
-  // Scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -79,7 +75,6 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  // Pusher for real-time messages
   useEffect(() => {
     if (!selectedConversation || !pusherClient) return;
 
@@ -93,7 +88,6 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
         return [...current, message];
       });
 
-      // Update conversation in sidebar list to top with new timestamp
       setConversations((current) => {
           const updatedConversations = [...current];
           const index = updatedConversations.findIndex(c => c.id === selectedConversation.id);
@@ -139,63 +133,73 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
   };
 
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-neutral-50 overflow-hidden relative">
+    // Outer container ensures standard height when in Host Layout, and full height when standalone Guest mode
+    <div className={`w-full ${isHostMode ? 'h-[calc(100vh-140px)] md:rounded-[32px] md:border md:shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)]' : 'h-[calc(100vh-80px)]'} flex overflow-hidden bg-white border-neutral-200 relative`}>
+      
       {/* Sidebar: Conversations List */}
       <div className={`
         ${isMobileChatOpen ? 'hidden md:flex' : 'flex'}
-        w-full md:w-1/3 lg:w-1/4 border-r border-neutral-200 bg-white flex-col z-20
+        w-full md:w-80 lg:w-96 flex-col border-r border-neutral-100 bg-[#FAFAFA] z-20 shrink-0
       `}>
-        <div className="p-6 border-b border-neutral-200 bg-white">
-          <h1 className="text-2xl font-black text-neutral-900 italic tracking-tight">
-            {activeTab === "host" ? t.messages_host_title : t.messages_guest_title}
+        <div className="p-6 md:p-8">
+          <h1 className="text-2xl font-black text-neutral-900 tracking-tight">
+            {activeTab === "host" ? t.messages_host_title || 'Messagerie' : t.messages_guest_title || 'Vos messages'}
           </h1>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-4">
           {filteredConversations.length === 0 ? (
-            <div className="p-12 text-center flex flex-col items-center gap-6">
-              <div className="p-6 bg-neutral-50 rounded-full text-neutral-200 border border-neutral-100 shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
-                </svg>
+            <div className="py-12 text-center flex flex-col items-center gap-4">
+              <div className="p-4 bg-white rounded-2xl text-neutral-300 shadow-sm border border-neutral-100">
+                <IoChatbubbleOutline size={32} />
               </div>
-              <p className="text-[15px] font-bold text-neutral-400 max-w-[200px] leading-snug">
-                {activeTab === "guest" 
-                    ? t.msg_no_hosts 
-                    : t.msg_no_guests}
+              <p className="text-sm font-semibold text-neutral-400">
+                {activeTab === "guest" ? t.msg_no_hosts || 'Aucun message.' : t.msg_no_guests || 'Aucun message.'}
               </p>
             </div>
           ) : (
-            filteredConversations.map((conv) => {
-              const otherUser = getOtherUser(conv);
-              const isSelected = selectedConversation?.id === conv.id;
-              return (
-                <div
-                  key={conv.id}
-                  onClick={() => handleSelectConversation(conv)}
-                  className={`p-5 cursor-pointer flex gap-4 hover:bg-neutral-50/80 transition-all border-b border-neutral-100 group relative ${
-                    isSelected ? "bg-neutral-50 border-l-[6px] border-l-neutral-900" : "border-l-[6px] border-l-transparent"
-                  }`}
-                >
-                  <Avatar src={otherUser?.image} />
-                  <div className="flex flex-col flex-1 overflow-hidden">
-                    <div className="flex justify-between items-center w-full mb-0.5">
-                      <span className="font-black text-[15px] truncate text-neutral-900 group-hover:text-brand-600 transition-colors">
-                        {otherUser?.firstname || t.msg_user}
-                      </span>
-                         <span className="text-[10px] font-black uppercase text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-md">
-                         {format(new Date(conv.updatedAt), "d MMM", { locale })}
-                       </span>
+            <div className="flex flex-col gap-2">
+              {filteredConversations.map((conv) => {
+                const otherUser = getOtherUser(conv);
+                const isSelected = selectedConversation?.id === conv.id;
+                
+                return (
+                  <div
+                    key={conv.id}
+                    onClick={() => handleSelectConversation(conv)}
+                    className={`p-4 rounded-2xl cursor-pointer flex gap-4 transition-all duration-300 group ${
+                      isSelected 
+                        ? "bg-white shadow-sm border border-neutral-200" 
+                        : "hover:bg-white hover:shadow-sm border border-transparent"
+                    }`}
+                  >
+                    <div className="relative">
+                      <Avatar src={otherUser?.image} />
+                      {/* Active indicator dot placeholder */}
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                     </div>
-                    {conv.listing && (
-                      <span className="text-[12px] text-neutral-500 font-bold truncate italic">
-                        {activeTab === "guest" ? t.msg_regarding : t.msg_your_listing}{conv.listing.title}
-                      </span>
-                    )}
+                    
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className={`font-bold text-[15px] truncate ${isSelected ? 'text-neutral-900' : 'text-neutral-700 group-hover:text-neutral-900'}`}>
+                          {otherUser?.firstname || t.msg_user || 'Utilisateur'}
+                        </span>
+                        <span className="text-[10px] font-semibold text-neutral-400 whitespace-nowrap ml-2">
+                          {format(new Date(conv.updatedAt), "d MMM", { locale })}
+                        </span>
+                      </div>
+                      
+                      {conv.listing && (
+                        <span className="text-xs text-neutral-500 font-medium truncate">
+                          {activeTab === "guest" ? t.msg_regarding || 'À propos de ' : t.msg_your_listing || 'Annonce : '} 
+                          {conv.listing.title}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
         </div>
       </div>
@@ -203,66 +207,84 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
       {/* Main Chat Area */}
       <div className={`
         ${isMobileChatOpen ? 'flex' : 'hidden md:flex'}
-        flex-col flex-1 bg-white z-30
+        flex-col flex-1 bg-white relative z-30
       `}>
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 md:p-6 border-b border-neutral-100 flex justify-between items-center shadow-sm z-10 bg-white">
+            <div className="px-6 py-5 border-b border-neutral-100 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center gap-4">
                 <button 
                     onClick={() => setIsMobileChatOpen(false)}
-                    className="md:hidden p-2 -ml-2 hover:bg-neutral-100 rounded-full transition"
+                    className="md:hidden p-2 -ml-2 text-neutral-500 hover:bg-neutral-100 rounded-full transition-colors"
                 >
-                    <IoChevronBack size={24} className="text-neutral-900" />
+                    <IoChevronBack size={24} />
                 </button>
                 <Avatar src={getOtherUser(selectedConversation)?.image} />
                 <div className="flex flex-col">
-                  <h2 className="font-black text-neutral-900 text-lg">{getOtherUser(selectedConversation)?.firstname}</h2>
-                  <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.5)]"></div>
-                      <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-tighter">{t.msg_online}</p>
-                  </div>
+                  <h2 className="font-black text-neutral-900 text-[17px]">{getOtherUser(selectedConversation)?.firstname}</h2>
+                  <span className="text-xs font-semibold text-green-500">{t.msg_online || 'En ligne'}</span>
                 </div>
               </div>
               
               {selectedConversation.listing && (
-                  <div className="hidden lg:flex items-center gap-3 bg-neutral-50 px-4 py-2 rounded-2xl border border-neutral-100">
-                      <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-sm">
+                  <div className="flex items-center gap-2 md:gap-3 bg-[#FAFAFA] px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-neutral-200 ml-auto">
+                      <div className="hidden sm:block w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden shadow-sm relative shrink-0">
                           <img src={selectedConversation.listing.images?.[0]} className="object-cover w-full h-full" alt="listing" />
                       </div>
-                      <div className="flex flex-col">
-                          <span className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">{t.msg_listing}</span>
-                          <span className="text-xs font-bold text-neutral-800 truncate max-w-[150px]">{selectedConversation.listing.title}</span>
+                      <div className="flex flex-col text-right sm:text-left">
+                          <span className="text-[9px] md:text-[10px] font-bold text-neutral-400 uppercase tracking-wider">{t.msg_listing || 'Annonce'}</span>
+                          <span className="text-[11px] md:text-xs font-bold text-neutral-800 truncate max-w-[100px] md:max-w-[150px]">{selectedConversation.listing.title}</span>
                       </div>
                   </div>
               )}
             </div>
 
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 bg-[#fcfcfc] custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col gap-4 custom-scrollbar bg-white">
               {isLoading ? (
-                <div className="flex justify-center items-center h-full text-neutral-400">
-                  <div className="animate-pulse font-black uppercase tracking-widest text-xs">{t.msg_loading}</div>
+                <div className="flex justify-center items-center h-full">
+                  <div className="w-8 h-8 border-4 border-neutral-200 border-t-neutral-800 rounded-full animate-spin"></div>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="flex justify-center items-center h-full text-neutral-400 text-sm italic">
-                  {t.msg_start}{getOtherUser(selectedConversation)?.firstname}
+                <div className="flex flex-col items-center justify-center h-full text-neutral-400 gap-3">
+                  <div className="p-6 bg-neutral-50 rounded-full">
+                    <IoChatbubbleOutline size={32} className="text-neutral-300" />
+                  </div>
+                  <span className="text-sm font-semibold">{t.msg_start || 'Dites bonjour à'} {getOtherUser(selectedConversation)?.firstname}</span>
                 </div>
               ) : (
-                messages.map((message) => {
+                messages.map((message, index) => {
                   const isMine = message.senderId === currentUser.id;
+                  
+                  // Add logic for grouping messages to round corners conditionally
+                  const isFirstInGroup = index === 0 || messages[index - 1].senderId !== message.senderId;
+                  const isLastInGroup = index === messages.length - 1 || messages[index + 1].senderId !== message.senderId;
+                  
+                  let roundedClass = 'rounded-[20px]';
+                  if (isMine) {
+                    if (!isFirstInGroup && !isLastInGroup) roundedClass = 'rounded-[20px] rounded-r-md';
+                    else if (!isFirstInGroup && isLastInGroup) roundedClass = 'rounded-[20px] rounded-tr-md rounded-br-[4px]';
+                    else if (isFirstInGroup && !isLastInGroup) roundedClass = 'rounded-[20px] rounded-tr-[4px] rounded-br-md';
+                    else roundedClass = 'rounded-[20px] rounded-br-[4px]'; // Single message
+                  } else {
+                    if (!isFirstInGroup && !isLastInGroup) roundedClass = 'rounded-[20px] rounded-l-md';
+                    else if (!isFirstInGroup && isLastInGroup) roundedClass = 'rounded-[20px] rounded-tl-md rounded-bl-[4px]';
+                    else if (isFirstInGroup && !isLastInGroup) roundedClass = 'rounded-[20px] rounded-tl-[4px] rounded-bl-md';
+                    else roundedClass = 'rounded-[20px] rounded-bl-[4px]'; // Single message
+                  }
+
                   return (
                     <div
                       key={message.id}
-                      className={`flex ${isMine ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 duration-300`}
+                      className={`flex flex-col ${isMine ? "items-end" : "items-start"} w-full animate-in fade-in slide-in-from-bottom-1 duration-300 ${!isFirstInGroup ? 'mt-0.5' : 'mt-4'}`}
                     >
-                      <div className={`flex flex-col max-w-[85%] md:max-w-[70%] ${isMine ? "items-end" : "items-start"}`}>
+                      <div className="flex flex-col w-full max-w-[85%] md:max-w-[70%]">
                         <div
-                          className={`p-4 rounded-[24px] text-[15px] font-medium shadow-sm leading-relaxed ${
+                          className={`px-5 py-3 text-[15px] leading-relaxed w-fit ${isMine ? "ml-auto" : "mr-auto"} ${roundedClass} ${
                             isMine
-                              ? "bg-neutral-900 text-white rounded-tr-none shadow-neutral-200"
-                              : "bg-white border-2 border-neutral-100 text-neutral-800 rounded-tl-none shadow-neutral-100"
+                              ? "bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm"
+                              : "bg-[#F0F0F0] text-neutral-900"
                           }`}
                         >
                           {message.content.split('\n').map((line, i) => (
@@ -272,23 +294,25 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
                             </span>
                           ))}
                         </div>
-                        <span className="text-[10px] font-black text-neutral-400 mt-2 px-2 uppercase tracking-tighter italic">
-                          {format(new Date(message.createdAt), "HH:mm")}
-                        </span>
+                        {isLastInGroup && (
+                           <span className={`text-[10px] font-semibold text-neutral-400 mt-1 ${isMine ? 'text-right' : 'text-left'}`}>
+                             {format(new Date(message.createdAt), "HH:mm")}
+                           </span>
+                        )}
                       </div>
                     </div>
                   );
                 })
               )}
-              <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} className="h-4" />
             </div>
 
             {/* Chat Input */}
-            <div className="p-6 bg-white border-t border-neutral-100">
-              <div className="flex items-end gap-3 bg-neutral-50 p-3 rounded-3xl border-2 border-neutral-100 focus-within:border-neutral-900 focus-within:bg-white transition-all duration-300 shadow-inner">
+            <div className="p-4 md:px-8 md:py-6 bg-white border-t border-neutral-100">
+              <div className="flex items-end gap-3 bg-[#FAFAFA] border border-neutral-200 rounded-3xl p-2 focus-within:border-neutral-400 focus-within:bg-white transition-all shadow-sm">
                 <textarea
-                  className="flex-1 bg-transparent outline-none max-h-32 min-h-[44px] resize-none px-4 py-2.5 text-[15px] font-medium placeholder:text-neutral-400"
-                  placeholder={t.msg_write_here}
+                  className="flex-1 bg-transparent outline-none max-h-32 min-h-[44px] resize-none px-4 py-2.5 text-[15px] placeholder:text-neutral-400"
+                  placeholder={t.msg_write_here || 'Écrivez votre message...'}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => {
@@ -301,25 +325,21 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
                 <button
                   onClick={sendMessage}
                   disabled={!newMessage.trim()}
-                  className="p-3 mb-1 bg-neutral-900 text-white rounded-2xl hover:bg-black transition-all shadow-md disabled:opacity-30 disabled:cursor-not-allowed transform active:scale-95 group"
+                  className="w-11 h-11 mb-0.5 flex items-center justify-center bg-neutral-900 text-white rounded-full hover:bg-black transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 group-hover:rotate-12 transition-transform">
-                    <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
-                  </svg>
+                  <IoSend size={18} className="ml-1" />
                 </button>
               </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-neutral-50 flex-col gap-6 text-neutral-300 p-10">
-            <div className="p-8 bg-white rounded-[40px] shadow-sm border border-neutral-100">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-20 h-20 opacity-40">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
-                </svg>
+          <div className="flex-1 flex items-center justify-center bg-white flex-col gap-4 text-neutral-300">
+            <div className="p-6 bg-[#FAFAFA] rounded-full border border-neutral-100">
+                <IoChatbubbleOutline size={48} className="text-neutral-200" />
             </div>
-            <div className="text-center flex flex-col gap-2">
-                <p className="text-xl font-black text-neutral-800 italic">{t.msg_select}</p>
-                <p className="text-sm font-bold text-neutral-400 uppercase tracking-widest">{t.msg_to_start}</p>
+            <div className="text-center flex flex-col">
+                <h3 className="text-xl font-black text-neutral-800">{t.msg_select || 'Sélectionnez une discussion'}</h3>
+                <p className="text-sm text-neutral-400 mt-1">{t.msg_to_start || 'Pour commencer à échanger'}</p>
             </div>
           </div>
         )}

@@ -53,6 +53,21 @@ function UserMenu({ currentUser }: Props) {
         
         const unreadHandler = () => {
           setHasUnreadMessages(true);
+          
+          // Show a toast notification if not already on the messages page
+          if (!pathname?.includes('/messages')) {
+            const lang = useLanguage.getState().language || "en";
+            const currentT = translations[lang as keyof typeof translations] || translations.en;
+            toast.info(currentT.new_message_notification || "Vous avez reçu un nouveau message !", {
+              onClick: () => router.push('/messages'),
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            });
+          }
         };
         
         pusherClient.bind("messages:unread", unreadHandler);

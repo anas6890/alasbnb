@@ -80,7 +80,7 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
         <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/70 via-purple-500/50 to-orange-400/70 mix-blend-multiply" />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-transparent to-transparent opacity-80" />
         
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 mt-10">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-white to-pink-200 tracking-tight drop-shadow-2xl mb-6 max-w-5xl">
             {t.home_hero_title}
           </h1>

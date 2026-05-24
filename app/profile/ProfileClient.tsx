@@ -5,14 +5,13 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { SafeUser } from "@/types";
 import Container from "@/components/Container";
-import Heading from "@/components/Heading";
 import Input from "@/components/inputs/Input";
-import Button from "@/components/Button";
 import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
-import { TbCheck, TbUserExclamation, TbCameraPlus, TbShieldCheck, TbEdit } from "react-icons/tb";
+import { TbCheck, TbCameraPlus, TbEdit } from "react-icons/tb";
+import { FiUser } from "react-icons/fi";
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
 
@@ -73,117 +72,143 @@ export default function ProfileClient({ currentUser }: ProfileClientProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-gradient-to-br from-brand-500/10 to-teal-200/10 blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-gradient-to-tl from-rose-500/10 to-orange-200/10 blur-[100px] pointer-events-none"></div>
-
-      <Container>
-        <div className="max-w-6xl mx-auto pt-8 pb-24 relative z-10">
-          
-          {/* Luxury Split Container */}
-          <div className="flex flex-col md:flex-row bg-white/80 backdrop-blur-xl rounded-[40px] overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.06)] border border-white/50 min-h-[75vh] hover:shadow-[0_30px_100px_rgba(0,0,0,0.08)] transition-shadow duration-700">
-            
-            {/* Left Panel - Dark & Elegant */}
-            <div className="md:w-[35%] bg-neutral-900 p-10 flex flex-col items-center justify-center text-center relative overflow-hidden group">
-              {/* Soft animated glow effect in the background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-600/30 via-neutral-900 to-rose-600/20 opacity-60 group-hover:opacity-100 transition-opacity duration-1000"></div>
-              <div className="absolute -top-[20%] -left-[20%] w-[140%] h-[140%] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 animate-[spin_120s_linear_infinite] pointer-events-none"></div>
-            
-            <div className="relative z-10 w-full flex flex-col items-center">
-              <div className="relative w-40 h-40 rounded-full overflow-hidden mb-6 group shadow-2xl ring-4 ring-neutral-800 transition-all duration-500 hover:ring-brand-500">
-                <Image
-                  src={profileImage || "/images/placeholder.jpg"}
-                  alt="Profile"
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
-
-                <CldUploadWidget
-                  onUpload={handleUpload}
-                  onSuccess={handleUpload}
-                  uploadPreset={uploadPreset}
-                  options={{ maxFiles: 1 }}
-                >
-                  {({ open }) => (
-                    <div
-                      onClick={() => open?.()}
-                      className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer text-white"
-                    >
-                      <TbCameraPlus size={36} className="mb-2" />
-                      <span className="text-sm font-semibold tracking-wide">{t.profile_edit_photo || "Modifier"}</span>
-                    </div>
-                  )}
-                </CldUploadWidget>
-              </div>
-              
-              <h2 className="text-3xl font-black text-white tracking-tight mb-2">
-                {currentUser.firstname} {currentUser.lastname}
-              </h2>
-              <p className="text-neutral-400 font-light mb-10">{currentUser.email}</p>
+    <div className="bg-[#FAFAFA] min-h-screen pb-24 font-sans">
+      
+      {/* Clean Brand Header */}
+      <div className="bg-white border-b border-neutral-200 pt-6 pb-10">
+        <Container>
+          <div className="flex flex-col gap-3">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-50 text-rose-500 w-fit border border-rose-100">
+              <FiUser size={16} />
+              <span className="text-xs font-bold tracking-wider uppercase">Compte</span>
             </div>
+            <h1 className="text-4xl md:text-5xl font-black text-neutral-900 tracking-tight">
+              Profil Personnel
+            </h1>
+            <p className="text-neutral-500 font-medium max-w-xl text-lg">
+              Gérez vos informations, votre photo de profil et vos préférences de compte.
+            </p>
           </div>
+        </Container>
+      </div>
 
-          {/* Right Panel - Form (Light Mode) */}
-          <div className="md:w-[65%] p-10 lg:p-16 flex flex-col justify-center bg-white relative">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="p-3 bg-neutral-100 text-neutral-900 rounded-2xl">
-                <TbEdit size={28} />
-              </div>
-              <div>
-                <h3 className="text-3xl font-black text-neutral-900 tracking-tight">{t.profile_info_title || "Vos Informations"}</h3>
-                <p className="text-neutral-500 font-medium mt-1">{t.profile_info_subtitle || "Mettez à jour vos données personnelles"}</p>
-              </div>
-            </div>
+      {/* Main Content Area */}
+      <div className="pt-12">
+        <Container>
+          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            
+            {/* Left Column: Avatar & Quick Info */}
+            <div className="lg:col-span-4 flex flex-col gap-6">
+              <div className="bg-white rounded-[2rem] p-8 border border-neutral-200 shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+                {/* Decorative subtle gradient */}
+                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-rose-50/50 to-transparent pointer-events-none"></div>
+                
+                <div className="relative w-40 h-40 rounded-full overflow-hidden mb-6 mt-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-4 border-white transition-all duration-300 group-hover:shadow-[0_12px_40px_rgba(244,63,94,0.15)] z-10">
+                  <Image
+                    src={profileImage || "/images/placeholder.jpg"}
+                    alt="Profile"
+                    fill
+                    style={{ objectFit: "cover" }}
+                  />
 
-            <div className="flex flex-col gap-8 w-full max-w-2xl">
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Input id="firstname" label={t.profile_firstname || "Prénom"} disabled={isLoading} register={register} errors={errors} required />
-                <Input id="lastname" label={t.profile_lastname || "Nom"} disabled={isLoading} register={register} errors={errors} required />
-              </div>
-
-              <div className="w-full">
-                <Input id="phone" label={t.profile_phone || "Téléphone (Optionnel)"} disabled={isLoading} register={register} errors={errors} />
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <label className="text-neutral-900 font-bold text-sm tracking-wide ml-1">{t.profile_about_label || "À propos de vous"}</label>
-                <textarea
-                  id="bio"
-                  disabled={isLoading}
-                  {...register("bio")}
-                  placeholder={t.profile_about_placeholder || "Décrivez-vous en quelques mots, vos passions, ce que vous aimez en voyage..."}
-                  rows={4}
-                  className="w-full p-5 font-medium text-neutral-800 bg-neutral-50 border-2 rounded-[20px] outline-none transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed border-neutral-100 focus:border-neutral-900 focus:bg-white resize-none hover:bg-neutral-100/50"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                <Input id="preferredLang" label={t.profile_lang || "Langue (ex: fr, en)"} disabled={isLoading} register={register} errors={errors} />
-                <Input id="currency" label={t.profile_currency || "Devise (ex: EUR, USD)"} disabled={isLoading} register={register} errors={errors} />
-              </div>
-
-              <div className="pt-8 mt-4 flex justify-end border-t border-neutral-100">
-                <div className="w-full md:w-auto">
-                  <button 
-                    disabled={isLoading}
-                    onClick={handleSubmit(onSubmit)}
-                    className="w-full md:w-auto px-10 py-4 bg-neutral-900 hover:bg-black text-white font-bold rounded-full transition-all duration-300 shadow-[0_10px_20px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_30px_rgba(0,0,0,0.2)] hover:-translate-y-1 active:scale-95 active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 flex items-center justify-center gap-3 overflow-hidden relative group/btn"
+                  <CldUploadWidget
+                    onUpload={handleUpload}
+                    onSuccess={handleUpload}
+                    uploadPreset={uploadPreset}
+                    options={{ maxFiles: 1 }}
                   >
-                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-out"></span>
-                    <TbCheck size={22} className="relative z-10" />
-                    <span className="relative z-10">{t.profile_save || "Enregistrer les modifications"}</span>
-                  </button>
+                    {({ open }) => (
+                      <div
+                        onClick={() => open?.()}
+                        className="absolute inset-0 bg-neutral-900/60 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer text-white"
+                      >
+                        <TbCameraPlus size={32} className="mb-2" />
+                        <span className="text-xs font-bold tracking-wide uppercase">{t.profile_edit_photo || "Modifier"}</span>
+                      </div>
+                    )}
+                  </CldUploadWidget>
+                </div>
+                
+                <h2 className="text-2xl font-black text-neutral-900 tracking-tight mb-1 relative z-10">
+                  {currentUser.firstname} {currentUser.lastname}
+                </h2>
+                <p className="text-neutral-500 font-medium text-sm relative z-10">{currentUser.email}</p>
+                
+                <div className="w-full h-[1px] bg-neutral-100 my-6 relative z-10"></div>
+                
+                <div className="w-full flex flex-col gap-3 text-left relative z-10">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-neutral-400 font-medium">Inscription</span>
+                    <span className="text-neutral-900 font-bold">2026</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-neutral-400 font-medium">Statut</span>
+                    <span className="text-emerald-500 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">Vérifié</span>
+                  </div>
                 </div>
               </div>
-
             </div>
-          </div>
 
-        </div>
+            {/* Right Column: Edit Form */}
+            <div className="lg:col-span-8">
+              <div className="bg-white rounded-[2rem] p-8 md:p-10 border border-neutral-200 shadow-sm flex flex-col gap-8">
+                
+                <div className="flex items-center gap-4 mb-2 pb-6 border-b border-neutral-100">
+                  <div className="p-3 bg-rose-50 text-rose-500 rounded-2xl border border-rose-100">
+                    <TbEdit size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-neutral-900 tracking-tight">{t.profile_info_title || "Vos Informations"}</h3>
+                    <p className="text-neutral-500 font-medium text-sm mt-1">{t.profile_info_subtitle || "Mettez à jour vos données personnelles"}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-6 w-full">
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input id="firstname" label={t.profile_firstname || "Prénom"} disabled={isLoading} register={register} errors={errors} required />
+                    <Input id="lastname" label={t.profile_lastname || "Nom"} disabled={isLoading} register={register} errors={errors} required />
+                  </div>
+
+                  <div className="w-full">
+                    <Input id="phone" label={t.profile_phone || "Téléphone (Optionnel)"} disabled={isLoading} register={register} errors={errors} />
+                  </div>
+
+                  <div className="flex flex-col gap-2.5">
+                    <label className="text-neutral-900 font-bold text-sm tracking-wide ml-1">{t.profile_about_label || "À propos de vous"}</label>
+                    <textarea
+                      id="bio"
+                      disabled={isLoading}
+                      {...register("bio")}
+                      placeholder={t.profile_about_placeholder || "Décrivez-vous en quelques mots, vos passions, ce que vous aimez en voyage..."}
+                      rows={4}
+                      className="w-full p-4 font-medium text-neutral-800 bg-white border-2 rounded-2xl outline-none transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed border-neutral-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 resize-none hover:border-neutral-300"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    <Input id="preferredLang" label={t.profile_lang || "Langue (ex: fr, en)"} disabled={isLoading} register={register} errors={errors} />
+                    <Input id="currency" label={t.profile_currency || "Devise (ex: EUR, USD)"} disabled={isLoading} register={register} errors={errors} />
+                  </div>
+
+                  <div className="pt-8 mt-4 flex justify-end">
+                    <button 
+                      disabled={isLoading}
+                      onClick={handleSubmit(onSubmit)}
+                      className="w-full md:w-auto px-8 py-3.5 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white font-bold rounded-xl transition-all duration-300 shadow-[0_8px_25px_rgba(244,63,94,0.25)] hover:shadow-[0_12px_30px_rgba(244,63,94,0.35)] hover:-translate-y-0.5 active:scale-95 disabled:opacity-70 disabled:hover:translate-y-0 flex items-center justify-center gap-2"
+                    >
+                      <TbCheck size={20} />
+                      <span>{t.profile_save || "Enregistrer les modifications"}</span>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </Container>
       </div>
-    </Container>
     </div>
   );
 }

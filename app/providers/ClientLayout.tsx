@@ -23,8 +23,9 @@ export default function ClientLayout({ currentUser, children }: ClientLayoutProp
   const isListingDetail = pathname?.startsWith("/listings/");
   const isTripsPage = pathname?.startsWith("/trips");
   const isHome = pathname === "/" || pathname === "/experiences";
+  const isMessagesPage = pathname?.startsWith("/messages");
   
-  const paddingClass = isHostMode ? "" : isHome ? "pt-[142px] pb-20" : "pt-28 pb-20";
+  const paddingClass = isHostMode ? "" : isMessagesPage ? "pt-[80px]" : isHome ? "pt-[172px] pb-20" : "pt-28 pb-20";
 
   return (
     <ClientOnly>
@@ -38,7 +39,7 @@ export default function ClientLayout({ currentUser, children }: ClientLayoutProp
       <div className={paddingClass}>
         {children}
       </div>
-      {!isHostMode && <Footer />}
+      {!isHostMode && !isMessagesPage && <Footer />}
     </ClientOnly>
   );
 }

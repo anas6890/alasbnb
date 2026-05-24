@@ -14,11 +14,12 @@ declare global {
 type Props = {
   onChange: (value: string[]) => void;
   value: string[];
+  isExperience?: boolean;
 };
 
 const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "cptcecyi";
 
-function ImageUpload({ onChange, value = [] }: Props) {
+function ImageUpload({ onChange, value = [], isExperience }: Props) {
   const lang = useLanguage((s) => s.language) || "en";
   const t = translations[lang as keyof typeof translations] || translations.en;
   // Ensure value is always an array
@@ -48,15 +49,25 @@ function ImageUpload({ onChange, value = [] }: Props) {
     [onChange]
   );
 
+  const handleClose = useCallback(() => {
+    document.body.style.overflow = "unset";
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 w-full">
       {imageList.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[300px] overflow-y-auto p-2 border border-neutral-100 rounded-xl bg-neutral-50/50">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {imageList.map((url, index) => (
             <div
               key={url}
-              className={`relative rounded-xl overflow-hidden group aspect-video border border-neutral-200/60 shadow-sm transition hover:shadow-md ${
-                index === 0 ? "col-span-2 row-span-2 aspect-auto h-[160px] md:h-[200px]" : ""
+              className={`relative rounded-3xl overflow-hidden group aspect-video border border-neutral-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] ${
+                index === 0 ? "col-span-2 row-span-2 aspect-auto h-[200px] md:h-[280px]" : ""
               }`}
             >
               <Image
@@ -64,37 +75,39 @@ function ImageUpload({ onChange, value = [] }: Props) {
                 fill
                 style={{ objectFit: "cover" }}
                 src={url}
-                className="transition group-hover:scale-105 duration-300"
+                className="transition-transform group-hover:scale-105 duration-500"
               />
               {index === 0 && (
-                <div className="absolute top-2 left-2 bg-teal-500 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded shadow-sm">
+                <div className="absolute top-4 left-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white text-[11px] uppercase font-black px-3 py-1.5 rounded-full shadow-lg tracking-wider">
                   {t.image_upload_cover || "Couverture"}
                 </div>
               )}
               <button
                 type="button"
                 onClick={(e) => handleRemove(url, e)}
-                className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 hover:bg-red-500 hover:text-white text-neutral-600 transition shadow-sm opacity-0 group-hover:opacity-100 duration-200"
+                className="absolute top-4 right-4 p-2.5 rounded-full bg-white/95 hover:bg-rose-500 hover:text-white text-neutral-600 transition-all shadow-md opacity-0 group-hover:opacity-100 duration-300 transform group-hover:translate-y-0 translate-y-2"
               >
-                <TbTrash size={15} />
+                <TbTrash size={18} />
               </button>
             </div>
           ))}
 
-          {/* Add more box in the grid */}
           <CldUploadWidget
             onUpload={handleUpload}
             onSuccess={handleUpload}
+            onClose={handleClose}
             uploadPreset={uploadPreset}
             options={{ maxFiles: 10 }}
           >
             {({ open }) => (
               <div
                 onClick={() => open?.()}
-                className="flex flex-col items-center justify-center border-2 border-dashed border-neutral-300 hover:border-teal-500 hover:bg-neutral-100/50 transition cursor-pointer rounded-xl aspect-video text-neutral-500 gap-2 h-full min-h-[90px]"
+                className="flex flex-col items-center justify-center border-2 border-dashed border-neutral-300 hover:border-rose-500 hover:bg-rose-50/50 hover:text-rose-600 transition-all duration-300 cursor-pointer rounded-3xl aspect-video text-neutral-400 gap-3 h-full min-h-[120px]"
               >
-                <TbPhotoPlus size={24} />
-                <span className="text-xs font-medium">{t.image_upload_add || "Ajouter des photos"}</span>
+                <div className="p-3 bg-neutral-100 rounded-full group-hover:bg-rose-100 transition-colors">
+                    <TbPhotoPlus size={28} />
+                </div>
+                <span className="text-sm font-bold">{t.image_upload_add || "Ajouter plus"}</span>
               </div>
             )}
           </CldUploadWidget>
@@ -105,20 +118,25 @@ function ImageUpload({ onChange, value = [] }: Props) {
         <CldUploadWidget
           onUpload={handleUpload}
           onSuccess={handleUpload}
+          onClose={handleClose}
           uploadPreset={uploadPreset}
           options={{ maxFiles: 10 }}
         >
           {({ open }) => (
             <div
               onClick={() => open?.()}
-              className="relative cursor-pointer hover:border-teal-500 hover:bg-neutral-50/50 transition border-dashed border-2 p-16 border-neutral-300 flex flex-col justify-center items-center gap-4 text-neutral-600 rounded-2xl bg-neutral-50/20"
+              className="relative cursor-pointer hover:border-rose-500 hover:bg-rose-50/30 transition-all duration-500 border-dashed border-2 p-16 md:p-24 border-neutral-300 flex flex-col justify-center items-center gap-6 text-neutral-600 rounded-[2rem] bg-neutral-50/50 group"
             >
-              <div className="p-4 bg-teal-50 rounded-full text-teal-500 transition shadow-sm border border-teal-100">
-                <TbPhotoPlus size={36} />
+              <div className="p-6 bg-white rounded-full text-rose-500 shadow-sm border border-neutral-100 group-hover:scale-110 group-hover:shadow-md transition-all duration-500">
+                <TbPhotoPlus size={48} />
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="font-semibold text-base">{t.image_upload_click || "Cliquez pour importer des photos"}</div>
-                <div className="text-xs text-neutral-400">{t.image_upload_drag || "Glissez-déposez jusqu'à 10 photos de votre logement"}</div>
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="font-black text-xl text-neutral-800">{t.image_upload_click || "Importer des photos"}</div>
+                <div className="text-sm font-medium text-neutral-400 max-w-sm">
+                  {isExperience 
+                    ? "Glissez-déposez jusqu'à 10 photos de votre activité."
+                    : (t.image_upload_drag || "Commencez par votre meilleure photo. Vous pourrez ajouter les autres ensuite.")}
+                </div>
               </div>
             </div>
           )}
