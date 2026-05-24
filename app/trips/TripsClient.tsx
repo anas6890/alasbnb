@@ -42,7 +42,7 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
     return r.checkOut && new Date(r.checkOut) < new Date();
   };
 
-  const filteredReservations = reservations.filter((r) => r.type === activeTab && r.status !== "CANCELLED");
+  const filteredReservations = reservations.filter((r) => r.type === activeTab);
   const upcomingTrips = filteredReservations.filter((r) => !getIsPast(r));
   const pastTrips = filteredReservations.filter((r) => getIsPast(r));
 
@@ -231,20 +231,25 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                                             <TbMessageCircle size={18} />
                                             Message
                                         </button>
-                                        <button
-                                            className="p-2.5 bg-white text-rose-500 border border-rose-200 rounded-xl hover:bg-rose-50 transition-all disabled:opacity-50"
-                                            onClick={(e) => {
-                                                e.stopPropagation(); e.preventDefault();
-                                                setCancellingReservation(reservation);
-                                            }}
-                                            disabled={deletingId === reservation.id}
-                                            title={t.cancel || "Annuler"}
-                                        >
-                                            <FiX size={18} />
-                                        </button>
+                                        {reservation.status !== "CANCELLED" && (
+                                            <button
+                                                className="p-2.5 bg-white text-rose-500 border border-rose-200 rounded-xl hover:bg-rose-50 transition-all disabled:opacity-50"
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); e.preventDefault();
+                                                    setCancellingReservation(reservation);
+                                                }}
+                                                disabled={deletingId === reservation.id}
+                                                title={t.cancel || "Annuler"}
+                                            >
+                                                <FiX size={18} />
+                                            </button>
+                                        )}
                                     </div>
-                                    <div className="text-[10px] text-center font-bold text-neutral-500 uppercase tracking-widest bg-neutral-100 py-1.5 rounded-lg border border-neutral-200">
-                                        {t.reservation_label || "Réservation"} {t[`status_${reservation.status.toLowerCase()}` as string] || reservation.status}
+                                    <div className={`text-[10px] text-center font-bold uppercase tracking-widest py-1.5 rounded-lg border ${reservation.status === 'CANCELLED' ? 'bg-rose-50 text-rose-500 border-rose-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
+                                        {reservation.status === "CANCELLED" 
+                                          ? (reservation.cancelledBy && reservation.cancelledBy !== currentUser?.id ? "Annulé par l'hôte" : "Annulé par vous")
+                                          : `${t.reservation_label || "Réservation"} ${t[`status_${reservation.status.toLowerCase()}` as string] || reservation.status}`
+                                        }
                                     </div>
                                 </div>
                             </ListingCard>

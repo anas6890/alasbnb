@@ -116,6 +116,31 @@ export async function POST(
     },
   });
 
+  if (isHost) {
+    const hostName = `${currentUser.firstname} ${currentUser.lastname}`;
+    const notification = await prisma.notification.create({
+      data: {
+        userId: reservation.userId,
+        type: "RESERVATION_CANCELLED",
+        title: `❌ Réservation annulée`,
+        body: `${hostName} a annulé votre réservation pour ${reservation.listing?.title || reservation.session?.experience?.title}.`,
+        link: `/trips`,
+      },
+    });
+
+    const { pusherServer } = await import("@/lib/pusher");
+    await pusherServer.trigger(`user-${reservation.userId}`, "notifications:new", {
+      id: notification.id,
+      type: "RESERVATION_CANCELLED",
+      title: notification.title,
+      body: notification.body,
+      link: notification.link,
+      createdAt: notification.createdAt,
+      senderName: hostName,
+      senderImage: currentUser.image,
+    });
+  }
+
   // ── Libérer le calendrier si logement ────────────────────────────
   if (
     reservation.type === "LISTING" &&

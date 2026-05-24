@@ -3,9 +3,11 @@
 import Container from "@/components/Container";
 import Logo from "@/components/navbar/Logo";
 import UserMenu from "@/components/navbar/UserMenu";
+import NotificationBell from "@/components/navbar/NotificationBell";
 import { SafeUser } from "@/types";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
 import { useEffect } from "react";
@@ -27,6 +29,8 @@ interface HostLayoutProps {
 
 const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const finalUser = currentUser || (session?.user as SafeUser);
   const { language } = useLanguage();
   const t = translations[language] || translations.en;
 
@@ -67,7 +71,10 @@ const HostLayout: React.FC<HostLayoutProps> = ({ children, currentUser }) => {
               <FiPlus size={18} />
               {t.create}
             </Link>
-            <UserMenu currentUser={currentUser} />
+            {finalUser && (
+              <NotificationBell currentUser={finalUser} isHostMode />
+            )}
+            <UserMenu currentUser={finalUser} />
           </div>
         </div>
       </header>

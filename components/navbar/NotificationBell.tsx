@@ -42,7 +42,12 @@ export default function NotificationBell({ currentUser, isHostMode = false }: Pr
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const filteredNotifications = notifications.filter((n) => {
+    const isHostNotif = n.link?.startsWith("/hosting");
+    return isHostMode ? isHostNotif : !isHostNotif;
+  });
+
+  const unreadCount = filteredNotifications.filter((n) => !n.isRead).length;
 
   // ── Charger les notifications initiales ──────────────────────────────
   const fetchNotifications = useCallback(async () => {
@@ -88,9 +93,14 @@ export default function NotificationBell({ currentUser, isHostMode = false }: Pr
       // Ajouter en tête de liste
       setNotifications((prev) => [{ ...data, isRead: false }, ...prev]);
 
-      // Toast enrichi seulement si on n'est pas sur la page des messages
-      const onMessagePage = pathnameRef.current?.includes("/messages");
-      if (!onMessagePage) {
+      // Toast enrichi seulement si on n'est pas sur la page des messages ciblée
+      const isTargetingHost = data.link?.startsWith("/hosting");
+      const currentPath = pathnameRef.current || "";
+      const onTargetMessagePage = isTargetingHost
+        ? currentPath.includes("/hosting/messages")
+        : currentPath.includes("/messages") && !currentPath.includes("/hosting");
+
+      if (!onTargetMessagePage) {
         toast.info(
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full overflow-hidden bg-neutral-200 flex-none">
@@ -236,7 +246,7 @@ export default function NotificationBell({ currentUser, isHostMode = false }: Pr
 
             {/* Liste */}
             <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
-              {notifications.length === 0 ? (
+              {filteredNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-14 gap-3 text-neutral-300">
                   <FiBell size={32} />
                   <p className="text-sm font-semibold">
@@ -244,7 +254,9 @@ export default function NotificationBell({ currentUser, isHostMode = false }: Pr
                   </p>
                 </div>
               ) : (
-                notifications.map((notif) => (
+                filteredNotifications
+                  .filter((n, i) => !n.isRead || i < 5)
+                  .map((notif) => (
                   <button
                     key={notif.id}
                     onClick={() => handleNotificationClick(notif)}
