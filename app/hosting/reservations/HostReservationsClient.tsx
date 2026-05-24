@@ -32,7 +32,7 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
   const [processingId, setProcessingId] = useState("");
   const [cancellingReservation, setCancellingReservation] = useState<SafeReservation | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
-  const [activeFilter, setActiveFilter] = useState<"ALL" | "PENDING" | "CONFIRMED">("ALL");
+  const [activeFilter, setActiveFilter] = useState<"ALL" | "CONFIRMED" | "CANCELLED">("ALL");
 
   const filteredReservations = useMemo(() => {
     const validReservations = reservations;
@@ -68,7 +68,7 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
             guestId, 
             content: t.host_reservations_contact_message
         });
-        router.push(`/messages?selected=${response.data.id}`);
+        router.push(`/hosting/messages?selected=${response.data.id}`);
     } catch (error) {
         toast.error(t.host_reservations_contact_error);
     } finally {
@@ -172,13 +172,13 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
       {viewMode === "list" ? (
         <>
             <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
-                {["ALL", "PENDING", "CONFIRMED", "CANCELLED"].map((filter) => (
+                {["ALL", "CONFIRMED", "CANCELLED"].map((filter) => (
                     <button
                         key={filter}
                         onClick={() => setActiveFilter(filter as any)}
                         className={`px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest border-2 transition-all ${activeFilter === filter ? 'bg-neutral-900 border-neutral-900 text-white' : 'bg-white border-neutral-100 text-neutral-400 hover:border-neutral-200'}`}
                     >
-                        {filter === 'ALL' ? t.host_reservations_filter_all : filter === 'PENDING' ? t.host_reservations_filter_pending : filter === 'CONFIRMED' ? t.host_reservations_filter_confirmed : "Annulée"}
+                        {filter === 'ALL' ? t.host_reservations_filter_all : filter === 'CONFIRMED' ? t.host_reservations_filter_confirmed : (t as any).status_cancelled || "Annulée"}
                     </button>
                 ))}
             </div>
@@ -204,10 +204,10 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
                                         <Image src={imageUrl || "/images/placeholder.jpg"} alt="listing" fill className="object-cover group-hover:scale-105 transition duration-700" />
                                         <div className="absolute top-4 left-4 flex flex-col gap-2">
                                                     <span className={`text-[10px] font-black uppercase px-4 py-1.5 rounded-full shadow-lg backdrop-blur-md ${
-                                                reservation.status === 'PENDING' ? 'bg-amber-500/90 text-white' : 
+                                                reservation.status === 'CANCELLED' ? 'bg-rose-500/90 text-white' : 
                                                 reservation.status === 'CONFIRMED' ? 'bg-teal-500/90 text-white' : 'bg-neutral-800/90 text-white'
                                             }`}>
-                                                {reservation.status === 'PENDING' ? t.status_pending : 
+                                                {reservation.status === 'CANCELLED' ? ((t as any).status_cancelled || "Annulée") : 
                                                 reservation.status === 'CONFIRMED' ? t.status_confirmed : t.status_completed}
                                             </span>
                                         </div>
@@ -249,6 +249,12 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
                                                     </div>
                                                 </div>
                                             </div>
+                                            {reservation.status === 'CANCELLED' && reservation.cancelReason && (
+                                                <div className="mt-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
+                                                    <span className="text-xs font-bold text-rose-600 uppercase tracking-widest block mb-1">{(t as any).cancel_reason || "Motif d'annulation"}</span>
+                                                    <span className="text-sm font-medium text-rose-900">{reservation.cancelReason}</span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center justify-between gap-4">

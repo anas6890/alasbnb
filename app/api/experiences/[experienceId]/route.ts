@@ -3,7 +3,7 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 import prisma from "@/lib/prismadb";
 
 interface IParams {
-  listingId?: string;
+  experienceId?: string;
 }
 
 export async function DELETE(
@@ -17,20 +17,20 @@ export async function DELETE(
     return NextResponse.error();
   }
 
-  const { listingId } = params;
+  const { experienceId } = params;
 
-  if (!listingId || typeof listingId !== "string") {
+  if (!experienceId || typeof experienceId !== "string") {
     throw new Error("Invalid Id");
   }
 
-  const listing = await prisma.listing.deleteMany({
+  const experience = await prisma.experience.deleteMany({
     where: {
-      id: listingId,
+      id: experienceId,
       hostId: currentUser.id,
     },
   });
 
-  return NextResponse.json(listing);
+  return NextResponse.json(experience);
 }
 
 export async function GET(
@@ -38,24 +38,24 @@ export async function GET(
   props: { params: Promise<IParams> }
 ) {
   const params = await props.params;
-  const { listingId } = params;
+  const { experienceId } = params;
 
-  if (!listingId || typeof listingId !== "string") {
+  if (!experienceId || typeof experienceId !== "string") {
     throw new Error("Invalid Id");
   }
 
-  const listing = await prisma.listing.findUnique({
+  const experience = await prisma.experience.findUnique({
     where: {
-      id: listingId,
+      id: experienceId,
     },
     include: {
       location: true,
     }
   });
 
-  if (!listing) return NextResponse.error();
+  if (!experience) return NextResponse.error();
 
-  return NextResponse.json(listing);
+  return NextResponse.json(experience);
 }
 
 export async function PUT(
@@ -69,9 +69,9 @@ export async function PUT(
     return NextResponse.error();
   }
 
-  const { listingId } = params;
+  const { experienceId } = params;
 
-  if (!listingId || typeof listingId !== "string") {
+  if (!experienceId || typeof experienceId !== "string") {
     throw new Error("Invalid Id");
   }
 
@@ -81,23 +81,16 @@ export async function PUT(
     description,
     images,
     category,
-    roomCount,
-    bathroomCount,
     guestCount,
-    bedCount,
+    duration,
     price,
     amenities,
-    checkInTime,
-    checkOutTime,
-    petsAllowed,
-    smokingAllowed,
-    partiesAllowed,
     cancellationPolicy
   } = body;
 
-  const listing = await prisma.listing.update({
+  const experience = await prisma.experience.update({
     where: {
-      id: listingId,
+      id: experienceId,
       hostId: currentUser.id,
     },
     data: {
@@ -105,20 +98,13 @@ export async function PUT(
       description,
       images,
       category,
-      bedrooms: roomCount,
-      bathrooms: bathroomCount,
-      maxGuests: guestCount,
-      beds: bedCount,
-      pricePerNight: parseInt(price, 10),
+      maxGroupSize: guestCount,
+      durationMinutes: duration,
+      pricePerPerson: parseInt(price, 10),
       amenities,
-      checkInTime,
-      checkOutTime,
-      petsAllowed,
-      smokingAllowed,
-      partiesAllowed,
       cancellationPolicy
     },
   });
 
-  return NextResponse.json(listing);
+  return NextResponse.json(experience);
 }

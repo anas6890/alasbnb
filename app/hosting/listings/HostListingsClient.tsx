@@ -160,6 +160,7 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
                               <FiEye size={16} />
                           </button>
                           <button 
+                              onClick={() => router.push(`/hosting/create?type=${isListing ? 'LISTING' : 'EXPERIENCE'}&editId=${item.id}`)}
                               className="p-2.5 bg-white/90 backdrop-blur-md text-neutral-700 rounded-full hover:bg-rose-500 hover:text-white transition-colors shadow-sm"
                               title={t.host_listings_edit || "Modifier"}
                           >
@@ -212,6 +213,7 @@ const HostListingsClient: React.FC<HostListingsClientProps> = ({
                                   <FiEye size={18} />
                               </button>
                               <button 
+                                  onClick={() => router.push(`/hosting/create?type=${isListing ? 'LISTING' : 'EXPERIENCE'}&editId=${item.id}`)}
                                   className="p-2 bg-neutral-50 text-neutral-600 rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-colors"
                               >
                                   <FiEdit2 size={18} />

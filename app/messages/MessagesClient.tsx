@@ -261,6 +261,9 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
                   const isFirstInGroup = index === 0 || messages[index - 1].senderId !== message.senderId;
                   const isLastInGroup = index === messages.length - 1 || messages[index + 1].senderId !== message.senderId;
                   
+                  const isAutoMessage = Object.values(translations).some((trans: any) => trans.host_reservations_contact_message === message.content);
+                  const displayedContent = isAutoMessage ? (t.host_reservations_contact_message as string) : message.content;
+                  
                   let roundedClass = 'rounded-[20px]';
                   if (isMine) {
                     if (!isFirstInGroup && !isLastInGroup) roundedClass = 'rounded-[20px] rounded-r-md';
@@ -287,7 +290,7 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
                               : "bg-[#F0F0F0] text-neutral-900"
                           }`}
                         >
-                          {message.content.split('\n').map((line, i) => (
+                          {displayedContent.split('\n').map((line, i) => (
                             <span key={i}>
                                 {line}
                                 <br/>

@@ -52,6 +52,7 @@ const CreateListingPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const typeParam = searchParams?.get("type");
+  const editId = searchParams?.get("editId");
 
   const [step, setStep] = useState(STEPS.TYPE);
   const [isLoading, setIsLoading] = useState(false);
@@ -101,7 +102,39 @@ const CreateListingPage = () => {
     if (typeParam === "EXPERIENCE" || typeParam === "LISTING") {
       setStep(STEPS.CATEGORY);
     }
-  }, [typeParam]);
+    
+    if (editId) {
+      setIsLoading(true);
+      const url = typeParam === "EXPERIENCE" ? `/api/experiences/${editId}` : `/api/listings/${editId}`;
+      axios.get(url)
+        .then((res) => {
+          const data = res.data;
+          setCustomValue("category", data.category || "");
+          if (data.location) {
+             setCustomValue("location", { label: data.location.city, value: data.location.country, latlng: [data.location.lat || 0, data.location.lng || 0] });
+          }
+          setCustomValue("city", data.location?.city || "");
+          setCustomValue("address", data.location?.address || "");
+          setCustomValue("guestCount", data.maxGuests || data.maxGroupSize || 1);
+          setCustomValue("roomCount", data.bedrooms || 1);
+          setCustomValue("bedCount", data.beds || 1);
+          setCustomValue("bathroomCount", data.bathrooms || 1);
+          setCustomValue("duration", data.durationMinutes || 60);
+          setCustomValue("amenities", data.amenities || []);
+          setCustomValue("images", data.images || []);
+          setCustomValue("price", data.pricePerNight || data.pricePerPerson || 1);
+          setCustomValue("title", data.title || "");
+          setCustomValue("description", data.description || "");
+          setCustomValue("petsAllowed", data.petsAllowed || false);
+          setCustomValue("smokingAllowed", data.smokingAllowed || false);
+          setCustomValue("partiesAllowed", data.partiesAllowed || false);
+          setCustomValue("checkInTime", data.checkInTime || 15);
+          setCustomValue("checkOutTime", data.checkOutTime || 11);
+          setCustomValue("cancellationPolicy", data.cancellationPolicy || "FLEXIBLE");
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [typeParam, editId]);
 
   const creationType = watch("type");
   const category = watch("category");
@@ -163,11 +196,14 @@ const CreateListingPage = () => {
     if (step !== STEPS.PRICE) return onNext();
 
     setIsLoading(true);
+    const isUpdate = !!editId;
     const url = data.type === "LISTING" ? "/api/listings" : "/api/experiences";
+    const requestUrl = isUpdate ? `${url}/${editId}` : url;
+    const request = isUpdate ? axios.put(requestUrl, data) : axios.post(requestUrl, data);
 
-    axios.post(url, data)
+    request
       .then(() => {
-        toast.success(t.listing_success || "Annonce créée !");
+        toast.success(isUpdate ? "Annonce modifiée !" : (t.listing_success || "Annonce créée !"));
         router.push("/hosting/listings");
         router.refresh();
       })
@@ -178,8 +214,8 @@ const CreateListingPage = () => {
   };
 
   // Content for each step
-  const renderStepContent = () => {
-    switch (step) {
+  const renderStepContent = (stepIndex: STEPS = step) => {
+    switch (stepIndex) {
       case STEPS.TYPE:
         return (
           <div className="flex flex-col gap-8">
@@ -641,73 +677,127 @@ const CreateListingPage = () => {
   const progress = (currentVisualStep / totalVisualSteps) * 100;
 
   return (
-    <div className="relative flex flex-col max-h-[calc(100vh-100px)] bg-white border border-neutral-200 rounded-[2rem] overflow-hidden m-4 lg:m-6 shadow-sm font-sans">
+    <div className={`relative flex flex-col max-h-[calc(100vh-100px)] bg-white border border-neutral-200 rounded-[2rem] overflow-hidden m-4 lg:m-6 shadow-sm font-sans ${editId ? 'overflow-y-auto' : ''}`}>
         
-        {/* Top Progress Bar */}
-        <div className="w-full h-[70px] bg-white border-b border-neutral-100 flex items-center justify-between px-8 shrink-0 relative z-20">
-            <div className="font-bold text-neutral-400 uppercase tracking-widest text-xs hidden sm:block">
-                Assistant de création
-            </div>
-            <div className="font-bold text-neutral-800 bg-neutral-100 px-4 py-1.5 rounded-full text-sm">
-                Étape {currentVisualStep} sur {totalVisualSteps}
-            </div>
-            <button className="text-sm font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 px-4 py-2 rounded-xl transition-colors" onClick={() => router.push('/hosting/listings')}>
-                Annuler
-            </button>
-        </div>
+        {/* Top Progress Bar - Hidden in Edit Mode */}
+        {!editId && (
+            <>
+                <div className="w-full h-[70px] bg-white border-b border-neutral-100 flex items-center justify-between px-8 shrink-0 relative z-20">
+                    <div className="font-bold text-neutral-400 uppercase tracking-widest text-xs hidden sm:block">
+                        Assistant de création
+                    </div>
+                    <div className="font-bold text-neutral-800 bg-neutral-100 px-4 py-1.5 rounded-full text-sm">
+                        Étape {currentVisualStep} sur {totalVisualSteps}
+                    </div>
+                    <button className="text-sm font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 px-4 py-2 rounded-xl transition-colors" onClick={() => router.push('/hosting/listings')}>
+                        Annuler
+                    </button>
+                </div>
 
-        {/* Progress Line */}
-        <div className="w-full h-1 bg-neutral-50 shrink-0 relative z-20">
-            <div className="h-full bg-gradient-to-r from-rose-500 to-orange-500 transition-all duration-500" style={{ width: `${progress}%` }}></div>
-        </div>
+                {/* Progress Line */}
+                <div className="w-full h-1 bg-neutral-50 shrink-0 relative z-20">
+                    <div className="h-full bg-gradient-to-r from-rose-500 to-orange-500 transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                </div>
+            </>
+        )}
 
         {/* Content Area */}
-        <div className="overflow-y-auto p-6 md:p-10 bg-[#FAFAFA] relative z-10 flex flex-col">
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={step}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="w-full max-w-4xl mx-auto flex flex-col justify-center py-4"
-                >
-                    {renderStepContent()}
-                </motion.div>
-            </AnimatePresence>
+        <div className={`p-6 md:p-10 bg-[#FAFAFA] relative z-10 flex flex-col ${editId ? 'min-h-full' : 'overflow-y-auto'}`}>
+            {editId ? (
+                <div className="w-full max-w-5xl mx-auto flex flex-col gap-16 py-8">
+                    <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-neutral-200 shadow-sm sticky top-0 z-30">
+                        <div className="flex flex-col gap-1">
+                            <h1 className="text-2xl font-black text-neutral-900">Modification de l'annonce</h1>
+                            <p className="text-neutral-500 font-medium">Mettez à jour les informations de votre annonce</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <button className="font-bold text-neutral-900 underline px-6 py-3 hover:bg-neutral-50 rounded-xl transition-all" onClick={() => router.push('/hosting/listings')}>
+                                Annuler
+                            </button>
+                            <button 
+                                onClick={handleSubmit(onSubmit)}
+                                disabled={isLoading}
+                                className="px-8 py-3 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-[0_8px_25px_rgba(244,63,94,0.25)] hover:shadow-[0_12px_30px_rgba(244,63,94,0.35)]"
+                            >
+                                Sauvegarder
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-neutral-200">
+                        {renderStepContent(STEPS.CATEGORY)}
+                    </div>
+                    <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-neutral-200">
+                        {renderStepContent(STEPS.LOCATION)}
+                    </div>
+                    <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-neutral-200">
+                        {renderStepContent(STEPS.FLOOR_PLAN)}
+                    </div>
+                    <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-neutral-200">
+                        {renderStepContent(STEPS.AMENITIES)}
+                    </div>
+                    <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-neutral-200">
+                        {renderStepContent(STEPS.IMAGES)}
+                    </div>
+                    <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-neutral-200">
+                        {renderStepContent(STEPS.DESCRIPTION)}
+                    </div>
+                    <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-neutral-200">
+                        {renderStepContent(STEPS.CONDITIONS)}
+                    </div>
+                    <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-neutral-200">
+                        {renderStepContent(STEPS.PRICE)}
+                    </div>
+                </div>
+            ) : (
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={step}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="w-full max-w-4xl mx-auto flex flex-col justify-center py-4"
+                    >
+                        {renderStepContent()}
+                    </motion.div>
+                </AnimatePresence>
+            )}
         </div>
 
-        {/* Bottom Navigation Bar */}
-        <div className="bg-white border-t border-neutral-100 p-5 px-8 flex items-center justify-between shrink-0 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] relative z-20">
-            {step === STEPS.TYPE ? (
-                <div></div>
-            ) : (
-                <button 
-                    onClick={onBack}
-                    className="font-bold text-neutral-900 underline px-6 py-3 hover:bg-neutral-50 rounded-xl transition-all"
-                >
-                    Retour
-                </button>
-            )}
-            
-            <button 
-                onClick={handleSubmit(onSubmit)}
-                disabled={isLoading}
-                className="px-10 py-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-[0_8px_25px_rgba(244,63,94,0.25)] hover:shadow-[0_12px_30px_rgba(244,63,94,0.35)] hover:-translate-y-0.5 active:scale-95"
-            >
-                {step === STEPS.PRICE ? (
-                    <>
-                        <span>Publier</span>
-                        <TbCheck size={20} />
-                    </>
+        {/* Bottom Navigation Bar - Hidden in Edit Mode */}
+        {!editId && (
+            <div className="bg-white border-t border-neutral-100 p-5 px-8 flex items-center justify-between shrink-0 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] relative z-20">
+                {step === STEPS.TYPE ? (
+                    <div></div>
                 ) : (
-                    <>
-                        <span>Suivant</span>
-                        <TbArrowRight size={20} />
-                    </>
+                    <button 
+                        onClick={onBack}
+                        className="font-bold text-neutral-900 underline px-6 py-3 hover:bg-neutral-50 rounded-xl transition-all"
+                    >
+                        Retour
+                    </button>
                 )}
-            </button>
-        </div>
+                
+                <button 
+                    onClick={handleSubmit(onSubmit)}
+                    disabled={isLoading}
+                    className="px-10 py-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-[0_8px_25px_rgba(244,63,94,0.25)] hover:shadow-[0_12px_30px_rgba(244,63,94,0.35)] hover:-translate-y-0.5 active:scale-95"
+                >
+                    {step === STEPS.PRICE ? (
+                        <>
+                            <span>Publier</span>
+                            <TbCheck size={20} />
+                        </>
+                    ) : (
+                        <>
+                            <span>Suivant</span>
+                            <TbArrowRight size={20} />
+                        </>
+                    )}
+                </button>
+            </div>
+        )}
     </div>
   );
 };
