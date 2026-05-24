@@ -35,18 +35,25 @@ export async function POST(req: Request) {
 
     const reservation = await prisma.reservation.findUnique({
       where: { id: reservationId },
-      include: { listing: true, session: true }
     });
 
     if (!reservation) {
       return new NextResponse("Reservation not found", { status: 404 });
     }
 
-    // 1. Update reservation status
+    // ── Idempotency guard ──────────────────────────────────────────────
+    // Si le paiement est déjà enregistré, on ignore le webhook rejoué.
+    if (reservation.payment?.status === "captured") {
+      console.log(`[WEBHOOK] Payment already captured for ${reservationId} — skipping.`);
+      return new NextResponse(null, { status: 200 });
+    }
+
+    // ── Enregistrer les informations de paiement uniquement ───────────
+    // La réservation est déjà CONFIRMED et les dates/places déjà bloquées
+    // au moment de la création. On enregistre juste le détail du paiement.
     await prisma.reservation.update({
       where: { id: reservationId },
       data: {
-        status: "CONFIRMED",
         payment: {
           set: {
             amount: session.amount_total || 0,
@@ -54,52 +61,13 @@ export async function POST(req: Request) {
             status: "captured",
             stripePaymentIntentId: session.payment_intent as string,
             paidAt: new Date(),
-          }
-        }
+          },
+        },
       },
     });
 
-    // 2. Business Logic based on type
-    if (reservation.type === "EXPERIENCE" && reservation.sessionId) {
-      // Decrement spots only after payment confirmation
-      await prisma.experienceSession.update({
-        where: { id: reservation.sessionId },
-        data: {
-          spotsLeft: {
-            decrement: reservation.adults + (reservation.children || 0)
-          }
-        }
-      });
-    } else if (reservation.type === "LISTING" && reservation.listingId && reservation.checkIn && reservation.checkOut) {
-      // Block dates in ListingAvailability
-      const startDate = new Date(reservation.checkIn);
-      const endDate = new Date(reservation.checkOut);
-      
-      const datesToBlock = [];
-      let currentDate = new Date(startDate);
-      while (currentDate < endDate) {
-        datesToBlock.push(new Date(currentDate));
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-
-      for (const date of datesToBlock) {
-        await prisma.listingAvailability.upsert({
-          where: {
-            listingId_date: {
-              listingId: reservation.listingId,
-              date: date
-            }
-          },
-          update: { isAvailable: false },
-          create: {
-            listingId: reservation.listingId,
-            date: date,
-            isAvailable: false
-          }
-        });
-      }
-
-      // Neo4j integration
+    // ── Intégration Neo4j (recommandations) ───────────────────────────
+    if (reservation.type === "LISTING" && reservation.listingId) {
       try {
         const neo4jSession = neo4jDriver.session();
         await neo4jSession.run(
@@ -110,7 +78,7 @@ export async function POST(req: Request) {
         );
         await neo4jSession.close();
       } catch (error) {
-        console.error("Neo4j error on booking:", error);
+        console.error("[WEBHOOK] Neo4j error on booking:", error);
       }
     }
   }

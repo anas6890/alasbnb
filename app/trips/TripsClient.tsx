@@ -35,7 +35,7 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
 
   const getIsPast = (r: any) => {
     if (r.status === "COMPLETED") return true;
-    if (r.status === "PENDING" || r.status === "CONFIRMED") return false;
+    if (r.status === "CONFIRMED") return false;
     if (r.type === "EXPERIENCE" && r.session) {
       return new Date(r.session.dateTime) < new Date();
     }

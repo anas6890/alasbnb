@@ -53,16 +53,21 @@ export default async function getListings(params: IListingsParams) {
     }
 
     if (locationValue) {
-      const [cityPart, countryPart] = locationValue.split(" - ").map((item) => item.trim());
-      const city = countryPart ? cityPart : null;
-      const country = countryPart || locationValue;
-
-      const locationFilters: any[] = [{ location: { is: { country } } }];
-      if (city) {
-        locationFilters.unshift({ location: { is: { city } } });
+      const parts = locationValue.split(" - ").map((item) => item.trim());
+      if (parts.length === 2) {
+        const [city, country] = parts;
+        query.location = {
+          is: {
+            city,
+            country
+          }
+        };
+      } else {
+        query.OR = [
+          { location: { is: { city: locationValue } } },
+          { location: { is: { country: locationValue } } }
+        ];
       }
-
-      query.OR = locationFilters;
     }
 
     if (startDate && endDate) {

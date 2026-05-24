@@ -16,6 +16,7 @@ import { translations } from "@/lib/translations";
 import { useCallback, useState, useRef, useEffect } from "react";
 import { MdLanguage } from "react-icons/md";
 import { BiSearch } from "react-icons/bi";
+import NotificationBell from "./NotificationBell";
 
 type Props = {
   currentUser?: SafeUser | null;
@@ -159,6 +160,9 @@ function Navbar({ currentUser }: Props) {
               >
                 <MdLanguage size={20} />
               </div>
+              {currentUser && (
+                <NotificationBell currentUser={currentUser} />
+              )}
               <UserMenu currentUser={currentUser} />
             </div>
           </div>

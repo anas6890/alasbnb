@@ -128,7 +128,7 @@ export default async function HostingPage() {
                         <div className="flex flex-col">
                           <p className="font-semibold text-neutral-900 line-clamp-1">{title}</p>
                           <div className="flex items-center gap-1.5 mt-1">
-                              <span className={`w-1.5 h-1.5 rounded-full ${res.status === 'CONFIRMED' || res.status === 'COMPLETED' ? 'bg-green-500' : res.status === 'CANCELLED' ? 'bg-rose-500' : 'bg-amber-500'}`}></span>
+                              <span className={`w-1.5 h-1.5 rounded-full ${res.status === 'CONFIRMED' || res.status === 'COMPLETED' ? 'bg-green-500' : res.status === 'CANCELLED' ? 'bg-rose-500' : 'bg-green-500'}`}></span>
                               <span className="text-xs font-medium text-neutral-500 capitalize">{(t as any)[`status_${res.status.toLowerCase()}`]}</span>
                           </div>
                         </div>

@@ -4,6 +4,7 @@ import { SafeUser } from "@/types";
 import Container from "../Container";
 import Logo from "./Logo";
 import UserMenu from "./UserMenu";
+import NotificationBell from "./NotificationBell";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import useLanguage from "@/hook/useLanguage";
@@ -56,6 +57,9 @@ function HostNavbar({ currentUser }: Props) {
               >
                 {t.return_guest_mode}
               </Link>
+              {currentUser && (
+                <NotificationBell currentUser={currentUser} isHostMode />
+              )}
               <UserMenu currentUser={currentUser} />
             </div>
           </div>

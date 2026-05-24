@@ -8,15 +8,13 @@ import { toast } from "react-toastify";
 
 import { SafeUser } from "@/types";
 import { signOut, useSession } from "next-auth/react";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import useLanguage from "@/hook/useLanguage";
 import { translations } from "@/lib/translations";
 import { AiOutlineMenu } from "react-icons/ai";
 import { FiUser, FiBriefcase, FiHeart, FiList, FiHome, FiLogOut, FiLogIn, FiUserPlus, FiRepeat, FiCalendar, FiMessageCircle } from "react-icons/fi";
 import Avatar from "../Avatar";
 import MenuItem from "./MenuItem";
-import axios from "axios";
-import { pusherClient } from "@/lib/pusher";
 
 interface Props {
   currentUser?: SafeUser | null;
@@ -40,47 +38,6 @@ function UserMenu({ currentUser }: Props) {
 
   const finalUser = currentUser || (session?.user as SafeUser);
 
-  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
-
-  useEffect(() => {
-    if (finalUser) {
-      axios.get('/api/messages/unread').then((res) => {
-        setHasUnreadMessages(res.data.unread);
-      });
-
-      if (pusherClient) {
-        pusherClient.subscribe(`user-${finalUser.id}`);
-        
-        const unreadHandler = () => {
-          setHasUnreadMessages(true);
-          
-          // Show a toast notification if not already on the messages page
-          if (!pathname?.includes('/messages')) {
-            const lang = useLanguage.getState().language || "en";
-            const currentT = translations[lang as keyof typeof translations] || translations.en;
-            toast.info(currentT.new_message_notification || "Vous avez reçu un nouveau message !", {
-              onClick: () => router.push('/messages'),
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-            });
-          }
-        };
-        
-        pusherClient.bind("messages:unread", unreadHandler);
-
-        return () => {
-          if (pusherClient) {
-            pusherClient.unsubscribe(`user-${finalUser.id}`);
-            pusherClient.unbind("messages:unread", unreadHandler);
-          }
-        };
-      }
-    }
-  }, [finalUser]);
 
   const toggleOpen = useCallback(() => {
     setIsOpen((value) => !value);
@@ -102,9 +59,6 @@ function UserMenu({ currentUser }: Props) {
           onClick={toggleOpen}
           className="p-4 md:py-1 md:px-2 border-[1px] flex flex-row items-center gap-3 rounded-full cursor-pointer hover:shadow-md transition relative"
         >
-          {hasUnreadMessages && (
-            <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
-          )}
           <AiOutlineMenu />
           <div className="hidden md:block">
             {finalUser ? (
@@ -160,10 +114,7 @@ function UserMenu({ currentUser }: Props) {
                       icon={FiCalendar}
                     />
                     <MenuItem
-                      onClick={() => {
-                        setHasUnreadMessages(false);
-                        navigateTo("/hosting/messages");
-                      }}
+                      onClick={() => navigateTo("/hosting/messages")}
                       label={t.messages}
                       icon={FiMessageCircle}
                     />
@@ -192,10 +143,7 @@ function UserMenu({ currentUser }: Props) {
                       icon={FiHeart}
                     />
                     <MenuItem
-                      onClick={() => {
-                        setHasUnreadMessages(false);
-                        navigateTo("/messages");
-                      }}
+                      onClick={() => navigateTo("/messages")}
                       label={t.messages}
                       icon={FiMessageCircle}
                     />

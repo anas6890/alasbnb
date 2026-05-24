@@ -201,6 +201,13 @@ export const translations: any = {
     msg_select: "Sélectionnez une discussion",
     msg_to_start: "Pour commencer à échanger",
 
+    // Notifications
+    notifications_title: "Notifications",
+    notifications_new: "nouvelles",
+    notifications_mark_all_read: "Tout lire",
+    notifications_empty: "Aucune notification",
+    new_message_notification: "Vous avez reçu un nouveau message !",
+
     // Host Layout
     return_guest_mode: "Retour au mode voyageur",
     create: "Créer",
@@ -658,6 +665,13 @@ export const translations: any = {
     msg_write_here: "Write your message here...",
     msg_select: "Select a conversation",
     msg_to_start: "To start messaging",
+
+    // Notifications
+    notifications_title: "Notifications",
+    notifications_new: "new",
+    notifications_mark_all_read: "Mark all read",
+    notifications_empty: "No notifications yet",
+    new_message_notification: "You received a new message!",
 
     // Host Layout
     return_guest_mode: "Return to guest mode",

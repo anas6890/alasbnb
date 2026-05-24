@@ -1,356 +1,278 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-import { faker } from "@faker-js/faker";
+import { PrismaClient, ListingStatus, ReservationType, ReservationStatus, CancellationPolicy } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import { fakerFR as faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
 
-const AVATARS = [
-  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200",
-  "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=200",
-  "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&q=80&w=200",
-  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200",
-  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200",
-  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
-  "https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&q=80&w=200",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200"
+const LOCATIONS = [
+  { city: 'Paris', country: 'France', lat: 48.8566, lng: 2.3522, address: 'Centre-ville' },
+  { city: 'Lyon', country: 'France', lat: 45.7640, lng: 4.8357, address: 'Presqu\'île' },
+  { city: 'Marseille', country: 'France', lat: 43.2965, lng: 5.3698, address: 'Vieux-Port' },
+  { city: 'Bordeaux', country: 'France', lat: 44.8378, lng: -0.5792, address: 'Quinconces' },
+  { city: 'Nice', country: 'France', lat: 43.7102, lng: 7.2620, address: 'Promenade des Anglais' },
+  { city: 'Strasbourg', country: 'France', lat: 48.5734, lng: 7.7521, address: 'Petite France' },
+  { city: 'Nantes', country: 'France', lat: 47.2184, lng: -1.5536, address: 'Île de Nantes' },
+  { city: 'Lille', country: 'France', lat: 50.6292, lng: 3.0573, address: 'Vieux-Lille' },
+  { city: 'Toulouse', country: 'France', lat: 43.6047, lng: 1.4442, address: 'Capitole' },
+  { city: 'Montpellier', country: 'France', lat: 43.6119, lng: 3.8772, address: 'Place de la Comédie' }
 ];
 
 const LISTING_IMAGES = [
-  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1502672260266-1c1c24240f57?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&q=80&w=1200"
+  'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1502672260266-1c1c24240f57?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&q=80&w=1200'
 ];
 
-const EXPERIENCE_IMAGES = [
-  "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1517436073-3b1b1519fca9?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1504609774616-568bf863c0bb?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&q=80&w=1200",
-  "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?auto=format&fit=crop&q=80&w=1200"
+const EXP_IMAGES = [
+  'https://images.unsplash.com/photo-1556910103-1c02745a872f?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1522812871321-255d61ea15a9?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80&w=1200'
 ];
-
-const CITIES = [
-  { city: "Paris", country: "France", lat: 48.8566, lng: 2.3522 },
-  { city: "New York", country: "United States", lat: 40.7128, lng: -74.0060 },
-  { city: "Tokyo", country: "Japan", lat: 35.6762, lng: 139.6503 },
-  { city: "London", country: "United Kingdom", lat: 51.5074, lng: -0.1278 },
-  { city: "Rome", country: "Italy", lat: 41.9028, lng: 12.4964 },
-  { city: "Barcelona", country: "Spain", lat: 41.3851, lng: 2.1734 },
-  { city: "Marrakech", country: "Morocco", lat: 31.6295, lng: -7.9811 },
-  { city: "Dubai", country: "United Arab Emirates", lat: 25.2048, lng: 55.2708 },
-  { city: "Bali", country: "Indonesia", lat: -8.4095, lng: 115.1889 },
-  { city: "Sydney", country: "Australia", lat: -33.8688, lng: 151.2093 }
-];
-
-const CATEGORIES = ["Sport", "Cuisine", "Art", "Culture", "Nature", "Bien-être"];
-const TYPES = ["apartment", "house", "villa", "cabin", "boat", "treehouse"];
-
-function getRandomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function getRandomItems<T>(arr: T[], count: number): T[] {
-  const shuffled = arr.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
 
 async function main() {
-  console.log("🔥 Suppression des anciennes données...");
-  
-  // Wipe in reverse order of relationships
+  console.log('🧹 Nettoyage de la base de données...');
   await prisma.notification.deleteMany();
   await prisma.message.deleteMany();
   await prisma.conversation.deleteMany();
   await prisma.review.deleteMany();
-  await prisma.listingAvailability.deleteMany();
   await prisma.reservation.deleteMany();
   await prisma.experienceSession.deleteMany();
   await prisma.experience.deleteMany();
+  await prisma.listingAvailability.deleteMany();
   await prisma.listing.deleteMany();
   await prisma.account.deleteMany();
   await prisma.user.deleteMany();
 
-  console.log("✅ Base de données purgée.");
+  const hashedPassword = await bcrypt.hash('password', 12);
 
-  const hashedPassword = await bcrypt.hash("password123", 10);
-  const users = [];
-
-  console.log("👤 Création de 20 utilisateurs...");
-  for (let i = 0; i < 20; i++) {
-    const user = await prisma.user.create({
+  console.log('👥 Création des hôtes...');
+  const hosts = [];
+  for (let i = 0; i < 10; i++) {
+    const host = await prisma.user.create({
       data: {
-        email: faker.internet.email(),
-        hashedPassword,
+        email: `host${i + 1}@test.com`,
         firstname: faker.person.firstName(),
         lastname: faker.person.lastName(),
-        bio: faker.person.bio(),
-        image: getRandomItem(AVATARS),
-        isVerified: true,
-        preferredLang: "fr",
-        currency: "EUR",
-      },
+        hashedPassword,
+        image: faker.image.avatar(),
+      }
     });
-    users.push(user);
+    hosts.push(host);
   }
-  console.log("✅ Utilisateurs créés.");
 
-  console.log("🏠 Création de 100 logements...");
+  console.log('👥 Création des voyageurs...');
+  const guests = [];
+  for (let i = 0; i < 10; i++) {
+    const guest = await prisma.user.create({
+      data: {
+        email: `guest${i + 1}@test.com`,
+        firstname: faker.person.firstName(),
+        lastname: faker.person.lastName(),
+        hashedPassword,
+        image: faker.image.avatar(),
+      }
+    });
+    guests.push(guest);
+  }
+
+  console.log('🏠 Création des logements et des disponibilités...');
   const listings = [];
-  for (let i = 0; i < 100; i++) {
-    const host = getRandomItem(users);
-    const location = getRandomItem(CITIES);
-    const type = getRandomItem(TYPES);
+  for (let i = 0; i < hosts.length; i++) {
+    const host = hosts[i];
+    const loc = LOCATIONS[i];
     
-    // Create random offset for lat/lng to spread them around the city
-    const latOffset = (Math.random() - 0.5) * 0.1;
-    const lngOffset = (Math.random() - 0.5) * 0.1;
-
-    const images = getRandomItems(LISTING_IMAGES, 5);
-
     const listing = await prisma.listing.create({
       data: {
         hostId: host.id,
-        status: "PUBLISHED",
-        title: faker.lorem.words({ min: 3, max: 7 }),
+        status: ListingStatus.PUBLISHED,
+        title: `Magnifique logement à ${loc.city}`,
         description: faker.lorem.paragraphs(2),
-        type,
-        pricePerNight: faker.number.int({ min: 40, max: 800 }),
+        type: faker.helpers.arrayElement(['apartment', 'house', 'villa', 'cabin']),
+        pricePerNight: faker.number.int({ min: 50, max: 500 }),
         cleaningFee: faker.number.int({ min: 10, max: 100 }),
-        securityDeposit: faker.number.int({ min: 0, max: 300 }),
-        maxGuests: faker.number.int({ min: 1, max: 12 }),
-        bedrooms: faker.number.int({ min: 1, max: 5 }),
-        beds: faker.number.int({ min: 1, max: 8 }),
-        bathrooms: faker.number.int({ min: 1, max: 4 }),
-        images,
-        amenities: getRandomItems(["Wifi", "Pool", "Kitchen", "AC", "TV", "Washer", "Parking", "Gym"], 5),
-        location: {
-          city: location.city,
-          country: location.country,
-          lat: location.lat + latOffset,
-          lng: location.lng + lngOffset,
-          address: faker.location.streetAddress(),
-        },
+        maxGuests: faker.number.int({ min: 2, max: 8 }),
+        bedrooms: faker.number.int({ min: 1, max: 4 }),
+        beds: faker.number.int({ min: 1, max: 5 }),
+        bathrooms: faker.number.int({ min: 1, max: 3 }),
+        images: faker.helpers.arrayElements(LISTING_IMAGES, 3),
+        amenities: ['Wifi', 'Kitchen', 'TV', 'Washer'],
+        location: loc,
+        cancellationPolicy: CancellationPolicy.FLEXIBLE,
       }
     });
     listings.push(listing);
+
+    // Create availabilities for the next 30 days
+    const availabilities = [];
+    for (let d = 0; d < 30; d++) {
+      const date = new Date();
+      date.setDate(date.getDate() + d);
+      date.setHours(0, 0, 0, 0);
+      
+      availabilities.push({
+        listingId: listing.id,
+        date: date,
+        isAvailable: true
+      });
+    }
+    await prisma.listingAvailability.createMany({ data: availabilities });
   }
-  console.log("✅ Logements créés.");
 
-  console.log("🏄 Création de 100 expériences...");
+  console.log('🎈 Création des expériences et des sessions...');
   const experiences = [];
-  for (let i = 0; i < 100; i++) {
-    const host = getRandomItem(users);
-    const location = getRandomItem(CITIES);
-    const category = getRandomItem(CATEGORIES);
+  const sessions = [];
+  for (let i = 0; i < hosts.length; i++) {
+    const host = hosts[i];
+    const loc = LOCATIONS[i];
     
-    const latOffset = (Math.random() - 0.5) * 0.1;
-    const lngOffset = (Math.random() - 0.5) * 0.1;
-
-    const images = getRandomItems(EXPERIENCE_IMAGES, 5);
-
     const experience = await prisma.experience.create({
       data: {
         hostId: host.id,
-        status: "PUBLISHED",
-        title: faker.lorem.words({ min: 3, max: 8 }),
+        status: ListingStatus.PUBLISHED,
+        title: `Expérience unique à ${loc.city}`,
+        category: faker.helpers.arrayElement(['cuisine', 'art', 'sport', 'nature', 'culture']),
         description: faker.lorem.paragraphs(2),
-        category,
-        durationMinutes: faker.number.int({ min: 60, max: 360 }),
-        pricePerPerson: faker.number.int({ min: 15, max: 200 }),
-        maxGroupSize: faker.number.int({ min: 2, max: 20 }),
-        images,
-        included: getRandomItems(["Equipment", "Drinks", "Snacks", "Transport", "Tickets", "Photos"], 3),
-        languages: ["fr", "en"],
-        location: {
-          city: location.city,
-          country: location.country,
-          lat: location.lat + latOffset,
-          lng: location.lng + lngOffset,
-          address: faker.location.streetAddress(),
-        },
+        durationMinutes: faker.number.int({ min: 60, max: 240 }),
+        pricePerPerson: faker.number.int({ min: 20, max: 150 }),
+        maxGroupSize: faker.number.int({ min: 2, max: 10 }),
+        images: faker.helpers.arrayElements(EXP_IMAGES, 3),
+        included: ['Matériel', 'Boissons'],
+        languages: ['Français', 'Anglais'],
+        location: loc,
       }
     });
     experiences.push(experience);
 
-    // Create a few sessions for each experience
-    for(let s = 0; s < 3; s++) {
-        const futureDate = faker.date.future({ years: 0.5 });
-        futureDate.setHours(faker.number.int({ min: 8, max: 18 }), 0, 0, 0);
-        await prisma.experienceSession.create({
-            data: {
-                experienceId: experience.id,
-                dateTime: futureDate,
-                spotsTotal: experience.maxGroupSize,
-                spotsLeft: experience.maxGroupSize
-            }
-        });
+    // Create a few sessions in the future
+    for (let s = 1; s <= 5; s++) {
+      const sessionDate = new Date();
+      sessionDate.setDate(sessionDate.getDate() + (s * 3));
+      sessionDate.setHours(14, 0, 0, 0);
+      
+      const session = await prisma.experienceSession.create({
+        data: {
+          experienceId: experience.id,
+          dateTime: sessionDate,
+          spotsTotal: experience.maxGroupSize,
+          spotsLeft: experience.maxGroupSize,
+        }
+      });
+      sessions.push(session);
     }
   }
-  console.log("✅ Expériences et sessions créées.");
 
-  console.log("📅 Création des réservations et des avis...");
-  for (let i = 0; i < 200; i++) {
-    const isListing = Math.random() > 0.3;
-    const guest = getRandomItem(users);
+  console.log('📅 Création des réservations et des commentaires...');
+  
+  for (let i = 0; i < guests.length; i++) {
+    const guest = guests[i];
     
-    if (isListing) {
-      const listing = getRandomItem(listings);
-      if (guest.id === listing.hostId) continue;
-      
-      const checkIn = faker.date.recent({ days: 30 });
-      const nights = faker.number.int({ min: 1, max: 7 });
-      const checkOut = new Date(checkIn);
-      checkOut.setDate(checkOut.getDate() + nights);
-      const totalPrice = listing.pricePerNight * nights + listing.cleaningFee;
+    // 1. Réserver un logement dans le passé (pour laisser un avis)
+    const pastListing = faker.helpers.arrayElement(listings);
+    const checkIn = new Date();
+    checkIn.setDate(checkIn.getDate() - 10);
+    const checkOut = new Date();
+    checkOut.setDate(checkOut.getDate() - 7);
+    
+    const pastReservation = await prisma.reservation.create({
+      data: {
+        type: ReservationType.LISTING,
+        userId: guest.id,
+        listingId: pastListing.id,
+        checkIn,
+        checkOut,
+        nights: 3,
+        adults: 2,
+        totalPrice: pastListing.pricePerNight * 3 + pastListing.cleaningFee,
+        status: ReservationStatus.CONFIRMED,
+        listingSnapshot: {
+          listingId: pastListing.id,
+          title: pastListing.title,
+          type: pastListing.type,
+          city: pastListing.location.city,
+          country: pastListing.location.country,
+          image: pastListing.images[0],
+          lat: pastListing.location.lat,
+          lng: pastListing.location.lng,
+        },
+        hostSnapshot: {
+          hostId: pastListing.hostId,
+          firstname: 'Hôte',
+          lastname: 'Test',
+        }
+      }
+    });
 
-      const host = users.find(u => u.id === listing.hostId)!;
+    // Laisser un commentaire
+    const r1 = faker.number.int({ min: 4, max: 5 });
+    await prisma.review.create({
+      data: {
+        authorId: guest.id,
+        reservationId: pastReservation.id,
+        listingId: pastListing.id,
+        ratingCleanliness: r1,
+        ratingAccuracy: r1,
+        ratingCheckin: r1,
+        ratingCommunication: r1,
+        ratingLocation: r1,
+        ratingValue: r1,
+        avgRating: r1,
+        comment: faker.lorem.sentences(2),
+      }
+    });
 
-      const res = await prisma.reservation.create({
+    // Mettre à jour les stats du listing
+    await prisma.listing.update({
+      where: { id: pastListing.id },
+      data: {
+        avgRating: r1,
+        totalReviews: { increment: 1 }
+      }
+    });
+
+    // 2. Réserver une expérience dans le futur
+    const futureSession = faker.helpers.arrayElement(sessions);
+    const exp = experiences.find(e => e.id === futureSession.experienceId);
+    if (exp) {
+      await prisma.reservation.create({
         data: {
+          type: ReservationType.EXPERIENCE,
           userId: guest.id,
-          listingId: listing.id,
-          type: "LISTING",
-          checkIn,
-          checkOut,
-          nights,
-          totalPrice,
-          pricePerNight: listing.pricePerNight,
-          adults: 2,
-          status: Math.random() > 0.1 ? "CONFIRMED" : "CANCELLED",
-          listingSnapshot: {
-            listingId: listing.id,
-            title: listing.title,
-            type: listing.type,
-            city: listing.location.city,
-            country: listing.location.country,
-            image: listing.images[0],
-            lat: listing.location.lat,
-            lng: listing.location.lng
+          sessionId: futureSession.id,
+          adults: 1,
+          totalPrice: exp.pricePerPerson,
+          status: ReservationStatus.CONFIRMED,
+          experienceSnapshot: {
+            experienceId: exp.id,
+            title: exp.title,
+            category: exp.category,
+            city: exp.location.city,
+            country: exp.location.country,
+            image: exp.images[0],
           },
           hostSnapshot: {
-            hostId: host.id,
-            firstname: host.firstname,
-            lastname: host.lastname,
-            image: host.image
+            hostId: exp.hostId,
+            firstname: 'Hôte',
+            lastname: 'Test',
           }
         }
       });
-
-      // Create Review
-      if (res.status === "CONFIRMED" && Math.random() > 0.3) {
-        const rating = faker.number.int({ min: 3, max: 5 });
-        const review = await prisma.review.create({
-            data: {
-                authorId: guest.id,
-                reservationId: res.id,
-                listingId: listing.id,
-                avgRating: rating,
-                ratingCleanliness: rating,
-                ratingAccuracy: rating,
-                ratingCheckin: rating,
-                ratingCommunication: rating,
-                ratingLocation: rating,
-                ratingValue: rating,
-                comment: faker.lorem.paragraph(),
-                createdAt: checkOut
-            }
-        });
-        
-        // Update Listing rating
-        await prisma.listing.update({
-            where: { id: listing.id },
-            data: {
-                avgRating: (listing.avgRating * listing.totalReviews + rating) / (listing.totalReviews + 1),
-                totalReviews: { increment: 1 }
-            }
-        });
-      }
-    } else {
-        const experience = getRandomItem(experiences);
-        if (guest.id === experience.hostId) continue;
-
-        const session = await prisma.experienceSession.findFirst({ where: { experienceId: experience.id } });
-        if(!session) continue;
-        
-        const adults = faker.number.int({ min: 1, max: 4 });
-        if (session.spotsLeft < adults) continue;
-
-        const host = users.find(u => u.id === experience.hostId)!;
-
-        const res = await prisma.reservation.create({
-            data: {
-              userId: guest.id,
-              sessionId: session.id,
-              type: "EXPERIENCE",
-              totalPrice: experience.pricePerPerson * adults,
-              pricePerPerson: experience.pricePerPerson,
-              adults,
-              status: "CONFIRMED",
-              experienceSnapshot: {
-                experienceId: experience.id,
-                title: experience.title,
-                category: experience.category,
-                city: experience.location.city,
-                country: experience.location.country,
-                image: experience.images[0]
-              },
-              hostSnapshot: {
-                hostId: host.id,
-                firstname: host.firstname,
-                lastname: host.lastname,
-                image: host.image
-              }
-            }
-        });
-
-        await prisma.experienceSession.update({
-            where: { id: session.id },
-            data: { spotsLeft: { decrement: adults } }
-        });
-
-        if (Math.random() > 0.4) {
-            const rating = faker.number.int({ min: 4, max: 5 });
-            await prisma.review.create({
-                data: {
-                    authorId: guest.id,
-                    reservationId: res.id,
-                    experienceId: experience.id,
-                    avgRating: rating,
-                    comment: faker.lorem.paragraph(),
-                }
-            });
-            await prisma.experience.update({
-                where: { id: experience.id },
-                data: {
-                    avgRating: (experience.avgRating * experience.totalReviews + rating) / (experience.totalReviews + 1),
-                    totalReviews: { increment: 1 }
-                }
-            });
-        }
+      // Mettre à jour les places restantes
+      await prisma.experienceSession.update({
+        where: { id: futureSession.id },
+        data: { spotsLeft: { decrement: 1 } }
+      });
     }
   }
-  console.log("✅ Réservations et avis créés.");
 
-  console.log("🎉 Terminé ! Tout le site a été peuplé.");
+  console.log('✅ Base de données peuplée avec succès !');
+  console.log('');
+  console.log('Comptes de test (Mot de passe: password) :');
+  console.log('- Hôte 1 : host1@test.com');
+  console.log('- Voyageur 1 : guest1@test.com');
 }
 
 main()
