@@ -35,7 +35,7 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
   const [activeFilter, setActiveFilter] = useState<"ALL" | "PENDING" | "CONFIRMED">("ALL");
 
   const filteredReservations = useMemo(() => {
-    const validReservations = reservations.filter(r => r.status !== "PENDING");
+    const validReservations = reservations;
     if (activeFilter === "ALL") return validReservations;
     return validReservations.filter(r => r.status === activeFilter);
   }, [reservations, activeFilter]);
@@ -172,13 +172,13 @@ const HostReservationsClient: React.FC<HostReservationsClientProps> = ({
       {viewMode === "list" ? (
         <>
             <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
-                {["ALL", "CONFIRMED", "CANCELLED"].map((filter) => (
+                {["ALL", "PENDING", "CONFIRMED", "CANCELLED"].map((filter) => (
                     <button
                         key={filter}
                         onClick={() => setActiveFilter(filter as any)}
                         className={`px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest border-2 transition-all ${activeFilter === filter ? 'bg-neutral-900 border-neutral-900 text-white' : 'bg-white border-neutral-100 text-neutral-400 hover:border-neutral-200'}`}
                     >
-                        {filter === 'ALL' ? t.host_reservations_filter_all : filter === 'CONFIRMED' ? t.host_reservations_filter_confirmed : "Annulée"}
+                        {filter === 'ALL' ? t.host_reservations_filter_all : filter === 'PENDING' ? t.host_reservations_filter_pending : filter === 'CONFIRMED' ? t.host_reservations_filter_confirmed : "Annulée"}
                     </button>
                 ))}
             </div>

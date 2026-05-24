@@ -48,7 +48,7 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
     return r.checkOut && new Date(r.checkOut) < new Date();
   };
 
-  const filteredReservations = reservations.filter((r) => r.type === viewType && r.status !== "CANCELLED" && r.status !== "PENDING");
+  const filteredReservations = reservations.filter((r) => r.type === viewType && r.status !== "CANCELLED");
   const upcomingTrips = filteredReservations.filter((r) => !getIsPast(r));
   const pastTrips = filteredReservations.filter((r) => getIsPast(r));
 
@@ -163,8 +163,8 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
         {filteredReservations.length === 0 ? (
           <div className="py-20">
             <EmptyState
-                title={viewType === "LISTING" ? t.no_listing : t.no_experience}
-                subtitle={viewType === "LISTING" ? t.no_listing_desc : t.no_experience_desc}
+                title={t.trips_empty_title || "Aucune réservation"}
+                subtitle={t.trips_empty_subtitle || "Vous n'avez effectué aucune réservation pour le moment."}
             />
           </div>
         ) : (

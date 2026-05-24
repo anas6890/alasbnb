@@ -280,6 +280,7 @@ export const translations: any = {
     elsewhere: "Ailleurs",
     no_listing: "Aucun logement",
     no_listing_desc: "Aucun logement ne correspond à votre recherche.",
+    hero_explore_btn: "Explorer",
     
     // Statuses
     status_pending: "En attente",
@@ -299,6 +300,8 @@ export const translations: any = {
     trips_no_upcoming: "Vous n'avez pas de voyage prévu prochainement.",
     trips_history: "Historique (Voyages terminés)",
     trips_history_empty: "Votre historique est vide pour le moment.",
+    trips_empty_title: "Aucune réservation",
+    trips_empty_subtitle: "Vous n'avez effectué aucune réservation pour le moment.",
     leave_review: "Laisser un avis",
 
     // Experiences Page
@@ -725,6 +728,7 @@ export const translations: any = {
     elsewhere: "Elsewhere",
     no_listing: "No stays",
     no_listing_desc: "No stays match your search.",
+    hero_explore_btn: "Explore",
 
     // Statuses
     status_pending: "Pending",
@@ -745,6 +749,8 @@ export const translations: any = {
     trips_no_upcoming: "You have no upcoming trips.",
     trips_history: "History (Completed trips)",
     trips_history_empty: "Your history is empty for now.",
+    trips_empty_title: "No reservations",
+    trips_empty_subtitle: "You haven't made any reservations yet.",
     leave_review: "Leave a review",
 
     // Experiences Page
@@ -1137,6 +1143,7 @@ export const translations: any = {
     elsewhere: "En otra parte",
     no_listing: "No hay alojamientos",
     no_listing_desc: "No hay alojamientos que coincidan.",
+    hero_explore_btn: "Explorar",
     status_pending: "Pendiente",
     status_confirmed: "Confirmada",
     status_cancelled: "Cancelada",
@@ -1153,6 +1160,8 @@ export const translations: any = {
     trips_no_upcoming: "No tienes próximos viajes.",
     trips_history: "Historial (Viajes completados)",
     trips_history_empty: "Tu historial está vacío por ahora.",
+    trips_empty_title: "Sin reservas",
+    trips_empty_subtitle: "Aún no has hecho ninguna reserva.",
     leave_review: "Dejar una reseña",
     exp_hero_title: "Vive lo excepcional.",
     exp_hero_subtitle: "Momentos inolvidables creados por expertos.",
@@ -1412,6 +1421,7 @@ export const translations: any = {
     elsewhere: "Anderswo",
     no_listing: "Keine Unterkünfte",
     no_listing_desc: "Keine Unterkünfte entsprechen Ihrer Suche.",
+    hero_explore_btn: "Entdecken",
     status_pending: "Ausstehend",
     status_confirmed: "Bestätigt",
     status_cancelled: "Storniert",
@@ -1428,6 +1438,8 @@ export const translations: any = {
     trips_no_upcoming: "Sie haben keine bevorstehenden Reisen.",
     trips_history: "Verlauf (Abgeschlossene Reisen)",
     trips_history_empty: "Ihr Verlauf ist noch leer.",
+    trips_empty_title: "Keine Reservierungen",
+    trips_empty_subtitle: "Sie haben noch keine Reservierungen vorgenommen.",
     leave_review: "Bewertung hinterlassen",
     exp_hero_title: "Erleben Sie das Außergewöhnliche.",
     exp_hero_subtitle: "Unvergessliche Momente, von Experten geschaffen.",

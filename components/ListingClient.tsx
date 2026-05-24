@@ -16,6 +16,7 @@ import ListingHead from "./listing/ListingHead";
 import ListingInfo from "./listing/ListingInfo";
 import ListingReservation from "./listing/ListingReservation";
 import ListingReviews from "./listing/ListingReviews";
+import ListingRecommendations from "./listing/ListingRecommendations";
 import { categories } from "./navbar/Categories";
 import dynamic from "next/dynamic";
 import { usePrice } from "@/hook/usePrice";
@@ -39,9 +40,10 @@ type Props = {
     user: SafeUser;
   };
   currentUser?: SafeUser | null;
+  recommendations?: safeListing[];
 };
 
-function ListingClient({ reservations = [], reviews = [], listing, currentUser }: Props) {
+function ListingClient({ reservations = [], reviews = [], listing, currentUser, recommendations = [] }: Props) {
   const router = useRouter();
   const loginModal = useLoginModal();
 
@@ -217,6 +219,11 @@ function ListingClient({ reservations = [], reviews = [], listing, currentUser }
           <div className="border-t border-neutral-200 mt-8">
             <ListingReviews reviews={reviews} listing={listingWithDynamicStats} />
           </div>
+
+          {/* Recommendations Section */}
+          {recommendations && recommendations.length > 0 && (
+            <ListingRecommendations listings={recommendations} currentUser={currentUser} />
+          )}
 
         </div>
       </div>

@@ -1,6 +1,7 @@
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import prisma from "@/lib/prismadb";
 import { NextResponse } from "next/server";
+import neo4jDriver from "@/lib/neo4j";
 
 interface IPrisma {
   listingId?: string;
@@ -43,6 +44,21 @@ export async function POST(request: Request, props: { params: Promise<IPrisma> }
         where: { id: currentUser.id },
         data: { savedListingIds },
     });
+
+    // Neo4j integration
+    try {
+      const session = neo4jDriver.session();
+      await session.run(
+        `MERGE (u:User {id: $userId})
+         MERGE (l:Listing {id: $listingId})
+         MERGE (u)-[:FAVORITED]->(l)`,
+        { userId: currentUser.id, listingId }
+      );
+      await session.close();
+    } catch (error) {
+      console.error("Neo4j error on favorite:", error);
+    }
+
     return NextResponse.json(user);
   }
 }
@@ -83,6 +99,20 @@ export async function DELETE(
       where: { id: currentUser.id },
       data: { savedListingIds },
     });
+
+    // Neo4j integration
+    try {
+      const session = neo4jDriver.session();
+      await session.run(
+        `MATCH (u:User {id: $userId})-[r:FAVORITED]->(l:Listing {id: $listingId})
+         DELETE r`,
+        { userId: currentUser.id, listingId }
+      );
+      await session.close();
+    } catch (error) {
+      console.error("Neo4j error on unfavorite:", error);
+    }
+
     return NextResponse.json(user);
   }
 }

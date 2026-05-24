@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
+import neo4jDriver from "@/lib/neo4j";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2022-11-15" as any,
@@ -96,6 +97,20 @@ export async function POST(req: Request) {
             isAvailable: false
           }
         });
+      }
+
+      // Neo4j integration
+      try {
+        const neo4jSession = neo4jDriver.session();
+        await neo4jSession.run(
+          `MERGE (u:User {id: $userId})
+           MERGE (l:Listing {id: $listingId})
+           MERGE (u)-[:BOOKED]->(l)`,
+          { userId: reservation.userId, listingId: reservation.listingId }
+        );
+        await neo4jSession.close();
+      } catch (error) {
+        console.error("Neo4j error on booking:", error);
       }
     }
   }

@@ -70,7 +70,7 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
 
   return (
     <ClientOnly>
-      <div className="relative w-full h-[65vh] min-h-[550px] max-h-[800px] overflow-hidden rounded-b-[3rem] mb-16 shadow-[0_20px_60px_-15px_rgba(236,72,153,0.5)]">
+      <div className="relative w-full h-[50vh] min-h-[400px] max-h-[600px] overflow-hidden rounded-b-[3rem] mb-16 shadow-[0_20px_60px_-15px_rgba(236,72,153,0.5)]">
         {/* Tropical Vibrant Background */}
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-90 hover:scale-110 transition-transform duration-[3000ms] ease-in-out"
@@ -87,16 +87,16 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
           <p className="text-xl md:text-2xl lg:text-3xl text-white font-medium max-w-3xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             {t.home_hero_subtitle}
           </p>
-          <div className="mt-12">
-            <button className="px-10 py-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white rounded-full font-bold text-xl shadow-xl shadow-rose-500/40 hover:shadow-rose-500/60 hover:scale-105 hover:-translate-y-1 active:scale-95 transition-all duration-300">
-              Explorer
-            </button>
+          <div className="mt-2">
+            <a href="#explore-section" className="inline-block px-10 py-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white rounded-full font-bold text-xl shadow-xl shadow-rose-500/40 hover:shadow-rose-500/60 hover:scale-105 hover:-translate-y-1 active:scale-95 transition-all duration-300">
+              {t.hero_explore_btn}
+            </a>
           </div>
         </div>
       </div>
 
       <Container>
-        <div className="pb-16 overflow-x-hidden flex flex-col gap-8">
+        <div id="explore-section" className="pb-16 overflow-x-hidden flex flex-col gap-8">
           {displayCityKeys.map((city) => (
             <ListingCarousel
               key={city}
