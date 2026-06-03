@@ -121,7 +121,7 @@ export async function POST(
     const notification = await prisma.notification.create({
       data: {
         userId: reservation.userId,
-        type: "RESERVATION_CANCELLED",
+        type: "BOOKING_CANCELLED",
         title: `❌ Réservation annulée`,
         body: `${hostName} a annulé votre réservation pour ${reservation.listing?.title || reservation.session?.experience?.title}.`,
         link: `/trips`,
@@ -131,7 +131,7 @@ export async function POST(
     const { pusherServer } = await import("@/lib/pusher");
     await pusherServer.trigger(`user-${reservation.userId}`, "notifications:new", {
       id: notification.id,
-      type: "RESERVATION_CANCELLED",
+      type: "BOOKING_CANCELLED",
       title: notification.title,
       body: notification.body,
       link: notification.link,

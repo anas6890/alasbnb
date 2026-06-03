@@ -5,6 +5,7 @@ import ListingCarousel from "@/components/listing/ListingCarousel";
 import SearchResultsClient from "@/components/listing/SearchResultsClient";
 import getCurrentUser from "./actions/getCurrentUser";
 import getListings, { IListingsParams } from "./actions/getListings";
+import getPopularListings from "./actions/getPopularListings";
 import { safeListing } from "@/types";
 import { cookies } from "next/headers";
 import { translations } from "@/lib/translations";
@@ -19,12 +20,13 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
   const t = translations[language as keyof typeof translations] || translations.en;
 
   const searchParams = await props.searchParams;
-  const [listing, currentUser] = await Promise.all([
+  const [listing, popularListings, currentUser] = await Promise.all([
     getListings(searchParams),
+    getPopularListings({ limit: 20 }),
     getCurrentUser()
   ]);
 
-  if (listing.length === 0) {
+  if (listing.length === 0 && popularListings.length === 0) {
     return (
       <ClientOnly>
         <EmptyState title={t.no_listing} subtitle={t.no_listing_desc} showReset />
@@ -97,6 +99,16 @@ export default async function Home(props: { searchParams: Promise<IListingsParam
 
       <Container>
         <div id="explore-section" className="pb-16 overflow-x-hidden flex flex-col gap-8">
+          {!isSearchActive && popularListings.length > 0 && (
+            <ListingCarousel
+              key="popular"
+              title={t.home_popular}
+              searchQuery=""
+              listings={popularListings}
+              currentUser={currentUser}
+            />
+          )}
+
           {displayCityKeys.map((city) => (
             <ListingCarousel
               key={city}
