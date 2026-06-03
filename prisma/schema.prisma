@@ -1,27 +1,3 @@
-// ╔══════════════════════════════════════════════════════════════════╗
-// ║        SCHÉMA PRISMA — VERSION FINALE                           ║
-// ║        Airbnb-like App · MongoDB · Prisma                       ║
-// ║                                                                  ║
-// ║  Règles appliquées :                                             ║
-// ║  1. "Embed what you read together" — pas de JOIN inutile         ║
-// ║  2. Snapshots figés au moment de la réservation                  ║
-// ║  3. Stats dénormalisées (avgRating, totalReviews...)             ║
-// ║  4. Review en collection séparée + index pour pagination         ║
-// ║  5. Soft deletes sur toutes les entités critiques                ║
-// ║  6. HostReply embarqué avec date                                 ║
-// ║  7. Index sur Message pour les threads paginés                   ║
-// ║                                                                  ║
-// ║  Améliorations v4 :                                              ║
-// ║  A. Index Reservation (userId, listingId, sessionId, status)     ║
-// ║  B. avgRatingCommunication ajouté dans Listing + Review          ║
-// ║  C. Index Listing par city pour la recherche géo                 ║
-// ║  D. Index ListingAvailability par range de dates                 ║
-// ║  E. Index Notification (isRead global)                           ║
-// ║  F. GuestCount type embarqué dans Reservation                    ║
-// ║  G. Index ExperienceSession par date                             ║
-// ║  H. hostSnapshot rendu nullable (sécurité applicative)           ║
-// ╚══════════════════════════════════════════════════════════════════╝
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -32,23 +8,20 @@ datasource db {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// TYPES EMBARQUÉS (composite types — pas de collection propre)
+// TYPES EMBARQUÉS (composite types)
 // ─────────────────────────────────────────────────────────────────────
 
-// Snapshot du logement figé à la réservation
-// → affiché sur la page "Détail réservation" sans aucun lookup
 type ListingSnapshot {
   listingId String
   title     String
   type      String
   city      String
   country   String
-  image     String // 1ère photo uniquement
+  image     String
   lat       Float
   lng       Float
 }
 
-// Snapshot de l'expérience figé à la réservation
 type ExperienceSnapshot {
   experienceId String
   title        String
@@ -58,7 +31,6 @@ type ExperienceSnapshot {
   image        String
 }
 
-// Snapshot de l'hôte figé à la réservation
 type HostSnapshot {
   hostId    String
   firstname String
@@ -66,12 +38,10 @@ type HostSnapshot {
   image     String?
 }
 
-// Paiement embarqué dans Reservation
-// → jamais lu séparément, toujours avec la réservation
 type PaymentEmbed {
   amount                Int
   currency              String
-  status                String // pending | captured | refunded | failed
+  status                String
   stripePaymentIntentId String?
   stripeChargeId        String?
   refundId              String?
@@ -80,25 +50,20 @@ type PaymentEmbed {
   refundedAt            DateTime?
 }
 
-// Réponse de l'hôte à un avis (avec date d'affichage)
-// → "L'hôte a répondu le 12 mai 2025"
 type HostReply {
   content   String
   createdAt DateTime
   updatedAt DateTime?
 }
 
-// Règle de prix saisonnière embarquée dans Listing
-// → toujours lue avec le listing pour calculer le prix affiché
 type PriceRule {
-  type      String // SEASONAL | WEEKEND | EVENT | LAST_MINUTE
+  type      String
   label     String?
-  discount  Int // % — positif = hausse, négatif = réduction
+  discount  Int
   startDate DateTime
   endDate   DateTime
 }
 
-// Localisation embarquée (partagée par Listing et Experience)
 type Location {
   address String?
   city    String
@@ -114,8 +79,6 @@ type Location {
 // ─────────────────────────────────────────────────────────────────────
 
 // ── 1. USER ───────────────────────────────────────────────────────────
-// Les favoris sont des tableaux d'ObjectIds embarqués dans User.
-// Pas de collection Favorite séparée — jamais requêtés seuls.
 model User {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
   email          String    @unique
@@ -129,16 +92,14 @@ model User {
   governmentId   String?
   isVerified     Boolean   @default(false)
   preferredLang  String    @default("fr")
-  currency       String    @default("EUR")
+  currency       String    @default("MAD")
 
-  // Favoris embarqués — tableaux d'ObjectIds
-  // Limite recommandée : <500 par user
   savedListingIds    String[] @db.ObjectId
   savedExperienceIds String[] @db.ObjectId
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete — l'historique transactionnel est préservé
+  deletedAt DateTime?
 
   accounts           Account[]
   listings           Listing[]
@@ -153,7 +114,6 @@ model User {
 }
 
 // ── 2. ACCOUNT (OAuth) ────────────────────────────────────────────────
-// Séparé de User car NextAuth le gère indépendamment.
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
   userId            String  @db.ObjectId
@@ -174,29 +134,19 @@ model Account {
 }
 
 // ── 3. LISTING ────────────────────────────────────────────────────────
-// Stats dénormalisées : recalculées à chaque Review créé/supprimé.
-// Évite un $avg sur des milliers de documents à chaque affichage.
-// PriceRules embarquées : toujours lues avec le listing.
-//   - avgRatingCommunication ajouté (cohérence avec Review)
-//   - Index sur location.city pour les recherches par ville
 model Listing {
-  id     String        @id @default(auto()) @map("_id") @db.ObjectId
-  hostId String        @db.ObjectId
-  status ListingStatus @default(DRAFT)
-
-  title       String
-  description String
-  type        String // apartment | house | villa | cabin | boat | treehouse
-
-  // Tarification de base
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  hostId          String        @db.ObjectId
+  status          ListingStatus @default(DRAFT)
+  title           String
+  description     String
+  type            String // apartment | house | villa | cabin | boat | treehouse
   pricePerNight   Int
-  cleaningFee     Int @default(0)
-  securityDeposit Int @default(0)
-  weeklyDiscount  Int @default(0) // %
-  monthlyDiscount Int @default(0) // %
-
-  // Règles de prix embarquées (toujours lues avec le listing)
-  priceRules PriceRule[]
+  cleaningFee     Int           @default(0)
+  securityDeposit Int           @default(0)
+  weeklyDiscount  Int           @default(0) // %
+  monthlyDiscount Int           @default(0) // %
+  priceRules      PriceRule[]
 
   // Capacité
   maxGuests Int
@@ -208,7 +158,7 @@ model Listing {
   images    String[]
   amenities String[]
 
-  // Localisation embarquée
+  // Localisation
   location Location
 
   // Règles maison
@@ -234,40 +184,30 @@ model Listing {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete
+  deletedAt DateTime?
 
   user           User                  @relation(fields: [hostId], references: [id], onDelete: Cascade)
   reservations   Reservation[]
   availabilities ListingAvailability[]
   reviews        Review[]
   conversations  Conversation[]
-
-  // Index pour la recherche par ville (filtres homepage)
-  @@index([hostId])
-  @@index([status])
 }
 
 // ── 4. LISTING AVAILABILITY ───────────────────────────────────────────
-// Séparée car requêtée par range de dates indépendamment du listing.
-//   - Index (listingId, date, isAvailable) pour les range queries
-//     ex: trouver toutes les dates dispo entre checkIn et checkOut
 model ListingAvailability {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   listingId   String   @db.ObjectId
   date        DateTime
   isAvailable Boolean  @default(true)
-  customPrice Int? // override tarifaire pour cette date précise
+  customPrice Int?
 
   listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
-  // Unique sur (listingId, date) — index principal pour lookup exact
   @@unique([listingId, date])
-  // Index pour range queries : WHERE listingId = X AND date BETWEEN A AND B AND isAvailable = true
   @@index([listingId, isAvailable, date])
 }
 
 // ── 5. EXPERIENCE ─────────────────────────────────────────────────────
-// Même logique que Listing : stats dénormalisées,localisation embarquée, avis en collection séparée.
 model Experience {
   id     String        @id @default(auto()) @map("_id") @db.ObjectId
   hostId String        @db.ObjectId
@@ -282,20 +222,19 @@ model Experience {
   maxGroupSize    Int
 
   images    String[]
-  included  String[] // ce qui est inclus dans le prix
-  languages String[] // langues parlées par l'hôte
+  included  String[]
+  languages String[]
 
   location Location
 
   cancellationPolicy CancellationPolicy @default(FLEXIBLE)
 
-  // Stats dénormalisées
   avgRating    Float @default(0)
   totalReviews Int   @default(0)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete
+  deletedAt DateTime?
 
   user          User                @relation(fields: [hostId], references: [id], onDelete: Cascade)
   sessions      ExperienceSession[]
@@ -307,10 +246,6 @@ model Experience {
 }
 
 // ── 6. EXPERIENCE SESSION ─────────────────────────────────────────────
-// Séparée car requêtée par date/dispo indépendamment de l'expérience.
-// Une session = une occurrence réservable (ex : "samedi 14h").
-//   - Index (experienceId, dateTime, isCancelled) pour les recherches
-//     de sessions disponibles dans un range de dates
 model ExperienceSession {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   experienceId String   @db.ObjectId
@@ -322,17 +257,10 @@ model ExperienceSession {
 
   experience   Experience    @relation(fields: [experienceId], references: [id], onDelete: Cascade)
   reservations Reservation[]
-
-  // Index pour trouver les sessions disponibles dans un range de dates
   @@index([experienceId, isCancelled, dateTime])
-}
+  }
 
 // ── 7. RESERVATION ────────────────────────────────────────────────────
-//
-// Document central du flux transactionnel — AUTOSUFFISANT.
-// Une seule lecture = tout ce qu'il faut pour afficher la page
-// "Détail de réservation" : snapshots + paiement embarqué.
-//
 // EMBEDDING :
 //   payment            → PaymentEmbed  (jamais lu séparément)
 //   listingSnapshot    → figé à la création
@@ -359,12 +287,12 @@ model Reservation {
   // Snapshots figés — insensibles aux modifications ultérieures
   listingSnapshot    ListingSnapshot?
   experienceSnapshot ExperienceSnapshot?
-  hostSnapshot       HostSnapshot? // ← nullable v4 (sécurité si host supprimé)
+  hostSnapshot       HostSnapshot?
 
   // Dates (logement uniquement)
   checkIn  DateTime?
   checkOut DateTime?
-  nights   Int? // pré-calculé à la création
+  nights   Int?
 
   // Voyageurs
   adults   Int @default(1)
@@ -388,45 +316,30 @@ model Reservation {
   cancelReason       String?
   cancelledBy        String? // userId de l'annulateur
 
-  // Paiement embarqué — jamais lu séparément
   payment PaymentEmbed?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing  Listing?           @relation(fields: [listingId], references: [id], onDelete: SetNull)
-  session  ExperienceSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
-  reviews  Review[]
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing?           @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  session ExperienceSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  reviews Review[]
 
-  // ── Index ──────────────────────────────────────────────────────
-  // "Mes réservations" (guest) — page principale
   @@index([userId, createdAt(sort: Desc)])
-  // "Réservations de mon logement" (hôte)
   @@index([listingId, createdAt(sort: Desc)])
-  // "Réservations d'une session d'expérience" (hôte)
   @@index([sessionId, createdAt(sort: Desc)])
-  // Dashboard admin & cron (ex: PENDING depuis >24h → auto-cancel)
   @@index([status, createdAt(sort: Desc)])
 }
 
 // ── 8. REVIEW ─────────────────────────────────────────────────────────
-//
-// Collection séparée — les avis sont paginés sur la page d'un logement/expérience et ne sont jamais chargés en bloc.
-//   - ratingCommunication ajouté (cohérence avec avgRatingCommunication)
-//   - deletedAt pour la modération sans perte d'historique
-//   - Index composites pour la pagination performante
-//
-// NOTE : listingId XOR experienceId — exactement l'un des deux doit être renseigné.
-// Contrainte enforced côté applicatif (pas de support natif Prisma/MongoDB).
 model Review {
   id            String  @id @default(auto()) @map("_id") @db.ObjectId
   authorId      String  @db.ObjectId
   reservationId String  @db.ObjectId
-  listingId     String? @db.ObjectId // obligatoire si type = LISTING
-  experienceId  String? @db.ObjectId // obligatoire si type = EXPERIENCE
+  listingId     String? @db.ObjectId
+  experienceId  String? @db.ObjectId
 
-  // Sous-notes (logement)
   ratingCleanliness   Int?
   ratingAccuracy      Int?
   ratingCheckin       Int?
@@ -434,38 +347,27 @@ model Review {
   ratingLocation      Int?
   ratingValue         Int?
 
-  // Note globale (logement + expérience)
   avgRating Float
-
   comment String
 
-  // Réponse de l'hôte avec date — "L'hôte a répondu le 12 mai"
   hostReply HostReply?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete — modération sans perte d'historique
+  deletedAt DateTime?
 
   author      User        @relation(fields: [authorId], references: [id])
   reservation Reservation @relation(fields: [reservationId], references: [id])
   listing     Listing?    @relation(fields: [listingId], references: [id])
   experience  Experience? @relation(fields: [experienceId], references: [id])
 
-  // Index pour pagination triée par date sur la page d'un logement/expérience
   @@index([listingId, createdAt(sort: Desc)])
   @@index([experienceId, createdAt(sort: Desc)])
-  // Index pour récupérer tous les avis d'un auteur (profil public)
   @@index([authorId, createdAt(sort: Desc)])
-  // Index pour la modération (avis non supprimés seulement)
   @@index([listingId, deletedAt])
 }
 
 // ── 9. MESSAGE ────────────────────────────────────────────────────────
-//
-// Séparé car paginé et requêté par thread (conversationId).
-// Index composite (conversationId, createdAt) pour charger
-// un thread paginé en une seule requête sans scan complet.
-//
 model Message {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
   senderId       String    @db.ObjectId
@@ -480,25 +382,19 @@ model Message {
   receiver     User         @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  // Index pour charger un thread paginé efficacement
   @@index([conversationId, createdAt(sort: Desc)])
-  // Index pour marquer tous les messages non lus d'un utilisateur
   @@index([receiverId, isRead])
 }
 
 // ── 11. CONVERSATION ──────────────────────────────────────────────────
-//
-// Gère les fils de discussion indépendamment des réservations, permettant 
-// le messaging pré-réservation sans créer de "fausse" réservation.
-//
 model Conversation {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  guestId      String    @db.ObjectId
-  hostId       String    @db.ObjectId
-  listingId    String?   @db.ObjectId
-  experienceId String?   @db.ObjectId
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  guestId      String   @db.ObjectId
+  hostId       String   @db.ObjectId
+  listingId    String?  @db.ObjectId
+  experienceId String?  @db.ObjectId
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   guest      User        @relation("GuestConversations", fields: [guestId], references: [id], onDelete: Cascade)
   host       User        @relation("HostConversations", fields: [hostId], references: [id], onDelete: Cascade)
@@ -511,29 +407,19 @@ model Conversation {
 }
 
 // ── 10. NOTIFICATION ──────────────────────────────────────────────────
-// Paginée, volume élevé — un TTL index MongoDB peut auto-supprimer
-// les notifications lues après N jours (à configurer dans Atlas).
-//
-// AJOUT v4 :
-//   - Index (isRead, createdAt) pour compter les notifs non lues
-//     globalement (badge dans le header) sans filtrer par user
-//   - Index (userId, type, createdAt) pour filtrer par type de notif
-//
 model Notification {
   id        String           @id @default(auto()) @map("_id") @db.ObjectId
   userId    String           @db.ObjectId
   type      NotificationType
   title     String
   body      String
-  link      String? // deep link dans l'app
+  link      String?
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Index pour charger les notifs non lues d'un user (liste)
   @@index([userId, isRead, createdAt(sort: Desc)])
-  // Index pour filtrer par type (ex: toutes les notifs BOOKING_*)
   @@index([userId, type, createdAt(sort: Desc)])
 }
 

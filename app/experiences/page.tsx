@@ -4,7 +4,7 @@ import getExperiences from "@/app/actions/getExperiences";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import Container from "@/components/Container";
 import ExperienceCard from "@/components/experience/ExperienceCard";
-import { cookies } from "next/headers";
+import { cookies} from "next/headers";
 import ExperienceCarousel from "@/components/experience/ExperienceCarousel";
 import { translations } from "@/lib/translations";
 

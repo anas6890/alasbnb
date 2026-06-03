@@ -6,6 +6,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import FacebookProvider from "next-auth/providers/facebook";
 import GoogleProvider from "next-auth/providers/google";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const customAdapter = PrismaAdapter(prisma);
 const originalCreateUser = customAdapter.createUser;
 if (originalCreateUser) {
@@ -25,10 +28,23 @@ export const authOptions: AuthOptions = {
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            allowDangerousEmailAccountLinking: true,
         }),
         FacebookProvider({
             clientId: process.env.FACEBOOK_ID as string,
             clientSecret: process.env.FACEBOOK_SECRET as string,
+            allowDangerousEmailAccountLinking: true,
+            authorization: {
+                params: {
+                    scope: "email public_profile",
+                },
+            },
+            profile: (profile: any) => ({
+                id: profile.id,
+                name: profile.name,
+                email: profile.email,
+                image: profile.picture?.data?.url,
+            }),
         }),
         CredentialsProvider({
             name: "credentials",
