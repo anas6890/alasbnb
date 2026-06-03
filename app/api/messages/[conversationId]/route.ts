@@ -38,7 +38,10 @@ export async function GET(
         sender: true,
         receiver: true,
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: [
+        { createdAt: "asc" },
+        { id: "asc" }
+      ],
     });
 
     return NextResponse.json(messages);

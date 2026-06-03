@@ -22,21 +22,21 @@ const CITIES = [
 ];
 
 const IMAGES = [
-  "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1566836139788-37fc67e20246?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1554995207-c18210cc2328?auto=format&fit=crop&w=1200&q=80",
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1568605114967-8ac60ecded8b?auto=format&fit=crop&w=1200&q=80",
   "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1506126613632-421aa661ebac?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600607687931-cebf10ddfbde?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1560165897-fc0cad00d5de?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1585128798051-2d45c6c6e7ce?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1539932017732-a3a33e079e12?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1494145904049-552f1f8ce5f5?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1478221143597-40f3a1265fcf?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1566073566663-6fb86d94c161?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1608570657551-8747e7a9c88?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1600210691290-ec4915cda22f?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1522578474514-e3995abf1a73?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1590523277543-a3db3d56e6c7?auto=format&fit=crop&w=1200&q=80",
 ];
 
 const TYPES = ["apartment", "house", "villa", "cabin", "boat"];

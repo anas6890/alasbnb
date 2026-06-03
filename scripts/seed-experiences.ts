@@ -4,12 +4,12 @@ import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 const images = [
-  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1200&q=80"
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1507003033856-51a6baad41b5?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1488149244554-f48f517c8078?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1486146049823-4af8f1c30192?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1507371341519-c06b6e64db00?auto=format&fit=crop&w=1200&q=80"
 ];
 
 async function main() {

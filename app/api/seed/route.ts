@@ -40,7 +40,7 @@ export async function GET() {
         bedrooms: 3,
         beds: 4,
         bathrooms: 2,
-        images: ["https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80"],
+        images: ["https://images.unsplash.com/photo-1566073566663-6fb86d94c161?auto=format&fit=crop&w=800&q=80"],
         amenities: ["Piscine", "Wifi", "Cuisine", "Stationnement gratuit sur place"],
         location: {
           city: "Nice",
@@ -59,7 +59,7 @@ export async function GET() {
         bedrooms: 1,
         beds: 1,
         bathrooms: 1,
-        images: ["https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80"],
+        images: ["https://images.unsplash.com/photo-1554995207-c18210cc2328?auto=format&fit=crop&w=800&q=80"],
         amenities: ["Wifi", "Cuisine", "Lave-linge"],
         location: {
           city: "Paris",
@@ -80,27 +80,27 @@ export async function GET() {
       });
     }
 
-    // 4. Create Sample Experience
-    await prisma.experience.create({
-      data: {
-        title: "Dégustation de Vins et Fromages",
-        category: "cuisine",
-        description: "Venez découvrir les secrets des meilleurs crus français accompagnés de fromages artisanaux.",
-        durationMinutes: 120,
-        pricePerPerson: 45,
-        maxGroupSize: 10,
-        images: ["https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=800&q=80"],
-        languages: ["Français", "Anglais"],
-        location: {
-          city: "Bordeaux",
-          country: "France",
-          lat: 44.8378,
-          lng: -0.5792,
-        },
-        status: "PUBLISHED" as any,
-        hostId: testUser.id,
-      }
-    });
+     // 4. Create Sample Experience
+     await prisma.experience.create({
+       data: {
+         title: "Dégustation de Vins et Fromages",
+         category: "cuisine",
+         description: "Venez découvrir les secrets des meilleurs crus français accompagnés de fromages artisanaux.",
+         durationMinutes: 120,
+         pricePerPerson: 45,
+         maxGroupSize: 10,
+         images: ["https://images.unsplash.com/photo-1506768066919-2f5ec3c7618c?auto=format&fit=crop&w=800&q=80"],
+         languages: ["Français", "Anglais"],
+         location: {
+           city: "Bordeaux",
+           country: "France",
+           lat: 44.8378,
+           lng: -0.5792,
+         },
+         status: "PUBLISHED" as any,
+         hostId: testUser.id,
+       }
+     });
 
     return NextResponse.json({ 
       message: "Base de données peuplée avec succès !",

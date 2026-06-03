@@ -113,13 +113,33 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
 
     const content = newMessage;
     setNewMessage("");
+    
+    // Optimistic UI update
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage = {
+      id: tempId,
+      content,
+      senderId: currentUser.id,
+      receiverId: getOtherUser(selectedConversation)?.id || "",
+      conversationId: selectedConversation.id,
+      createdAt: new Date().toISOString(),
+      isRead: false,
+    } as unknown as SafeMessage;
+    
+    setMessages((current) => [...current, tempMessage]);
 
     try {
-      await axios.post(`/api/messages/${selectedConversation.id}`, {
+      const res = await axios.post(`/api/messages/${selectedConversation.id}`, {
         content,
       });
+      // Replace the temp message with the real one returned by the API
+      setMessages((current) =>
+        current.map((m) => (m.id === tempId ? res.data : m))
+      );
     } catch (error) {
       console.error("Failed to send message");
+      // Remove temp message if failed
+      setMessages((current) => current.filter((m) => m.id !== tempId));
     }
   };
 
