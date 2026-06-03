@@ -108,14 +108,17 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
     };
   }, [selectedConversation?.id]);
 
+  const [isSending, setIsSending] = useState(false);
+
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+    if (!newMessage.trim() || !selectedConversation || isSending) return;
 
     const content = newMessage;
     setNewMessage("");
+    setIsSending(true);
     
     // Optimistic UI update
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const tempMessage = {
       id: tempId,
       content,
@@ -133,13 +136,19 @@ const MessagesClient: React.FC<MessagesClientProps> = ({
         content,
       });
       // Replace the temp message with the real one returned by the API
-      setMessages((current) =>
-        current.map((m) => (m.id === tempId ? res.data : m))
-      );
+      // If Pusher already added it, just remove the temp one.
+      setMessages((current) => {
+        if (current.find((m) => m.id === res.data.id)) {
+          return current.filter((m) => m.id !== tempId);
+        }
+        return current.map((m) => (m.id === tempId ? res.data : m));
+      });
     } catch (error) {
       console.error("Failed to send message");
       // Remove temp message if failed
       setMessages((current) => current.filter((m) => m.id !== tempId));
+    } finally {
+      setIsSending(false);
     }
   };
 
