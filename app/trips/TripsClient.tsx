@@ -303,16 +303,18 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                                           </div>
                                       </div>
                                   ) : (
-                                      <button
-                                          onClick={(e) => {
-                                              e.stopPropagation(); e.preventDefault();
-                                              setReviewingId(reservation.id);
-                                          }}
-                                          className="w-full bg-white text-neutral-900 border border-neutral-300 rounded-xl py-2.5 font-bold text-sm hover:border-neutral-900 hover:bg-neutral-50 transition-all flex items-center justify-center gap-2 shadow-sm"
-                                      >
-                                          <FiStar className="text-amber-500 fill-amber-500" size={16} />
-                                          {t.leave_review || 'Laisser un avis'}
-                                      </button>
+                                      reservation.status === "COMPLETED" ? (
+                                          <button
+                                              onClick={(e) => {
+                                                  e.stopPropagation(); e.preventDefault();
+                                                  setReviewingId(reservation.id);
+                                              }}
+                                              className="w-full bg-white text-neutral-900 border border-neutral-300 rounded-xl py-2.5 font-bold text-sm hover:border-neutral-900 hover:bg-neutral-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                                          >
+                                              <FiStar className="text-amber-500 fill-amber-500" size={16} />
+                                              {t.leave_review || 'Laisser un avis'}
+                                          </button>
+                                      ) : null
                                   )}
                               </div>
                           </div>
