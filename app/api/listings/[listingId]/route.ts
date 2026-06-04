@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import prisma from "@/lib/prismadb";
+import { EXCHANGE_RATES } from "@/hook/usePrice";
 
 interface IParams {
   listingId?: string;
@@ -92,7 +93,8 @@ export async function PUT(
     petsAllowed,
     smokingAllowed,
     partiesAllowed,
-    cancellationPolicy
+    cancellationPolicy,
+    currency
   } = body;
 
   const listing = await prisma.listing.update({
@@ -109,7 +111,7 @@ export async function PUT(
       bathrooms: bathroomCount,
       maxGuests: guestCount,
       beds: bedCount,
-      pricePerNight: parseInt(price, 10),
+      pricePerNight: currency && currency !== "EUR" ? Math.round(parseInt(price, 10) / EXCHANGE_RATES[currency as keyof typeof EXCHANGE_RATES]) : parseInt(price, 10),
       amenities,
       checkInTime,
       checkOutTime,

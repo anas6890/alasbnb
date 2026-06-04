@@ -1,6 +1,7 @@
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import prisma from "@/lib/prismadb";
 import { NextResponse } from "next/server";
+import { EXCHANGE_RATES } from "@/hook/usePrice";
 
 export async function POST(request: Request) {
   const currentUser = await getCurrentUser();
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
     checkInTime,
     checkOutTime,
     cancellationPolicy,
+    currency,
   } = body;
 
   const availabilities = [];
@@ -68,7 +70,7 @@ export async function POST(request: Request) {
           lng: location.latlng[1],
         },
       },
-      pricePerNight: parseInt(price, 10),
+      pricePerNight: currency && currency !== "EUR" ? Math.round(parseInt(price, 10) / EXCHANGE_RATES[currency as keyof typeof EXCHANGE_RATES]) : parseInt(price, 10),
       petsAllowed: Boolean(petsAllowed),
       smokingAllowed: Boolean(smokingAllowed),
       partiesAllowed: Boolean(partiesAllowed),

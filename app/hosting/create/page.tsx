@@ -199,7 +199,8 @@ const CreateListingPage = () => {
     const isUpdate = !!editId;
     const url = data.type === "LISTING" ? "/api/listings" : "/api/experiences";
     const requestUrl = isUpdate ? `${url}/${editId}` : url;
-    const request = isUpdate ? axios.put(requestUrl, data) : axios.post(requestUrl, data);
+    const requestData = { ...data, currency };
+    const request = isUpdate ? axios.put(requestUrl, requestData) : axios.post(requestUrl, requestData);
 
     request
       .then(() => {

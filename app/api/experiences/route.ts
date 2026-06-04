@@ -1,6 +1,7 @@
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import prisma from "@/lib/prismadb";
 import { NextResponse } from "next/server";
+import { EXCHANGE_RATES } from "@/hook/usePrice";
 
 export async function POST(request: Request) {
   const currentUser = await getCurrentUser();
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
     price,
     duration,
     cancellationPolicy,
+    currency,
   } = body;
 
   const experience = await prisma.experience.create({
@@ -31,7 +33,7 @@ export async function POST(request: Request) {
       images: images || [],
       category: category,
       durationMinutes: parseInt(duration, 10) || 60,
-      pricePerPerson: parseInt(price, 10),
+      pricePerPerson: currency && currency !== "EUR" ? Math.round(parseInt(price, 10) / EXCHANGE_RATES[currency as keyof typeof EXCHANGE_RATES]) : parseInt(price, 10),
       maxGroupSize: parseInt(guestCount, 10),
       status: "PUBLISHED",
       cancellationPolicy: cancellationPolicy || "FLEXIBLE",

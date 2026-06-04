@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { translations } from "@/lib/translations";
 import useLanguage from "@/hook/useLanguage";
+import useCurrency from "@/hook/useCurrency";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -54,6 +55,7 @@ function RentModal({ }: Props) {
   const [step, setStep] = useState(STEPS.CATEGORY);
   const [isLoading, setIsLoading] = useState(false);
   const { language } = useLanguage();
+  const { currency } = useCurrency();
   const t = translations[language] || translations.en;
 
   const {
@@ -138,7 +140,7 @@ function RentModal({ }: Props) {
     setIsLoading(true);
 
     axios
-      .post("/api/listings", data)
+      .post("/api/listings", { ...data, currency })
       .then(() => {
         toast.success(t.listing_success || "Listing Created!");
         router.refresh();

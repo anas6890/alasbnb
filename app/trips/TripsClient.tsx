@@ -34,12 +34,24 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
   const [activeTab, setActiveTab] = useState<"LISTING" | "EXPERIENCE">("LISTING");
 
   const getIsPast = (r: any) => {
-    if (r.status === "COMPLETED") return true;
-    if (r.status === "CONFIRMED") return false;
+    if (r.status === "COMPLETED" || r.status === "CANCELLED") return true;
+    
     if (r.type === "EXPERIENCE" && r.session) {
       return new Date(r.session.dateTime) < new Date();
     }
-    return r.checkOut && new Date(r.checkOut) < new Date();
+    
+    if (r.checkOut) {
+      const checkoutDate = new Date(r.checkOut);
+      // r.listingSnapshot?.checkOutTime might not be available, but we can assume checkout is at noon (12:00) 
+      // or try to use the listing checkOutTime if available. For now, let's just add 12 hours.
+      // Wait, let's just use the end of the checkout day or the exact time if possible.
+      // The user says "I set the checkOutTime to 11h". Where is that stored?
+      // It's in r.listing?.checkOutTime.
+      const checkOutHour = r.listing?.checkOutTime || 11;
+      checkoutDate.setHours(checkOutHour, 0, 0, 0);
+      return checkoutDate < new Date();
+    }
+    return false;
   };
 
   const filteredReservations = reservations.filter((r) => r.type === activeTab);
@@ -303,7 +315,7 @@ function TripsClient({ reservations, currentUser, isSuccess }: Props) {
                                           </div>
                                       </div>
                                   ) : (
-                                      reservation.status === "COMPLETED" ? (
+                                      (reservation.status === "COMPLETED" || (getIsPast(reservation) && reservation.status === "CONFIRMED")) ? (
                                           <button
                                               onClick={(e) => {
                                                   e.stopPropagation(); e.preventDefault();

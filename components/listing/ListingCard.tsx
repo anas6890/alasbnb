@@ -125,9 +125,15 @@ function ListingCard({
     if (!reservation) return null;
     
     // Check if the reservation is past
-    const isPast = reservation.type === "EXPERIENCE" 
-      ? (reservation.session && new Date(reservation.session.dateTime) < new Date())
-      : (reservation.checkOut && new Date(reservation.checkOut) < new Date());
+    let isPast = false;
+    if (reservation.type === "EXPERIENCE" && reservation.session) {
+      isPast = new Date(reservation.session.dateTime) < new Date();
+    } else if (reservation.checkOut) {
+      const checkoutDate = new Date(reservation.checkOut);
+      const checkOutHour = reservation.listing?.checkOutTime || 11;
+      checkoutDate.setHours(checkOutHour, 0, 0, 0);
+      isPast = checkoutDate < new Date();
+    }
 
     const status = isPast && reservation.status === "CONFIRMED" ? "COMPLETED" : reservation.status;
 

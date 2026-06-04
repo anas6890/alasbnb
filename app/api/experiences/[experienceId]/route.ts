@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import prisma from "@/lib/prismadb";
+import { EXCHANGE_RATES } from "@/hook/usePrice";
 
 interface IParams {
   experienceId?: string;
@@ -85,7 +86,8 @@ export async function PUT(
     duration,
     price,
     amenities,
-    cancellationPolicy
+    cancellationPolicy,
+    currency
   } = body;
 
   const experience = await prisma.experience.update({
@@ -100,7 +102,7 @@ export async function PUT(
       category,
       maxGroupSize: guestCount,
       durationMinutes: duration,
-      pricePerPerson: parseInt(price, 10),
+      pricePerPerson: currency && currency !== "EUR" ? Math.round(parseInt(price, 10) / EXCHANGE_RATES[currency as keyof typeof EXCHANGE_RATES]) : parseInt(price, 10),
       amenities,
       cancellationPolicy
     },
